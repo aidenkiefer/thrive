@@ -108,6 +108,27 @@ Rendered as:
 
 ---
 
+## Dependency Notes
+
+### `next-mdx-remote`
+
+**Current version:** v5 (installed)
+**Status:** Upgrade required before implementing MDX page rendering.
+
+v5 has a high-severity vulnerability ([GHSA-g4xw-jxrg-5f6m](https://github.com/advisories/GHSA-g4xw-jxrg-5f6m)): arbitrary code execution via untrusted MDX content in React SSR. This only applies when rendering MDX from user-controlled or untrusted input — our MDX files are developer-authored and committed to the repo, so the risk is low until we wire up the renderer.
+
+**Before implementing MDX pages:** upgrade to v6. The `serialize` / `MDXRemote` API is largely the same but the import paths changed. Since no MDX rendering code has been written yet, this is a clean upgrade.
+
+```bash
+npm install next-mdx-remote@6
+```
+
+### Moderate vulnerabilities in `postcss` / `next` / `uuid`
+
+These appear in `npm audit` but are in Next.js's and NextAuth's internal dependency trees — they cannot be fixed without downgrading Next.js to v9 (not appropriate). They will resolve when Next.js and NextAuth release their own dependency updates. Safe to ignore for now; monitor with `npm audit` on each dependency bump.
+
+---
+
 ## Future Integrations (Not Planned Yet)
 
 | System | Potential use |

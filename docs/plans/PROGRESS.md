@@ -52,6 +52,8 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 | **Future phase** | Podcast RSS feed | `docs/06-integrations.md` (future integrations) | Auto-publish sermons |
 | **Future phase** | Livestream embed | `docs/06-integrations.md` (future integrations) | YouTube Live / Vimeo embed on Watch page |
 | **Deferred** | Full CMS for non-technical staff | — | Custom admin panel covers staff editing needs |
+| **Fix / patch** | Upgrade `next-mdx-remote` v5 → v6 | `package.json` | High-severity vuln (GHSA-g4xw-jxrg-5f6m): arbitrary code execution via untrusted MDX in SSR. Safe until MDX rendering is implemented; upgrade before writing MDX pages. |
+| **Known / non-actionable** | `postcss`, `uuid` moderate vulns in Next.js / NextAuth internals | `package.json` | Not directly fixable without downgrading Next.js to v9. Will resolve when Next.js and NextAuth release dependency updates. Monitor with `npm audit`. |
 
 ---
 

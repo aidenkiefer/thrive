@@ -1,4 +1,4 @@
-import { Section, Container, Heading, Card, Button } from '@/components/ui'
+import { Section, Container, Heading, Card } from '@/components/ui'
 
 interface Group {
   slug: string
@@ -56,9 +56,9 @@ export function HubCardsSection({
               description={hub.description}
               href={hub.href}
               footer={
-                <Button href={hub.href} variant="secondary" className="w-full justify-center">
+                <span className="inline-flex w-full items-center justify-center rounded-md border border-brand-800 px-5 py-2.5 text-sm font-medium text-brand-800">
                   Learn More
-                </Button>
+                </span>
               }
             />
           ))}

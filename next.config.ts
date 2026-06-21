@@ -8,6 +8,12 @@ const nextConfig: NextConfig = {
         hostname: '*.supabase.co',
         pathname: '/storage/v1/object/public/**',
       },
+      // Migrated WordPress media — remove after re-hosting to Supabase Storage
+      {
+        protocol: 'https',
+        hostname: 'thrivevineyard.com',
+        pathname: '/wp-content/uploads/**',
+      },
     ],
   },
   // 301 redirects from WordPress will be populated here after the SEO audit.

@@ -301,3 +301,14 @@ create policy "public_read_announcements" on announcements for select using (
 );
 create policy "public_read_landing_pages" on landing_pages for select using (published_at is not null);
 create policy "public_read_outreach" on outreach for select using (published_at is not null);
+
+-- =============================================================================
+-- SCHEMA PATCH: Sprint 01 additions
+-- Apply after initial schema creation.
+-- After applying: npx supabase gen types typescript --local > src/lib/supabase/types.ts
+-- =============================================================================
+
+alter table sermons add column if not exists topics text[];
+alter table sermons add column if not exists service_type text default 'Sunday Service';
+alter table recurring_events add column if not exists venue text;
+alter table one_time_events add column if not exists venue text;

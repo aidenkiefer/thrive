@@ -29,13 +29,15 @@ Updating one record updates everything.
 | Phased launch | No hard deadline — ship core functionality first, layer in complexity |
 | Developer-primary editing | Aiden is the primary content editor; staff get custom-built admin interfaces for time-sensitive content |
 | Domain migration | Existing WordPress site lives on the same domain — URL structure changes require 301 redirects |
-| SEO audit needed | Google Search Console data must be reviewed before URL structure is finalized |
+| SEO audit needed | Google Search Console data must be reviewed before URL structure is finalized — draft redirect map started in `04-seo-url-migration-map.md` |
+| Live site audit done | WordPress crawl complete (2026-06-20) — see `01-current-site-audit.md`; ~103 sermons, ~62 events to migrate |
+| Active Google Ads | Campaigns live with conversion ID `AW-16575196430`; landing page URLs must be preserved through migration |
 
 ---
 
 ## What Is Not in Scope (Yet)
 
-- Design system / visual identity decisions
+- Design system **implementation** in code (plan written — see `07-design-system.md`)
 - Content migration from WordPress (a separate later phase)
 - Full SEO URL mapping (depends on Search Console audit)
 - ChurchSuite deep integration (forms only for now)

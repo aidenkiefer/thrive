@@ -2,11 +2,39 @@
 // Source: content/pages/plan-a-visit.mdx
 // See: docs/03-information-architecture.md
 
-export default function PlanAVisitPage() {
+import { compileMDX } from 'next-mdx-remote/rsc'
+import { getMdxContent } from '@/lib/mdx'
+import { Section, Container } from '@/components/ui'
+import type { Metadata } from 'next'
+
+interface Frontmatter {
+  title: string
+  description?: string
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Plan Your Visit',
+    description:
+      'Everything you need to know before your first visit to Thrive Vineyard Church in Palatine, IL.',
+  }
+}
+
+export default async function PlanAVisitPage() {
+  const source = getMdxContent('plan-a-visit.mdx')
+
+  const { content } = await compileMDX<Frontmatter>({
+    source,
+    options: { parseFrontmatter: true },
+  })
+
   return (
-    <div>
-      {/* TODO: Render content/pages/plan-a-visit.mdx */}
-      <h1>Plan a Visit</h1>
-    </div>
+    <Section background="white">
+      <Container>
+        <article className="max-w-prose mx-auto space-y-4 text-neutral-700 leading-relaxed">
+          {content}
+        </article>
+      </Container>
+    </Section>
   )
 }

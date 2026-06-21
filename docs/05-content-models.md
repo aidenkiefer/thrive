@@ -42,6 +42,8 @@ Individual sermon records.
 | `duration_seconds` | `int` | For display (e.g., "42 min") |
 | `preached_at` | `date NOT NULL` | Date the sermon was delivered |
 | `location` | `text` | Override if not main venue |
+| `topics` | `text[]` | e.g., `["faith", "healing", "prayer"]` |
+| `service_type` | `text DEFAULT 'Sunday Service'` | e.g., "Sunday Service", "Special Service", "Conference" |
 | + universal fields | | |
 
 ---
@@ -96,6 +98,7 @@ The canonical entity for anything that happens on a regular schedule. This is th
 | `recurrence_description` | `text` | Human-readable: "First Saturday of the month" |
 | `typical_time` | `text` | e.g., "7:00 PM" |
 | `location` | `text` | |
+| `venue` | `text` | Specific room/space, e.g., "Sanctuary", "Cafe" |
 | `leader` | `text` | |
 | `contact_email` | `text` | |
 | `contact_phone` | `text` | |
@@ -141,6 +144,7 @@ Standalone events that are not part of a recurring series.
 | `start_datetime` | `timestamptz NOT NULL` | |
 | `end_datetime` | `timestamptz` | |
 | `location` | `text` | |
+| `venue` | `text` | Specific room/space, e.g., "Sanctuary", "Cafe" |
 | `leader` | `text` | |
 | `contact_email` | `text` | |
 | `featured_image_url` | `text` | |

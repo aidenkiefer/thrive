@@ -184,6 +184,24 @@ Landing pages live at the root level for clean, short URLs suitable for ad campa
 
 ---
 
+## Live WordPress URL mapping
+
+The live site at thrivevineyard.com uses different URLs than the planned structure above. Key differences:
+
+| Planned route | Live WordPress URL | Notes |
+|---|---|---|
+| `/plan-a-visit` | `/im-new/` | Richer content — 5-step guide, RSVP form |
+| `/sermons` (Watch hub) | `/teaching/` + `/sermons/` | Live splits hub (`/teaching/`) from archive |
+| `/events/[slug]` | `/upcoming-events/[slug]/` | MEC event prefix |
+| `/kids-youth` | `/kids/` + `/youth-alpha/` | Kids and youth are separate pages on live site |
+| `/outreach` | *(no hub — 404)* | Outreach is standalone pages: `/joydrop/`, `/pantry/`, `/plug/`, etc. |
+| `/sermons/series/[slug]` | `/series/[slug]/` | Singular path on live site |
+| `/sermons/speakers/[slug]` | `/speaker/[slug]/` | Singular path on live site |
+
+Full live site inventory: [01-current-site-audit.md](./01-current-site-audit.md). Redirect mapping: [04-seo-url-migration-map.md](./04-seo-url-migration-map.md).
+
+---
+
 ## Notes
 
 - **SEO note:** The final URL structure above is the proposed structure. Before committing to it, a Google Search Console audit should be run on the existing WordPress site to identify high-traffic URLs. Any URL that changes from the old structure needs a 301 redirect. See `04-seo-url-migration-map.md` (to be written after the audit).

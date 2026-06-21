@@ -1,0 +1,96 @@
+{
+  "generated_at": "2026-06-20T22:12:09",
+  "source_files": [
+    "events.xml",
+    "sermons.xml"
+  ],
+  "events": {
+    "total": 64,
+    "recurring": 18,
+    "one_time": 46,
+    "with_churchsuite": 12,
+    "past": 63,
+    "upcoming": 1
+  },
+  "sermons": {
+    "total": 104,
+    "speakers": 12,
+    "series": 20,
+    "with_youtube": 100,
+    "with_audio": 41,
+    "with_scripture": 81,
+    "with_topics": 91
+  },
+  "event_issues": [
+    {
+      "type": "multiple_churchsuite_urls",
+      "slug": "pjs-and-pancakes",
+      "urls": [
+        "https://thrivevineyard.churchsuite.com/events/ht6rjjys",
+        "https://thrivevineyard.churchsuite.com/events/ht6rjjys?details=0&amp;photo=0&amp;description=0&amp;location=0&amp;gmap=0&amp;signup_form=1"
+      ]
+    }
+  ],
+  "sermon_issues": [
+    {
+      "type": "missing_media",
+      "slug": "thriving-with-god-a-spiritual-check-up-kevin-kiefer",
+      "title": "Thriving with God:  A Spiritual Check Up - Kevin Kiefer"
+    },
+    {
+      "type": "missing_media",
+      "slug": "kings-kingdoms-when-fools-push-your-buttons-kevin-kiefer",
+      "title": "Kings &amp; Kingdoms: When Fools Push Your Buttons - Kevin Kiefer"
+    },
+    {
+      "type": "missing_media",
+      "slug": "easter-sunday-service-april-5th-2026",
+      "title": "Easter Sunday Service, April 5th 2026"
+    },
+    {
+      "type": "missing_media",
+      "slug": "more-than-less-sin-molly-kiefer",
+      "title": "More Than Less Sin - Kevin Kiefer"
+    }
+  ],
+  "sermon_issue_counts": {
+    "missing_media": 4
+  },
+  "event_issue_counts": {
+    "multiple_churchsuite_urls": 1
+  },
+  "top_event_categories": {
+    "null": 16,
+    "Community Event": 13,
+    "Small Group": 7,
+    "Sunday Service": 6,
+    "Prayer": 5,
+    "Christmas Event": 4,
+    "Joy Drop": 3,
+    "Women's Event": 3,
+    "Kid's Ministry": 2,
+    "Fundraising Event": 2,
+    "Meal": 2,
+    "Worship Night": 1
+  },
+  "recurring_event_slugs": [
+    "joy-drop-outreach",
+    "palatine-lego-users-group",
+    "youth-alpha",
+    "summer-baptisms-2025",
+    "what-makes-you-beautiful-thrive-girls-group",
+    "kingdom-builders-2025",
+    "puerto-rico-mission-trip-fundraisers",
+    "come-to-the-table-conversations-that-lead-to-jesus",
+    "worship-night",
+    "prayer-ministry-training",
+    "rooted-small-group",
+    "contend-prayer-group",
+    "christmas-at-thrive",
+    "november-special-giving-days",
+    "seminary-now",
+    "womens-dbs",
+    "the-chosen-season-4-watch-party",
+    "family-worship-service"
+  ]
+}

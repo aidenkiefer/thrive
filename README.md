@@ -4,6 +4,8 @@ A centralized ministry information platform for Thrive Vineyard church. Every ev
 
 Built with Next.js App Router, TypeScript, Tailwind CSS, and Supabase.
 
+**Current phase:** v0.1.0 complete (scaffold + docs). **Next:** v0.2.0 — provision Supabase, apply schema, generate types, add seed data. See [docs/plans/PROGRESS.md](docs/plans/PROGRESS.md) for the full roadmap and checklist.
+
 ---
 
 ## Quick start
@@ -67,7 +69,9 @@ docs/
 |---|---|
 | Vision and architectural principles | `floorplan.md` |
 | Project brief and tech stack | `docs/00-project-brief.md` |
+| Live WordPress site audit | `docs/01-current-site-audit.md` |
 | URL structure and routes | `docs/03-information-architecture.md` |
+| SEO redirect map (draft) | `docs/04-seo-url-migration-map.md` |
 | Supabase content model (all tables) | `docs/05-content-models.md` |
 | Integrations (Supabase, NextAuth, ChurchSuite, Vercel) | `docs/06-integrations.md` |
 | Agent workflow entrypoint | `docs/workflow/workflow.md` |

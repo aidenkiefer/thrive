@@ -2,6 +2,8 @@
 
 All documentation for the Thrive Vineyard website project.
 
+**Current phase:** v0.1.0 done → starting **v0.2.0** (Supabase + data layer). Full status, checklist, and roadmap: [plans/PROGRESS.md](plans/PROGRESS.md).
+
 ---
 
 ## Architecture & Design
@@ -15,11 +17,13 @@ All documentation for the Thrive Vineyard website project.
 | `docs/06-integrations.md` | Supabase, NextAuth, ChurchSuite, Vercel, Google Ads, future integrations | M |
 | `supabase/schema.sql` | Full Postgres schema (tables, indexes, RLS policies) | L |
 
-**Pending (not yet written — needs external data first):**
-- `docs/01-current-site-audit.md` — WordPress crawl results
-- `docs/02-content-inventory.md` — WordPress content export
-- `docs/04-seo-url-migration-map.md` — Old URL → new URL mapping (needs Search Console audit)
-- `docs/07-design-system.md` — Brand colors, typography, Tailwind tokens
+**Written from live site audit (2026-06-20):**
+- [01-current-site-audit.md](./01-current-site-audit.md) — WordPress crawl: URLs, content, forms, integrations
+- [02-content-inventory.md](./02-content-inventory.md) — Parsed events/sermons export → Supabase mapping
+- [04-seo-url-migration-map.md](./04-seo-url-migration-map.md) — Draft redirect map (needs Search Console to finalize)
+- [07-design-system.md](./07-design-system.md) — Brand style subaudit + revamp plan (colors, type, components)
+
+**Pending (not yet written):**
 - `docs/08-ai-agent-rules.md` — AI agent rules (summarized version of `floorplan.md` section)
 
 ---
@@ -44,8 +48,8 @@ All documentation for the Thrive Vineyard website project.
 | Doc | Description |
 |---|---|
 | `docs/plans/PROGRESS.md` | Milestone log, patch history, backlog |
-| `docs/plans/specs/` | Feature specs (to be written per sprint) |
-| `docs/plans/tickets/` | Bounded agent task tickets |
+| `docs/plans/specs/` | Feature specs — **active:** `sprint-01-demo-draft.md` |
+| `docs/plans/tickets/` | Bounded agent tasks — **10 tickets** for Sprint 01 |
 | `docs/plans/summaries/` | Sprint and feature completion summaries |
 
 ---

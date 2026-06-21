@@ -1,24 +1,6 @@
 import Link from 'next/link'
 import { Section, Container, Heading, Card } from '@/components/ui'
-
-interface OneTimeEvent {
-  slug: string
-  name: string
-  short_summary: string | null
-  start_datetime: string
-  featured_image_url: string | null
-}
-
-interface EventOccurrence {
-  start_datetime: string
-  location: string | null
-  recurring_event: {
-    name: string
-    slug: string
-    short_summary: string | null
-    featured_image_url: string | null
-  }
-}
+import type { EventOccurrence, OneTimeEvent } from '@/lib/queries/events'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', {
@@ -36,7 +18,9 @@ export function UpcomingEventsSection({
   occurrences: EventOccurrence[]
 }) {
   const allEvents = [
-    ...oneTime.map((e) => ({
+    ...oneTime
+      .filter((e): e is OneTimeEvent & { start_datetime: string } => e.start_datetime !== null)
+      .map((e) => ({
       slug: e.slug,
       name: e.name,
       summary: e.short_summary,

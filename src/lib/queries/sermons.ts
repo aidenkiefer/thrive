@@ -147,11 +147,13 @@ export async function getSermonsBySeriesSlug(seriesSlug: string): Promise<Sermon
 
   if (seriesError || !series) return []
 
+  const seriesId = (series as Pick<SermonSeries, 'id'>).id
+
   const { data, error } = await supabase
     .from('sermons')
     .select('*, speaker:speakers(*), series:sermon_series(*)')
     .not('published_at', 'is', null)
-    .eq('series_id', series.id)
+    .eq('series_id', seriesId)
     .order('preached_at', { ascending: false })
 
   if (error || !data) return []

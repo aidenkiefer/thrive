@@ -150,12 +150,14 @@ export async function getEventBySlug(slug: string): Promise<{
     return { event: null, type: null, nextOccurrence: null }
   }
 
+  const recurring = recurringData as RecurringEvent
+
   const now = new Date().toISOString()
 
   const { data: nextOccurrenceData } = await supabase
     .from('event_occurrences')
     .select('*, recurring_event:recurring_events(*)')
-    .eq('recurring_event_id', recurringData.id)
+    .eq('recurring_event_id', recurring.id)
     .eq('cancelled', false)
     .gt('start_datetime', now)
     .order('start_datetime', { ascending: true })
@@ -163,7 +165,7 @@ export async function getEventBySlug(slug: string): Promise<{
     .single()
 
   return {
-    event: recurringData as RecurringEvent,
+    event: recurring,
     type: 'recurring',
     nextOccurrence: nextOccurrenceData ? (nextOccurrenceData as EventOccurrence) : null,
   }

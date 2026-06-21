@@ -12,6 +12,36 @@
 import { createClient } from '@supabase/supabase-js'
 import * as fs from 'fs'
 import * as path from 'path'
+import ws from 'ws'
+
+/** Standalone scripts don't get Next.js .env loading — read .env.local explicitly. */
+function loadEnvLocal() {
+  const envPath = path.resolve(process.cwd(), '.env.local')
+  if (!fs.existsSync(envPath)) return
+
+  for (const line of fs.readFileSync(envPath, 'utf8').split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+
+    const eq = trimmed.indexOf('=')
+    if (eq === -1) continue
+
+    const key = trimmed.slice(0, eq).trim()
+    let value = trimmed.slice(eq + 1).trim()
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1)
+    }
+
+    if (process.env[key] === undefined) {
+      process.env[key] = value
+    }
+  }
+}
+
+loadEnvLocal()
 
 // ---------------------------------------------------------------------------
 // Supabase admin client (service-role key bypasses RLS)
@@ -27,7 +57,9 @@ if (!supabaseUrl || !serviceRoleKey) {
   process.exit(1)
 }
 
-const supabase = createClient(supabaseUrl, serviceRoleKey)
+const supabase = createClient(supabaseUrl, serviceRoleKey, {
+  realtime: { transport: ws },
+})
 
 // ---------------------------------------------------------------------------
 // Helpers

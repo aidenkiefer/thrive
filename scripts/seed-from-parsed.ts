@@ -58,7 +58,7 @@ if (!supabaseUrl || !serviceRoleKey) {
 }
 
 const supabase = createClient(supabaseUrl, serviceRoleKey, {
-  realtime: { transport: ws },
+  realtime: { transport: ws as unknown as typeof WebSocket },
 })
 
 // ---------------------------------------------------------------------------

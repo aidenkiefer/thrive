@@ -1,11 +1,14 @@
-// Kids & Youth hub — MDX-driven page
-// Source: content/pages/kids-youth.mdx
+import { Container, PageHeader, Section } from '@/components/ui'
 
 export default function KidsYouthPage() {
   return (
-    <div>
-      {/* TODO: Render content/pages/kids-youth.mdx */}
-      <h1>Kids &amp; Youth</h1>
-    </div>
+    <Section background="light">
+      <Container>
+        <PageHeader title="Kids &amp; Youth" />
+        <p className="mt-6 max-w-prose text-neutral-600">
+          More information is being prepared.
+        </p>
+      </Container>
+    </Section>
   )
 }

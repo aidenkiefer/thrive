@@ -1,15 +1,16 @@
-// Outreach hub — MDX-driven overview + dynamic initiative cards
-// Source: content/pages/outreach.mdx (hub content)
-// Data: outreach table (active initiatives)
+import { Container, PageHeader, Section } from '@/components/ui'
 
 export const revalidate = 60
 
 export default function OutreachPage() {
   return (
-    <div>
-      {/* TODO: Render content/pages/outreach.mdx for hub description */}
-      {/* TODO: Active outreach initiative cards from Supabase */}
-      <h1>Outreach</h1>
-    </div>
+    <Section background="light">
+      <Container>
+        <PageHeader title="Outreach" />
+        <p className="mt-6 max-w-prose text-neutral-600">
+          More information is being prepared.
+        </p>
+      </Container>
+    </Section>
   )
 }

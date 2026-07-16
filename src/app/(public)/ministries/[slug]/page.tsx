@@ -1,6 +1,4 @@
-// Ministry landing page
-// Data: ministries table by slug
-// ISR revalidate: 60s
+import { Container, PageHeader, Section } from '@/components/ui'
 
 export const revalidate = 60
 
@@ -10,10 +8,13 @@ export default async function MinistryPage({ params }: Props) {
   const { slug } = await params
 
   return (
-    <div>
-      {/* TODO: Ministry name, description, leader, contact */}
-      {/* TODO: Related events or groups */}
-      <h1>Ministry: {slug}</h1>
-    </div>
+    <Section background="light">
+      <Container>
+        <PageHeader title={slug} eyebrow="Ministry" />
+        <p className="mt-6 max-w-prose text-neutral-600">
+          Ministry information is being prepared.
+        </p>
+      </Container>
+    </Section>
   )
 }

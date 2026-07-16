@@ -96,6 +96,15 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 | **v0.5.1** | Events: listing + detail for one-time and recurring events | 2026-06-20 | Frontend | Sprint 01 T09; EventCard, EventDetail components; past events excluded |
 | **v0.3.2** | Plan a Visit MDX page: next-mdx-remote v6 upgrade + content from audit | 2026-06-20 | Frontend | Sprint 01 T10; human must run `npm install` after merge |
 | **v0.5.2** | Sprint 01 final review fixes: SermonPlayer URL normalization, events query correctness, start_datetime null safety | 2026-06-20 | Bug fixes | SermonPlayer handles youtu.be/watch?v=/embed forms; occurrences limit post-filter; OneTimeEvent.start_datetime nullable |
+| **v0.5.3** | CSS pipeline diagnosis | 2026-07-16 | Frontend | No active stylesheet-delivery fault found: `layout.tsx` imports `globals.css`, Tailwind 3/PostCSS config match, and the supplied button screenshot proves Tailwind output is applied. The perceived issue is the intentionally configured yellow-green `accent` palette; local dependencies are absent in the isolated worktree, so any future runtime diagnosis requires a user-run install and browser asset evidence. |
+| **v0.5.4** | Dusty-rose accent palette | 2026-07-16 | Frontend | Replaced yellow-green accent tokens with `#c9828a` / `#fbf1f0`; updated the accent button hover treatment and design-system documentation. |
+| **v0.5.5** | Shared UI primitives | 2026-07-16 | Frontend | Added reusable badge, input, page-header, and back-link components plus MDX-ready prose styles. |
+| **v0.5.6** | Public navigation accessibility | 2026-07-16 | Frontend | Added a skip link, active-route states, mobile keyboard and scroll handling, reduced-motion styles, and an admin-safe public site shell. |
+| **v0.5.7** | Content-card consistency | 2026-07-16 | Frontend | Standardized event, sermon, and series-card media hierarchy; replaced raw images with optimized image components and added YouTube thumbnail support. |
+| **v0.5.8** | Public page foundations | 2026-07-16 | Frontend | Replaced unstyled top-level placeholder routes with shared page headers and intentional no-content states without fabricating ministry details. |
+| **v0.5.9** | Public detail page foundations | 2026-07-16 | Frontend | Applied the shared page shell to team, group, outreach, and pending landing-page routes while preserving route safeguards and avoiding invented content. |
+| **v0.6.0** | Homepage editorial refresh | 2026-07-16 | Frontend | Standardized editorial labels and event CTAs, and removed fabricated hub-card copy in favor of approved dynamic summaries or intentional temporary states. |
+| **v0.6.1** | UI rollout governance | 2026-07-16 | Frontend | Applied shared MDX prose styling to Plan a Visit. No URLs changed, so no redirects were added; no build, dev, test, or compile command was run under project rules. |
 
 ---
 

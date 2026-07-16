@@ -30,7 +30,7 @@ export function LatestSermonSection({ sermon }: { sermon: Sermon | null }) {
   return (
     <Section background="brand">
       <Container>
-        <p className="text-accent-400 text-sm font-medium tracking-wide uppercase mb-2">
+        <p className="mb-2 text-sm font-medium tracking-wide text-accent-400">
           Latest Message
         </p>
         <Heading level="h2" className="text-white mb-1">

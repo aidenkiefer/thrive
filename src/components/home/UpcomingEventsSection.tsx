@@ -47,7 +47,7 @@ export function UpcomingEventsSection({
             href="/events"
             className="text-sm font-medium text-brand-800 hover:text-brand-600 transition-colors"
           >
-            View all →
+            View all events
           </Link>
         </div>
         {allEvents.length === 0 ? (

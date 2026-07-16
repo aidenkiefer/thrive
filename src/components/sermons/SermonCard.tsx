@@ -1,4 +1,6 @@
+import Image from 'next/image'
 import Link from 'next/link'
+import { Badge } from '@/components/ui'
 
 interface SermonCardProps {
   sermon: {
@@ -24,21 +26,27 @@ export function SermonCard({ sermon }: SermonCardProps) {
   const thumbUrl = sermon.thumbnail_url ?? (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null)
 
   return (
-    <Link href={`/sermons/${sermon.slug}`} className="group block rounded-lg bg-neutral-0 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+    <Link href={`/sermons/${sermon.slug}`} className="group block overflow-hidden rounded-lg bg-neutral-0 shadow-sm transition-shadow hover:shadow-md">
       {thumbUrl ? (
-        <div className="aspect-video bg-brand-100">
-          <img src={thumbUrl} alt={sermon.title} className="w-full h-full object-cover" />
+        <div className="relative aspect-video bg-brand-100">
+          <Image
+            src={thumbUrl}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          />
         </div>
       ) : (
-        <div className="aspect-video bg-brand-100 flex items-center justify-center">
-          <span className="text-brand-600 text-sm">No preview</span>
+        <div className="flex aspect-video items-center justify-center bg-brand-100">
+          <span className="text-sm font-medium text-brand-600">Sermon</span>
         </div>
       )}
-      <div className="p-4">
+      <div className="p-5">
         {sermon.series && (
-          <p className="text-xs font-medium text-brand-600 uppercase tracking-wide mb-1">{sermon.series.title}</p>
+          <Badge>{sermon.series.title}</Badge>
         )}
-        <h3 className="font-display text-lg font-semibold text-neutral-950 leading-snug group-hover:text-brand-800 transition-colors line-clamp-2">
+        <h3 className="mt-3 line-clamp-2 font-display text-xl font-semibold leading-snug text-neutral-950 transition-colors group-hover:text-brand-800">
           {sermon.title}
         </h3>
         <div className="mt-2 flex items-center gap-2 text-sm text-neutral-600">

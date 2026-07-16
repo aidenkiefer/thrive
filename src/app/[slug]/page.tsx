@@ -4,6 +4,7 @@
 // See: docs/05-content-models.md, docs/03-information-architecture.md
 
 import { notFound } from 'next/navigation'
+import { Container, PageHeader, Section } from '@/components/ui'
 
 export const revalidate = 60
 
@@ -30,16 +31,14 @@ export default async function LandingPage({ params }: Props) {
     notFound()
   }
 
-  // TODO: Fetch from landing_pages table where slug = slug and published_at IS NOT NULL
-  // If not found: notFound()
-
   return (
-    <div>
-      {/* TODO: Hero (heading, subheading, hero image) */}
-      {/* TODO: Body content */}
-      {/* TODO: Single CTA button (cta_text → cta_url / churchsuite_form_url) */}
-      {/* TODO: Pull linked entity data if linked_entity_type is set */}
-      <h1>Landing page: {slug}</h1>
-    </div>
+    <Section background="light">
+      <Container>
+        <PageHeader title={slug} />
+        <p className="mt-6 max-w-prose text-neutral-600">
+          This page is being prepared.
+        </p>
+      </Container>
+    </Section>
   )
 }

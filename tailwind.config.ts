@@ -17,8 +17,8 @@ const config: Config = {
           100: '#e8eef2',
         },
         accent: {
-          400: '#c8cc9a',
-          50: '#f4f5eb',
+          400: '#c9828a',
+          50: '#fbf1f0',
         },
         neutral: {
           950: '#1a1a1a',

@@ -1,6 +1,4 @@
-// Individual group page
-// Data: groups table by slug
-// ISR revalidate: 60s
+import { BackLink, Container, PageHeader, Section } from '@/components/ui'
 
 export const revalidate = 60
 
@@ -10,12 +8,14 @@ export default async function GroupPage({ params }: Props) {
   const { slug } = await params
 
   return (
-    <div>
-      {/* TODO: Group header (name, image, category) */}
-      {/* TODO: Meeting schedule, location, leader, contact */}
-      {/* TODO: ChurchSuite signup button */}
-      {/* TODO: is_open badge */}
-      <h1>Group: {slug}</h1>
-    </div>
+    <Section background="light">
+      <Container>
+        <BackLink href="/groups">All groups</BackLink>
+        <PageHeader title={slug} eyebrow="Group" className="mt-5" />
+        <p className="mt-6 max-w-prose text-neutral-600">
+          Group information is being prepared.
+        </p>
+      </Container>
+    </Section>
   )
 }

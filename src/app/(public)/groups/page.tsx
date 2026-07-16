@@ -1,15 +1,16 @@
-// Groups listing
-// Data: groups table where published_at IS NOT NULL
-// ISR revalidate: 60s
+import { Container, PageHeader, Section } from '@/components/ui'
 
 export const revalidate = 60
 
 export default function GroupsPage() {
   return (
-    <div>
-      {/* TODO: Category filter (small group, connect group, youth, etc.) */}
-      {/* TODO: Group cards — name, schedule, location, leader, signup link */}
-      <h1>Groups</h1>
-    </div>
+    <Section background="light">
+      <Container>
+        <PageHeader title="Groups" />
+        <p className="mt-6 max-w-prose text-neutral-600">
+          Group information is being prepared.
+        </p>
+      </Container>
+    </Section>
   )
 }

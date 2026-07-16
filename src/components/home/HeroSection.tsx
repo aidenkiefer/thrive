@@ -5,7 +5,7 @@ export function HeroSection() {
     <Section background="brand" className="py-24 md:py-32">
       <Container>
         <div className="max-w-2xl">
-          <p className="text-accent-400 text-sm font-medium tracking-wide uppercase mb-3">
+          <p className="mb-3 text-sm font-medium tracking-wide text-accent-400">
             Welcome to Thrive Vineyard
           </p>
           <h1 className="font-display text-4xl md:text-5xl font-semibold leading-tight mb-4">

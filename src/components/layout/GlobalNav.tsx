@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
 
 const navLinks = [
   { label: 'Plan a Visit', href: '/plan-a-visit' },
@@ -16,6 +17,36 @@ const navLinks = [
 
 export function GlobalNav() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const pathname = usePathname()
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const firstMobileLinkRef = useRef<HTMLAnchorElement>(null)
+
+  useEffect(() => {
+    if (!mobileOpen) {
+      return
+    }
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    firstMobileLinkRef.current?.focus()
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setMobileOpen(false)
+        menuButtonRef.current?.focus()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [mobileOpen])
+
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(`${href}/`)
 
   return (
     <header className="sticky top-0 z-50 bg-brand-800">
@@ -31,7 +62,12 @@ export function GlobalNav() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-white hover:text-accent-400 transition-colors"
+              aria-current={isActive(link.href) ? 'page' : undefined}
+              className={`text-sm font-medium transition-colors ${
+                isActive(link.href)
+                  ? 'text-accent-400'
+                  : 'text-white hover:text-accent-400'
+              }`}
             >
               {link.label}
             </Link>
@@ -40,7 +76,8 @@ export function GlobalNav() {
 
         {/* Mobile menu button */}
         <button
-          className="md:hidden text-white p-2 rounded-md"
+          ref={menuButtonRef}
+          className="rounded-md p-2 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
@@ -57,7 +94,13 @@ export function GlobalNav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-base font-medium text-white hover:text-accent-400 transition-colors"
+                ref={link.href === navLinks[0].href ? firstMobileLinkRef : undefined}
+                aria-current={isActive(link.href) ? 'page' : undefined}
+                className={`text-base font-medium transition-colors ${
+                  isActive(link.href)
+                    ? 'text-accent-400'
+                    : 'text-white hover:text-accent-400'
+                }`}
                 onClick={() => setMobileOpen(false)}
               >
                 {link.label}

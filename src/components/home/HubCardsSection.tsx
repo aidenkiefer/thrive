@@ -22,22 +22,21 @@ export function HubCardsSection({
   const hubs = [
     {
       title: 'Kids & Youth',
-      description:
-        'Safe, fun environments for kids and teens to grow in faith from birth through high school.',
+      description: 'More information is being prepared.',
       href: '/kids-youth',
     },
     {
       title: 'Groups',
       description:
         groups[0]?.short_summary ??
-        'Connect in small groups, prayer gatherings, and community life.',
+        'Group information is being prepared.',
       href: '/groups',
     },
     {
       title: 'Outreach',
       description:
         outreach[0]?.short_summary ??
-        'Serving Palatine and beyond through practical ministry and community care.',
+        'Outreach information is being prepared.',
       href: '/outreach',
     },
   ]

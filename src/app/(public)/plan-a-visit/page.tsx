@@ -31,7 +31,7 @@ export default async function PlanAVisitPage() {
   return (
     <Section background="white">
       <Container>
-        <article className="max-w-prose mx-auto space-y-4 text-neutral-700 leading-relaxed">
+        <article className="prose-content mx-auto">
           {content}
         </article>
       </Container>

@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
         hostname: 'thrivevineyard.com',
         pathname: '/wp-content/uploads/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+        pathname: '/vi/**',
+      },
     ],
   },
   // 301 redirects from WordPress will be populated here after the SEO audit.

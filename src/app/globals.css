@@ -19,4 +19,54 @@
   *:focus-visible {
     @apply outline-2 outline-offset-2 outline-brand-600;
   }
+
+  .prose-content {
+    @apply max-w-prose text-neutral-600;
+  }
+
+  .prose-content > * + * {
+    @apply mt-5;
+  }
+
+  .prose-content h2,
+  .prose-content h3,
+  .prose-content h4 {
+    @apply text-neutral-950;
+  }
+
+  .prose-content h2 {
+    @apply text-3xl leading-snug;
+  }
+
+  .prose-content h3 {
+    @apply text-2xl;
+  }
+
+  .prose-content a {
+    @apply font-medium text-brand-800 underline decoration-brand-600/40 underline-offset-4 hover:text-brand-600;
+  }
+
+  .prose-content ul,
+  .prose-content ol {
+    @apply space-y-2 pl-6;
+  }
+
+  .prose-content ul {
+    @apply list-disc;
+  }
+
+  .prose-content ol {
+    @apply list-decimal;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }

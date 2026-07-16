@@ -1,6 +1,4 @@
-// Individual outreach initiative page
-// Data: outreach table by slug
-// ISR revalidate: 60s
+import { BackLink, Container, PageHeader, Section } from '@/components/ui'
 
 export const revalidate = 60
 
@@ -10,10 +8,14 @@ export default async function OutreachDetailPage({ params }: Props) {
   const { slug } = await params
 
   return (
-    <div>
-      {/* TODO: Initiative description, image, dates */}
-      {/* TODO: Volunteer signup link (churchsuite_form_url or volunteer_signup_url) */}
-      <h1>Outreach: {slug}</h1>
-    </div>
+    <Section background="light">
+      <Container>
+        <BackLink href="/outreach">All outreach</BackLink>
+        <PageHeader title={slug} eyebrow="Outreach" className="mt-5" />
+        <p className="mt-6 max-w-prose text-neutral-600">
+          Outreach information is being prepared.
+        </p>
+      </Container>
+    </Section>
   )
 }

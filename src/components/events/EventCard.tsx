@@ -1,4 +1,6 @@
+import Image from 'next/image'
 import Link from 'next/link'
+import { Badge } from '@/components/ui'
 
 interface EventCardProps {
   slug: string
@@ -23,27 +25,33 @@ function formatEventTime(dateStr: string) {
 
 export function EventCard({ slug, name, date, summary, imageUrl, category, location }: EventCardProps) {
   return (
-    <Link href={`/events/${slug}`} className="group block rounded-lg bg-neutral-0 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+    <Link href={`/events/${slug}`} className="group block overflow-hidden rounded-lg bg-neutral-0 shadow-sm transition-shadow hover:shadow-md">
       {imageUrl ? (
-        <div className="aspect-video">
-          <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
+        <div className="relative aspect-video">
+          <Image
+            src={imageUrl}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          />
         </div>
       ) : (
-        <div className="aspect-video bg-brand-100 flex items-center justify-center">
-          <span className="text-brand-600 text-2xl">📅</span>
+        <div className="flex aspect-video items-center justify-center bg-brand-100">
+          <span className="text-sm font-medium text-brand-600">Event details</span>
         </div>
       )}
-      <div className="p-4">
+      <div className="p-5">
         {category && (
-          <span className="text-xs font-medium text-brand-600 uppercase tracking-wide">{category}</span>
+          <Badge>{category}</Badge>
         )}
-        <h3 className="font-display text-lg font-semibold text-neutral-950 mt-1 group-hover:text-brand-800 transition-colors line-clamp-2">
+        <h3 className="mt-3 line-clamp-2 font-display text-xl font-semibold leading-snug text-neutral-950 transition-colors group-hover:text-brand-800">
           {name}
         </h3>
-        <p className="mt-1 text-sm text-brand-800 font-medium">
+        <p className="mt-2 text-sm font-medium text-brand-800">
           {formatEventDate(date)} · {formatEventTime(date)}
         </p>
-        {location && <p className="mt-0.5 text-xs text-neutral-600">{location}</p>}
+        {location && <p className="mt-1 text-xs text-neutral-600">{location}</p>}
         {summary && <p className="mt-2 text-sm text-neutral-600 line-clamp-2">{summary}</p>}
       </div>
     </Link>

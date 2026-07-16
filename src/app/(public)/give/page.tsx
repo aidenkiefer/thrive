@@ -1,11 +1,14 @@
-// Give page — MDX-driven
-// Source: content/pages/give.mdx
+import { Container, PageHeader, Section } from '@/components/ui'
 
 export default function GivePage() {
   return (
-    <div>
-      {/* TODO: Render content/pages/give.mdx */}
-      <h1>Give</h1>
-    </div>
+    <Section background="light">
+      <Container>
+        <PageHeader title="Give" />
+        <p className="mt-6 max-w-prose text-neutral-600">
+          More information is being prepared.
+        </p>
+      </Container>
+    </Section>
   )
 }

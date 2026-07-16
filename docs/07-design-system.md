@@ -57,7 +57,7 @@ Three overlapping “brand blues” compete on the live site:
 | **Hover gray** | `#8d8d8d` / `rgb(141,141,141)` | Link/button hover | Theme default |
 | **Legacy blue** | `#0054a6` | Custom CSS snippet labeled "Thrive primary brand color" | Conflicts with navy — likely outdated |
 | **MEC calendar** | `#1c4e73` | Events plugin skin | Close to navy but separate token |
-| **Sage accent** | `#DFE1BD` / `rgb(223,225,189)` | Hero subheadline only | Warm olive-cream — underused |
+| **Legacy sage accent** | `#DFE1BD` / `rgb(223,225,189)` | Hero subheadline only | Replaced in the rebuild because it reads yellow-green |
 | **Black** | `#000000` | Top bar, footer bands, off-canvas menu, hero text | Heavy — reads dated |
 | **White** | `#ffffff` | Body background, cards, inverted buttons | |
 | **Light gray** | `#f5f5f5` / `#f9f9f9` | Card sections, form backgrounds | |
@@ -113,7 +113,7 @@ Loaded via Google Fonts. Montserrat + Raleway is one of the most common pairings
 ### What works (keep the spirit)
 
 - Navy `#183d59` — distinctive, calm, trustworthy; worth keeping as primary anchor
-- Sage `#DFE1BD` — warm accent with subtle vineyard/organic feel; worth elevating
+- The legacy sage is distinct but reads too yellow-green for the rebuilt site
 - "Spirit Filled. Down to Earth." — strong positioning line
 - Real photography where used (staff, community) — lean into this
 - Clear hub navigation concept (Kids, Messages, Events, etc.) — simplify presentation, keep structure
@@ -136,7 +136,7 @@ Loaded via Google Fonts. Montserrat + Raleway is one of the most common pairings
 ### Design principles
 
 1. **Simple surfaces, strong type** — Let typography and photography carry the page; reduce decorative chrome.
-2. **Warm, not corporate** — Grounded ministry feel: navy depth + sage warmth + real people photos.
+2. **Warm, not corporate** — Grounded ministry feel: navy depth + dusty-rose warmth + real people photos.
 3. **One action per view** — Each section has a clear primary CTA; no chevron links or competing buttons.
 4. **Breathing room** — Generous whitespace; fewer full-width black bands.
 5. **System over pages** — Tokens and components first; pages compose from the system.
@@ -155,8 +155,8 @@ Evolve from live colors into a semantic token palette:
 | `brand-800` | `#183d59` | **Primary** — nav, headings, primary buttons (keep live navy) |
 | `brand-600` | `#245a7a` | Hover states, links on light bg |
 | `brand-100` | `#e8eef2` | Subtle tinted backgrounds |
-| `accent-400` | `#c8cc9a` | Refined sage (from live `#DFE1BD`, slightly deeper for contrast) |
-| `accent-50` | `#f4f5eb` | Warm highlight backgrounds |
+| `accent-400` | `#c9828a` | Dusty rose — approachable emphasis for tags, secondary CTAs, and dark-surface details |
+| `accent-50` | `#fbf1f0` | Blush-tinted highlight backgrounds |
 | `neutral-950` | `#1a1a1a` | Body text (replace pure `#000`) |
 | `neutral-600` | `#5c5c5c` | Secondary text |
 | `neutral-100` | `#f7f7f5` | Page background (warm off-white, not pure white) |
@@ -166,7 +166,7 @@ Evolve from live colors into a semantic token palette:
 **Rules:**
 - Primary buttons: `brand-800` fill, white text — not gray
 - Body text: `neutral-950` on `neutral-100` — never pure black on pure white
-- Accent sage: sparingly — highlights, tags, secondary buttons, section dividers
+- Accent dusty rose: sparingly — highlights, tags, secondary buttons, and section dividers
 - Drop the legacy `#0054a6` and theme gray `#515151` entirely
 
 ---
@@ -232,7 +232,7 @@ Build in `src/components/ui/` — lean, composable, Tailwind-only (no heavy UI l
 | `Heading` | Display font, semantic levels |
 | `Nav` | Sticky navy header, mobile drawer (navy not black) |
 | `Footer` | `brand-900` bg, simplified columns |
-| `Badge` | Sage accent for tags (event category, series) |
+| `Badge` | Dusty-rose accent for tags (event category, series) |
 | `Input` | Clean forms — shared by admin later |
 
 Reference: shadcn/ui patterns for accessibility (focus rings, aria) without importing the full library unless needed.
@@ -300,8 +300,8 @@ colors: {
     100: '#e8eef2',
   },
   accent: {
-    400: '#c8cc9a',
-    50: '#f4f5eb',
+    400: '#c9828a',
+    50: '#fbf1f0',
   },
   neutral: {
     950: '#1a1a1a',

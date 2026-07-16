@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../workflow-core"
+		},
+		{
+			"path": "../skills"
+		}
+	],
+	"settings": {}
+}

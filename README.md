@@ -1,5 +1,6 @@
 # Thrive Vineyard Website
 
+Updated 
 A centralized ministry information platform for Thrive Vineyard church. Every event, group, sermon, and announcement exists as one canonical entity — displayed automatically across the site rather than duplicated across pages.
 
 Built with Next.js App Router, TypeScript, Tailwind CSS, and Supabase.

@@ -1,6 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+import { useState } from 'react'
 import { Footer } from './Footer'
 import { GlobalNav } from './GlobalNav'
 
@@ -10,6 +11,7 @@ interface SiteShellProps {
 
 export function SiteShell({ children }: SiteShellProps) {
   const pathname = usePathname()
+  const [skipLinkFocused, setSkipLinkFocused] = useState(false)
   const isAdminRoute = pathname.startsWith('/admin')
 
   if (isAdminRoute) {
@@ -20,7 +22,11 @@ export function SiteShell({ children }: SiteShellProps) {
     <>
       <a
         href="#main-content"
-        className="sr-only fixed left-4 top-4 z-[60] rounded-md bg-neutral-0 px-4 py-2 font-medium text-brand-800 shadow-sm focus:not-sr-only focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2"
+        onFocus={() => setSkipLinkFocused(true)}
+        onBlur={() => setSkipLinkFocused(false)}
+        className={`fixed left-4 top-4 z-[60] rounded-md bg-neutral-0 px-4 py-2 font-medium text-brand-800 shadow-sm transition-transform focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 ${
+          skipLinkFocused ? 'translate-y-0' : '-translate-y-20'
+        }`}
       >
         Skip to main content
       </a>

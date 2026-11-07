@@ -77,7 +77,7 @@ export function GlobalNav() {
         {/* Mobile menu button */}
         <button
           ref={menuButtonRef}
-          className="rounded-md p-2 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
+          className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-white md:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}

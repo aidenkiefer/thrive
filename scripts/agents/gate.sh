@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Quality gate. REQUIRED before every push (builders) and before every merge (QA). CI runs it too.
-#   scripts/agents/gate.sh          full gate: typecheck + lint (if configured) + production build
-#   scripts/agents/gate.sh --quick  typecheck + lint only (cheap mid-work spot check)
+#   scripts/agents/gate.sh          full gate: typecheck + lint (if configured) + tests + production build
+#   scripts/agents/gate.sh --quick  typecheck + lint + tests (cheap mid-work spot check)
 #   scripts/agents/gate.sh --ci     full gate, no scope report (used by GitHub Actions)
 # Docs: docs/workflow/devops-automation.md
 set -uo pipefail
@@ -16,6 +16,7 @@ step() {
 
 [[ -d node_modules ]] || step install npm ci --no-audit --no-fund
 step typecheck npx tsc --noEmit
+step test npm test
 if compgen -G "eslint.config.*" >/dev/null || compgen -G ".eslintrc*" >/dev/null; then
   step lint npm run lint
 else

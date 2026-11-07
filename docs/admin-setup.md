@@ -20,4 +20,4 @@ unset THRIVE_ADMIN_PASSWORD
 
 Copy the printed value to `ADMIN_PASSWORD_SCRYPT`. Use a unique password of at least 16 characters. Generate `NEXTAUTH_SECRET` with `openssl rand -base64 32`.
 
-`/admin/login` accepts the configured email and password. Middleware protects `/admin/**` except the login page. Admin editors now cover announcements, sermons, one-time and recurring events, occurrences, groups, outreach, staff profiles, and campaign landing pages. Rotate the password by generating a new hash and updating the environment value.
+`/admin/login` accepts the configured email and password. Middleware protects `/admin/**` except the login page. Admin editors now cover announcements, sermons, one-time and recurring events, occurrences, ministries, groups, outreach, staff profiles, and campaign landing pages. Rotate the password by generating a new hash and updating the environment value.

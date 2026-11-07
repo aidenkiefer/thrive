@@ -8,6 +8,7 @@ const links = [
   { label: 'One-time events', href: '/admin/events' },
   { label: 'Recurring events', href: '/admin/recurring-events' },
   { label: 'Groups', href: '/admin/groups' },
+  { label: 'Ministries', href: '/admin/ministries' },
   { label: 'Campaign pages', href: '/admin/landing-pages' },
 ]
 

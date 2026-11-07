@@ -12,3 +12,12 @@ export function FormFeedback({ feedback, formKey }: { feedback?: AdminFeedback; 
 export function feedbackTargets(feedback: AdminFeedback | undefined, formKey: string): boolean {
   return Boolean(feedback && feedback.form === formKey)
 }
+
+/**
+ * React key for an admin form. It changes after that form saves successfully,
+ * so the form remounts showing the saved values (or blank, for a "new" form).
+ * After a rejected save it stays the same, so AdminForm keeps the typed values.
+ */
+export function formInstanceKey(feedback: AdminFeedback | undefined, formKey: string): string {
+  return feedback?.saved === formKey ? `${formKey}-saved-${Date.now()}` : formKey
+}

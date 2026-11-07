@@ -5,7 +5,8 @@ import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-
 import {
   announcementPublishProblems, assertPublishable, httpsUrl, parseInstant, requireText, siteOrHttpsUrl,
 } from '@/lib/admin-validation'
-import { FormFeedback, feedbackTargets } from '../_components/form-feedback'
+import { AdminForm } from '../_components/admin-form'
+import { FormFeedback, feedbackTargets, formInstanceKey } from '../_components/form-feedback'
 
 async function saveAnnouncement(formData: FormData) {
   'use server'
@@ -53,7 +54,7 @@ type Announcement = {
 function AnnouncementForm({ item, feedback }: { item?: Announcement; feedback?: AdminFeedback }) {
   const formKey = item?.id || 'new'
   return (
-    <form id={`form-${formKey}`} action={saveAnnouncement} className="space-y-3 rounded border bg-white p-5">
+    <AdminForm key={formInstanceKey(feedback, formKey)} id={`form-${formKey}`} action={saveAnnouncement} className="space-y-3 rounded border bg-white p-5">
       <FormFeedback feedback={feedback} formKey={formKey} />
       {item && <input type="hidden" name="id" value={item.id} />}
       <label className="block text-sm">Title<input name="title" defaultValue={item?.title} required className="mt-1 block w-full rounded border p-2" /></label>
@@ -65,7 +66,7 @@ function AnnouncementForm({ item, feedback }: { item?: Announcement; feedback?: 
       <label className="flex gap-2 text-sm"><input type="checkbox" name="is_homepage_feature" defaultChecked={item?.is_homepage_feature} />Feature on homepage</label>
       <label className="flex gap-2 text-sm"><input type="checkbox" name="published" defaultChecked={Boolean(item?.published_at)} />Published</label>
       <button className="rounded bg-brand-800 px-4 py-2 text-white" type="submit">{item ? 'Save changes' : 'Create announcement'}</button>
-    </form>
+    </AdminForm>
   )
 }
 

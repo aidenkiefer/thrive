@@ -3,7 +3,8 @@ import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import { assertPublishable, fail, formUrlPublishProblems, httpsUrl, requireSlug, requireText } from '@/lib/admin-validation'
-import { FormFeedback, feedbackTargets } from '../_components/form-feedback'
+import { AdminForm } from '../_components/admin-form'
+import { FormFeedback, feedbackTargets, formInstanceKey } from '../_components/form-feedback'
 
 async function saveGroup(form: FormData) {
   'use server'
@@ -57,7 +58,7 @@ type Group = {
 
 function GroupForm({ item, feedback }: { item?: Group; feedback?: AdminFeedback }) {
   const formKey = item?.id || 'new'
-  return <form id={`form-${formKey}`} action={saveGroup} className="space-y-3 rounded border bg-white p-5">
+  return <AdminForm key={formInstanceKey(feedback, formKey)} id={`form-${formKey}`} action={saveGroup} className="space-y-3 rounded border bg-white p-5">
     <FormFeedback feedback={feedback} formKey={formKey} />
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Name<input name="name" defaultValue={item?.name} required className="mt-1 block w-full rounded border p-2" /></label>
@@ -75,7 +76,7 @@ function GroupForm({ item, feedback }: { item?: Group; feedback?: AdminFeedback 
     <label className="flex gap-2 text-sm"><input type="checkbox" name="is_open" defaultChecked={item?.is_open ?? true} />Open to new participants</label>
     <label className="flex gap-2 text-sm"><input type="checkbox" name="published" defaultChecked={Boolean(item?.published_at)} />Published</label>
     <button type="submit" className="rounded bg-brand-800 px-4 py-2 text-white">{item ? 'Save group' : 'Create group'}</button>
-  </form>
+  </AdminForm>
 }
 
 export default async function AdminGroupsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {

@@ -6,6 +6,8 @@
 
 ## Executive status
 
+**Snapshot note:** The status table and roadmap below record the codebase as assessed on November 6, 2026. Implementation updates through November 7 are listed under [Progress since assessment](#progress-since-assessment).
+
 The rebuild has a real Next.js/Supabase foundation and functioning-looking server-rendered paths for sermons, events, and homepage data. It is not launch-ready yet. Most urgent: the fresh exports are not connected to the existing importer, admin authentication cannot authenticate anyone, admin pages are placeholders, several public routes are placeholders, and the SEO redirect map is not implemented.
 
 | Area | Status | Evidence / consequence |
@@ -31,6 +33,19 @@ These are observations from the supplied files in `C:\Users\Aiden\Desktop\church
 | `thrivevineyardchurch.wordpress.2026-11-07.xml` | WordPress WXR with 181 items: 122 `wpfc_sermon` records (120 published, one private sample, one draft) and 59 attachments. It contains no ordinary page or post records. | Sermon import must filter to published records and retain attachment/media references needed by sermons. This is not a full page-content export; the site audit remains the source for page inventory until a page export is supplied. |
 
 The repo’s present parser consumes the older `migration-files/events.xml` and `migration-files/sermons.xml`; `docs/02-content-inventory.md` reports 64 events and 104 usable sermons. The checked-in parsed outputs and report are therefore a baseline, not evidence that the November exports have been imported. Do not seed from the stale outputs and call the data migration complete.
+
+## Progress since assessment
+
+As of November 7, 2026, the feature branch includes:
+
+- Current export conversion, updated parsed outputs, 43 future occurrences across eight recurring events, and an exception report. Express(o) remains held for editorial schedule review.
+- A guarded seed command for the reviewed export pair, with no hand-authored placeholder rows or duplicate-prone fallback inserts. It has not been run against Supabase; schema updates still need applying and shared database state remains unverified.
+- Credential-based admin access plus create/edit/publish controls for announcements, sermons, one-time and recurring events, event occurrences, groups, outreach, staff profiles, and campaign landing pages.
+- Public group and outreach routes backed by published canonical records; campaign routes render published landing page records.
+- Confirmed legacy redirects, sitemap and robots routes, Chicago-local event display, month and grid/list event filters, and an iCalendar download.
+- A clean install and production build passed before each feature-branch push. Vercel Preview deploys still need their environment variables configured.
+
+Still open before a launch candidate: apply and review the database schema changes, run a safe data import, resolve the Express(o) schedule, complete visitor-facing content and forms, confirm Search Console and active Ads destinations, and review production configuration. The later copy/content migration remains a separate pass.
 
 ## Canonical architecture guardrails
 

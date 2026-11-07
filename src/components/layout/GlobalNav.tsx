@@ -77,7 +77,7 @@ export function GlobalNav() {
         {/* Mobile menu button */}
         <button
           ref={menuButtonRef}
-          className="rounded-md p-2 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
+          className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-white md:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
@@ -96,7 +96,7 @@ export function GlobalNav() {
                 href={link.href}
                 ref={link.href === navLinks[0].href ? firstMobileLinkRef : undefined}
                 aria-current={isActive(link.href) ? 'page' : undefined}
-                className={`text-base font-medium transition-colors ${
+                className={`flex min-h-11 items-center text-base font-medium transition-colors ${
                   isActive(link.href)
                     ? 'text-accent-400'
                     : 'text-white hover:text-accent-400'

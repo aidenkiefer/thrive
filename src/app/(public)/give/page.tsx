@@ -1,13 +1,23 @@
-import { Container, PageHeader, Section } from '@/components/ui'
+import type { Metadata } from 'next'
+import { compileMDX } from 'next-mdx-remote/rsc'
+import { Container, Section } from '@/components/ui'
+import { getMdxContent } from '@/lib/mdx'
 
-export default function GivePage() {
+export const metadata: Metadata = {
+  title: 'Give',
+  description: 'Give - Thrive Vineyard Church',
+}
+
+export default async function GivePage() {
+  const { content } = await compileMDX({
+    source: getMdxContent('give.mdx'),
+    options: { parseFrontmatter: true },
+  })
+
   return (
-    <Section background="light">
+    <Section background="white">
       <Container>
-        <PageHeader title="Give" />
-        <p className="mt-6 max-w-prose text-neutral-600">
-          More information is being prepared.
-        </p>
+        <article className="prose-content mx-auto">{content}</article>
       </Container>
     </Section>
   )

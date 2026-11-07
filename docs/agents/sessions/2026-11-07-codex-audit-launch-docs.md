@@ -12,3 +12,4 @@ A1 contract merged as PR #4. A2–A5 documented; second PR open.
 - **change A5:** Created a launch checklist with owner, evidence source, and done condition for each release step. (T0)
 - **request experience:** Review A2 redirect recommendations with owner before implementing undecided routes; protect prayer and contact form paths. (T1)
 - **decision:** Owner confirmed Express(o) weekly Sunday 8:30 AM in the cafe; audit now marks the MDX pause statement as stale. (T1)
+- **change:** Rebased PR #5 on data PR #6; launch checklist now orders seed before admin edits and records the anon-readable speaker/staff contact-column decision. (T0)

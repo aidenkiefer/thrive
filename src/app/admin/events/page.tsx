@@ -1,5 +1,6 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
+import Link from 'next/link'
 
 function requiredInstant(value: string, label: string): string {
   if (!/(Z|[+-]\d{2}:\d{2})$/i.test(value)) throw new Error(`${label} requires a timezone, such as -06:00`)
@@ -93,6 +94,7 @@ export default async function AdminEventsPage() {
   const items = (data || []) as EventRow[]
   return <div className="max-w-3xl space-y-8">
     <h1 className="text-2xl font-bold">One-time events</h1>
+    <Link href="/admin/recurring-events" className="inline-block rounded border px-4 py-2">Manage recurring events &amp; schedules</Link>
     <p className="text-sm text-neutral-600">Recurring event schedules are managed through the migration workflow while their rules are reconciled.</p>
     <section><h2 className="mb-3 text-lg font-semibold">New event</h2><EventForm /></section>
     <section className="space-y-4"><h2 className="text-lg font-semibold">Existing events</h2>

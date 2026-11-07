@@ -1,0 +1,260 @@
+[
+  {
+    "recurring_slug": "apologetics-training-with-dan-seidman",
+    "start_datetime": "2026-11-11T18:00:00-06:00",
+    "end_datetime": "2026-11-11T20:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "apologetics-training-with-dan-seidman",
+    "start_datetime": "2026-11-18T18:00:00-06:00",
+    "end_datetime": "2026-11-18T20:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "apologetics-training-with-dan-seidman",
+    "start_datetime": "2026-11-25T18:00:00-06:00",
+    "end_datetime": "2026-11-25T20:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "apologetics-training-with-dan-seidman",
+    "start_datetime": "2026-12-02T18:00:00-06:00",
+    "end_datetime": "2026-12-02T20:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "apologetics-training-with-dan-seidman",
+    "start_datetime": "2026-12-09T18:00:00-06:00",
+    "end_datetime": "2026-12-09T20:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "young-adults-bible-study",
+    "start_datetime": "2026-11-07T11:00:00-06:00",
+    "end_datetime": "2026-11-07T13:00:00-06:00",
+    "location": null
+  },
+  {
+    "recurring_slug": "young-adults-bible-study",
+    "start_datetime": "2026-11-14T11:00:00-06:00",
+    "end_datetime": "2026-11-14T13:00:00-06:00",
+    "location": null
+  },
+  {
+    "recurring_slug": "young-adults-bible-study",
+    "start_datetime": "2026-11-21T11:00:00-06:00",
+    "end_datetime": "2026-11-21T13:00:00-06:00",
+    "location": null
+  },
+  {
+    "recurring_slug": "young-adults-bible-study",
+    "start_datetime": "2026-11-28T11:00:00-06:00",
+    "end_datetime": "2026-11-28T13:00:00-06:00",
+    "location": null
+  },
+  {
+    "recurring_slug": "young-adults-bible-study",
+    "start_datetime": "2026-12-05T11:00:00-06:00",
+    "end_datetime": "2026-12-05T13:00:00-06:00",
+    "location": null
+  },
+  {
+    "recurring_slug": "young-adults-bible-study",
+    "start_datetime": "2026-12-12T11:00:00-06:00",
+    "end_datetime": "2026-12-12T13:00:00-06:00",
+    "location": null
+  },
+  {
+    "recurring_slug": "young-adults-bible-study",
+    "start_datetime": "2026-12-19T11:00:00-06:00",
+    "end_datetime": "2026-12-19T13:00:00-06:00",
+    "location": null
+  },
+  {
+    "recurring_slug": "young-adults-bible-study",
+    "start_datetime": "2026-12-26T11:00:00-06:00",
+    "end_datetime": "2026-12-26T13:00:00-06:00",
+    "location": null
+  },
+  {
+    "recurring_slug": "beyond-the-text",
+    "start_datetime": "2026-11-12T19:00:00-06:00",
+    "end_datetime": "2026-11-12T20:30:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "beyond-the-text",
+    "start_datetime": "2026-11-19T19:00:00-06:00",
+    "end_datetime": "2026-11-19T20:30:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "rooted-study-group",
+    "start_datetime": "2026-11-09T18:30:00-06:00",
+    "end_datetime": "2026-11-09T20:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "rooted-study-group",
+    "start_datetime": "2026-11-16T18:30:00-06:00",
+    "end_datetime": "2026-11-16T20:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "rooted-study-group",
+    "start_datetime": "2026-11-23T18:30:00-06:00",
+    "end_datetime": "2026-11-23T20:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "rooted-study-group",
+    "start_datetime": "2026-11-30T18:30:00-06:00",
+    "end_datetime": "2026-11-30T20:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "rooted-study-group",
+    "start_datetime": "2026-12-07T18:30:00-06:00",
+    "end_datetime": "2026-12-07T20:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "discovery-bible-study",
+    "start_datetime": "2026-11-11T09:30:00-06:00",
+    "end_datetime": "2026-11-11T11:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "discovery-bible-study",
+    "start_datetime": "2026-11-18T09:30:00-06:00",
+    "end_datetime": "2026-11-18T11:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "discovery-bible-study",
+    "start_datetime": "2026-11-25T09:30:00-06:00",
+    "end_datetime": "2026-11-25T11:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "discovery-bible-study",
+    "start_datetime": "2026-12-02T09:30:00-06:00",
+    "end_datetime": "2026-12-02T11:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "discovery-bible-study",
+    "start_datetime": "2026-12-09T09:30:00-06:00",
+    "end_datetime": "2026-12-09T11:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "discovery-bible-study",
+    "start_datetime": "2026-12-16T09:30:00-06:00",
+    "end_datetime": "2026-12-16T11:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "palatine-lego-users-group",
+    "start_datetime": "2026-11-13T18:30:00-06:00",
+    "end_datetime": "2026-11-13T21:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "palatine-lego-users-group",
+    "start_datetime": "2026-12-11T18:00:00-06:00",
+    "end_datetime": "2026-12-11T21:00:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "thrive-youth-thursday-nights",
+    "start_datetime": "2026-11-12T18:30:00-06:00",
+    "end_datetime": "2026-11-12T20:00:00-06:00",
+    "location": null
+  },
+  {
+    "recurring_slug": "thrive-youth-thursday-nights",
+    "start_datetime": "2026-12-10T18:30:00-06:00",
+    "end_datetime": "2026-12-10T20:00:00-06:00",
+    "location": null
+  },
+  {
+    "recurring_slug": "family-worship-service",
+    "start_datetime": "2026-11-08T09:30:00-06:00",
+    "end_datetime": "2026-11-08T10:45:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "family-worship-service",
+    "start_datetime": "2026-11-15T09:30:00-06:00",
+    "end_datetime": "2026-11-15T10:45:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "family-worship-service",
+    "start_datetime": "2026-11-22T09:30:00-06:00",
+    "end_datetime": "2026-11-22T10:45:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "family-worship-service",
+    "start_datetime": "2026-11-29T09:30:00-06:00",
+    "end_datetime": "2026-11-29T10:45:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "family-worship-service",
+    "start_datetime": "2026-12-06T09:30:00-06:00",
+    "end_datetime": "2026-12-06T10:45:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "family-worship-service",
+    "start_datetime": "2026-12-13T09:30:00-06:00",
+    "end_datetime": "2026-12-13T10:45:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "family-worship-service",
+    "start_datetime": "2026-12-20T09:30:00-06:00",
+    "end_datetime": "2026-12-20T10:45:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "family-worship-service",
+    "start_datetime": "2026-12-27T09:30:00-06:00",
+    "end_datetime": "2026-12-27T10:45:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "family-worship-service",
+    "start_datetime": "2027-01-03T09:30:00-06:00",
+    "end_datetime": "2027-01-03T10:45:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "family-worship-service",
+    "start_datetime": "2027-01-10T09:30:00-06:00",
+    "end_datetime": "2027-01-10T10:45:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "family-worship-service",
+    "start_datetime": "2027-01-17T09:30:00-06:00",
+    "end_datetime": "2027-01-17T10:45:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "family-worship-service",
+    "start_datetime": "2027-01-24T09:30:00-06:00",
+    "end_datetime": "2027-01-24T10:45:00-06:00",
+    "location": "Thrive Vineyard Church"
+  },
+  {
+    "recurring_slug": "family-worship-service",
+    "start_datetime": "2027-01-31T09:30:00-06:00",
+    "end_datetime": "2027-01-31T10:45:00-06:00",
+    "location": "Thrive Vineyard Church"
+  }
+]

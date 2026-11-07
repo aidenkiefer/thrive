@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "npx tsx scripts/seed-from-parsed.ts"
+    "seed": "npx tsx scripts/seed-current.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

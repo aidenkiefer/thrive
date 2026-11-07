@@ -31,3 +31,7 @@ Thumbs.db
 # Supabase local dev
 supabase/.branches/
 supabase/.temp/
+
+# Python parser cache and Windows download metadata
+__pycache__/
+*:Zone.Identifier

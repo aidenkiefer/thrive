@@ -11,12 +11,14 @@
 | #4 | Audit C1 | MERGED `08f49ac` | Independent live-source comparison across six pages; clean install and full gate on then-current main; CI/Vercel green. |
 | #6 | Data D1-D5 | MERGED `ceb39e0` | Two independent reviewers; auth/validation and schema/import checks; clean install and full integrated gate; CI/Vercel green. |
 | #7 | Ops-quality Q1-Q3 | MERGED `ba3fe81` | Independent dependency/config/test review; clean install, 33 tests, lint and production build passed on current base; CI/Vercel green. |
-| #8 | Experience E1-E6/R1 | HOLD | Content/redirect review passes. Mobile target fix, completion-status correction, browser evidence, rebase and full integrated gate still required. |
+| #8 | Experience E1-E6/R1 | OPEN — QA follow-up | Content/redirect review passes. The rebased branch's gate and Vercel checks pass; mobile drawer-link target sizing and route-by-route 375px/keyboard evidence remain required. E6 remains intentionally limited until canonical schedule/form fields land. |
 | #5 | Audit A2-A5 | REVIEWED, NOT MERGED | All 985 sitemap URLs accounted for; archive mapping corrected; rebased after #6. Rebase and full gate after remaining code merges still required. |
 
 **Final-main gate:** not rerun after the last merge because the owner requested tonight's checkpoint. The identical #7 candidate passed its full gate before squash merge. No final-main PASS is claimed.
 
 **Handoff branch verification:** clean `npm ci` followed by the full shared gate passed on this docs-only branch based on `ba3fe81`: typecheck, 33 tests, lint (0 errors / 12 warnings), and successful production build. Install reported 6 moderate findings; no high/critical findings or build failures.
+
+**Post-checkpoint PR evidence:** #8 was rebased and force-with-lease updated after #7. Its GitHub gate completed successfully on 2026-11-07 09:52 UTC, Vercel succeeded, and Supabase Preview was skipped. This does not replace the outstanding browser evidence or make unprovided Youth Alpha schedule/form data ready to publish. #5 remains clean and passing, but is intentionally held for a rebase and full integrated gate after #8 lands.
 
 ## Findings worth remembering
 
@@ -28,8 +30,8 @@
 
 ## Carry-over and exact resume order
 
-1. Finish #8 in its existing branch; do not reassign its open work. In `src/components/layout/GlobalNav.tsx`, mobile drawer links need 44px targets, not only the toggle. Correct the session claim that E1-E6 are complete: E6 has pending UI without canonical schedule/form fields or a complete field-value handoff. Record page-by-page 375px/keyboard results. Rebase on main after #7; clean `npm ci`, full gate and CI must pass before QA merges. Plain `git diff --check` flags CRLF additions; inspect/normalize line endings as appropriate (the `cr-at-eol` check passed). QA's detached rebase was conflict-free; its install passed, but the gate was intentionally interrupted at typecheck for wrap-up. No integrated PASS is claimed.
-2. Rebase #5 after #8; confirm the archive maps to `/events`, preserve current import facts, run the full integrated gate, then merge. Independent review accepted the corrected inventory, integration evidence and checklist.
+1. Continue #8 in its existing branch; do not reassign its open work. In `src/components/layout/GlobalNav.tsx`, mobile drawer links still need 44px targets, not only the toggle. Record page-by-page 375px/keyboard results. E6 must remain an intentional pending state until C2 supplies canonical schedule/form fields and the owner enters confirmed Youth Alpha values. The branch has a passing CI gate and Vercel check; run the full integrated gate again only after the remaining fixes and after any rebase.
+2. Rebase #5 after #8 merges; confirm the archive maps to `/events`, preserve current import facts, run the full integrated gate, then merge. Independent review accepted the corrected inventory, integration evidence and checklist.
 3. Run the full gate on resulting main. Consolidate these final results and then finalize the draft next assignment. No next-batch builders have been launched.
 4. Keep nine imported published sermons without media, re-seed overwriting admin edits, and public speaker/staff contact-column policy explicit. Schema apply, seed, Preview configuration, approved replacement forms, Youth Alpha current schedule/record, giving approval, Search Console/Ads and domain/rollback checks remain owner steps. Do not infer readiness from build success.
 5. Public `src/lib/constants/service-times.ts` still marks Express(o) paused; #8 fixes MDX wording but this data-owned constant remains a next-batch correction. Untracked `tsconfig.tsbuildinfo` cleanup belongs in a future allowed `.gitignore` change.

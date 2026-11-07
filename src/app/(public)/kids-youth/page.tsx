@@ -1,13 +1,23 @@
-import { Container, PageHeader, Section } from '@/components/ui'
+import type { Metadata } from 'next'
+import { compileMDX } from 'next-mdx-remote/rsc'
+import { Container, Section } from '@/components/ui'
+import { getMdxContent } from '@/lib/mdx'
 
-export default function KidsYouthPage() {
+export const metadata: Metadata = {
+  title: 'Kids',
+  description: 'Kids are the Future!',
+}
+
+export default async function KidsYouthPage() {
+  const { content } = await compileMDX({
+    source: getMdxContent('kids-youth.mdx'),
+    options: { parseFrontmatter: true },
+  })
+
   return (
-    <Section background="light">
+    <Section background="white">
       <Container>
-        <PageHeader title="Kids &amp; Youth" />
-        <p className="mt-6 max-w-prose text-neutral-600">
-          More information is being prepared.
-        </p>
+        <article className="prose-content mx-auto">{content}</article>
       </Container>
     </Section>
   )

@@ -20,3 +20,6 @@ Ready for QA review: E1–E6 and R1 complete; pull request opened without merge.
 - `03:33` **handoff** data/content owner: Enter the C1 Youth Alpha name, description, and media in the ministry admin record. Add canonical schedule and ChurchSuite form fields before publishing its schedule or signup destination. (T1 standard)
 - `03:35` **change** Owner confirmation superseded the stale Express(o) pause notice: Sundays at 8:30 AM in the cafe. T1 standard `content/pages/plan-a-visit.mdx`.
 - `03:53` **note** Completed a clean `npm ci` and full launch gate (`GATE: PASS`); opened PR #8 for QA review without merging. (T1 standard)
+- `12:37` **change** Carry-over: gave every mobile-drawer link a 44px minimum tap target (`min-h-11`). T1 standard `src/components/layout/GlobalNav.tsx`.
+- `12:37` **blocker** E5 browser check: the PR #8 Vercel preview requires an interactive Vercel login. No 375px or keyboard-only result was claimed for `/`, `/events`, `/sermons`, `/about`, `/give`, `/kids-youth`, or `/ministries/youth-alpha`; each remains pending a signed-in browser pass. (T1 standard)
+- `12:37` **note** E6 remains intentionally pending: Youth Alpha's owner-entered ministry record still needs canonical schedule and ChurchSuite signup fields; no fallback data was added. (T1 standard)

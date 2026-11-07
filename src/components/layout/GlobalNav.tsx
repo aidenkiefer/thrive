@@ -96,7 +96,7 @@ export function GlobalNav() {
                 href={link.href}
                 ref={link.href === navLinks[0].href ? firstMobileLinkRef : undefined}
                 aria-current={isActive(link.href) ? 'page' : undefined}
-                className={`text-base font-medium transition-colors ${
+                className={`flex min-h-11 items-center text-base font-medium transition-colors ${
                   isActive(link.href)
                     ? 'text-accent-400'
                     : 'text-white hover:text-accent-400'

@@ -30,6 +30,10 @@ const nextConfig: NextConfig = {
       { source: '/upcoming-events/:slug', destination: '/events/:slug', permanent: true },
       { source: '/kids', destination: '/kids-youth', permanent: true },
       { source: '/series/:slug', destination: '/sermons/series/:slug', permanent: true },
+      { source: '/youth-alpha', destination: '/ministries/youth-alpha', permanent: true },
+      { source: '/topics/:slug', destination: '/sermons', permanent: false },
+      { source: '/book/:slug', destination: '/sermons', permanent: false },
+      { source: '/service-type/:slug', destination: '/sermons', permanent: false },
     ]
   },
 }

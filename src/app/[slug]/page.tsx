@@ -10,14 +10,21 @@ type Props = { params: Promise<{ slug: string }> }
 async function getLanding(slug: string) {
   if (RESERVED.has(slug)) return null
   const db = await createClient()
-  const { data } = await db.from('landing_pages').select('*').eq('slug', slug).not('published_at', 'is', null).maybeSingle()
+  const { data: rawPage } = await db.from('landing_pages').select('*').eq('slug', slug).not('published_at', 'is', null).maybeSingle()
+  const data = rawPage as unknown as {
+    linked_entity_type: string | null; linked_entity_id: string | null; slug: string;
+    seo_title: string | null; hero_heading: string | null; title: string;
+    seo_description: string | null; hero_subheading: string | null; og_image_url: string | null;
+    body_content: string | null; hero_image_url: string | null; cta_url: string | null;
+    cta_text: string | null;
+  } | null
   if (!data) return null
-  const tables: Record<string, string> = { recurring_event: 'recurring_events', one_time_event: 'one_time_events', group: 'groups', ministry: 'ministries' }
-  const table = tables[data.linked_entity_type as string]
+  const tables: Record<string, 'recurring_events' | 'one_time_events' | 'groups' | 'ministries'> = { recurring_event: 'recurring_events', one_time_event: 'one_time_events', group: 'groups', ministry: 'ministries' }
+  const table = tables[data.linked_entity_type || '']
   let entity: Record<string, unknown> | null = null
   if (table && data.linked_entity_id) {
     const result = await db.from(table).select('*').eq('id', data.linked_entity_id).not('published_at', 'is', null).maybeSingle()
-    entity = result.data
+    entity = result.data as unknown as Record<string, unknown> | null
   }
   return { page: data, entity }
 }

@@ -18,10 +18,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (result.error) throw new Error(`Sitemap query failed: ${result.error.message}`)
   }
   const [sermons, series, oneTime, recurring, landingPages] = results
-  for (const row of sermons.data ?? []) entries.push({ url: `${base}/sermons/${row.slug}` })
-  for (const row of series.data ?? []) entries.push({ url: `${base}/sermons/series/${row.slug}` })
-  const eventSlugs = new Set([...(oneTime.data ?? []), ...(recurring.data ?? [])].map(row => row.slug))
+  type SlugRow = { slug: string }
+  const sermonRows = sermons.data as unknown as SlugRow[] | null
+  const seriesRows = series.data as unknown as SlugRow[] | null
+  const oneTimeRows = oneTime.data as unknown as SlugRow[] | null
+  const recurringRows = recurring.data as unknown as SlugRow[] | null
+  const landingRows = landingPages.data as unknown as SlugRow[] | null
+  for (const row of sermonRows ?? []) entries.push({ url: `${base}/sermons/${row.slug}` })
+  for (const row of seriesRows ?? []) entries.push({ url: `${base}/sermons/series/${row.slug}` })
+  const eventSlugs = new Set([...(oneTimeRows ?? []), ...(recurringRows ?? [])].map(row => row.slug))
   for (const slug of eventSlugs) entries.push({ url: `${base}/events/${slug}` })
-  for (const row of landingPages.data ?? []) entries.push({ url: `${base}/${row.slug}` })
+  for (const row of landingRows ?? []) entries.push({ url: `${base}/${row.slug}` })
   return entries
 }

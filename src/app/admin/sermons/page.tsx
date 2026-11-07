@@ -1,5 +1,6 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
+import { requireAdmin } from '@/lib/admin-auth'
 
 const list = (value: FormDataEntryValue | null) =>
   String(value || '').split(',').map(item => item.trim()).filter(Boolean)
@@ -13,6 +14,7 @@ const httpsUrl = (value: FormDataEntryValue | null) => {
 
 async function saveSermon(form: FormData) {
   'use server'
+  await requireAdmin()
   const db = await adminDb()
   const id = String(form.get('id') || '')
   const slug = String(form.get('slug') || '').trim().toLowerCase()

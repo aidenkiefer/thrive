@@ -1,5 +1,6 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
+import { requireAdmin } from '@/lib/admin-auth'
 
 function timestamp(form: FormData, key: string, label: string): string {
   const value = String(form.get(key) || '').trim()
@@ -11,6 +12,7 @@ function timestamp(form: FormData, key: string, label: string): string {
 
 async function saveRecurring(form: FormData) {
   'use server'
+  await requireAdmin()
   const db = await adminDb()
   const id = String(form.get('id') || '')
   const slug = String(form.get('slug') || '').trim().toLowerCase()
@@ -56,6 +58,7 @@ function secureUrl(value: FormDataEntryValue | null): string | null {
 
 async function saveOccurrence(form: FormData) {
   'use server'
+  await requireAdmin()
   const db = await adminDb()
   const id = String(form.get('id') || '')
   const eventId = String(form.get('recurring_event_id') || '')

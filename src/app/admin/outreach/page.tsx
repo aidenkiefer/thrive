@@ -1,5 +1,6 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
+import { requireAdmin } from '@/lib/admin-auth'
 
 function https(value: FormDataEntryValue | null) {
   const url = String(value || '').trim()
@@ -10,6 +11,7 @@ function https(value: FormDataEntryValue | null) {
 
 async function saveOutreach(form: FormData) {
   'use server'
+  await requireAdmin()
   const db = await adminDb()
   const id = String(form.get('id') || '')
   const slug = String(form.get('slug') || '').trim().toLowerCase()

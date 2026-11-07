@@ -24,11 +24,4 @@ export async function createClient() {
   })
 }
 
-// Service role client for admin writes — server-only, never expose to browser
-export function createServiceClient() {
-  return createServerClient<Database>(
-    getSupabaseUrl(),
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { cookies: { getAll: () => [], setAll: () => {} } }
-  )
-}
+// Admin writes use adminDb() in src/lib/admin-db.ts, which checks the admin session first.

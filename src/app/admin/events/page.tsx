@@ -1,5 +1,6 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
+import { requireAdmin } from '@/lib/admin-auth'
 import Link from 'next/link'
 
 function requiredInstant(value: string, label: string): string {
@@ -17,6 +18,7 @@ function optionalUrl(value: string): string | null {
 
 async function saveEvent(formData: FormData) {
   'use server'
+  await requireAdmin()
   const db = await adminDb()
   const id = String(formData.get('id') || '')
   const name = String(formData.get('name') || '').trim()

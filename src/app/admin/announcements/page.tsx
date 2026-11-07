@@ -1,8 +1,10 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
+import { requireAdmin } from '@/lib/admin-auth'
 
 async function saveAnnouncement(formData: FormData) {
   'use server'
+  await requireAdmin()
   const db = await adminDb()
   const id = String(formData.get('id') || '')
   const title = String(formData.get('title') || '').trim()

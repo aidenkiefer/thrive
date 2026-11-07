@@ -3,7 +3,7 @@ import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import {
-  assertEndAfterStart, assertPublishable, fail, httpsUrl, oneTimeEventPublishProblems,
+  assertEndAfterStart, assertPublishable, fail, formUrlPublishProblems, httpsUrl, oneTimeEventPublishProblems,
   parseInstant, requireInstant, requireSlug, requireText,
 } from '@/lib/admin-validation'
 import { FormFeedback, feedbackTargets } from '../_components/form-feedback'
@@ -50,7 +50,7 @@ async function saveEvent(formData: FormData) {
       external_url: httpsUrl(value('external_url'), 'Other action URL'),
       published_at: publish ? (currentPublishedAt || new Date().toISOString()) : null,
     }
-    if (publish) assertPublishable('event', oneTimeEventPublishProblems(row))
+    if (publish) assertPublishable('event', [...oneTimeEventPublishProblems(row), ...formUrlPublishProblems(row.churchsuite_form_url, 'ChurchSuite URL')])
     const result = id
       ? await db.from('one_time_events').update(row).eq('id', id)
       : await db.from('one_time_events').insert(row)

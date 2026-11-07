@@ -3,7 +3,7 @@ import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import {
-  assertEndAfterStart, assertPublishable, fail, httpsUrl, parseInstant, recurringEventPublishProblems,
+  assertEndAfterStart, assertPublishable, fail, formUrlPublishProblems, httpsUrl, parseInstant, recurringEventPublishProblems,
   requireInstant, requireSlug, requireText,
 } from '@/lib/admin-validation'
 import { FormFeedback, feedbackTargets } from '../_components/form-feedback'
@@ -48,7 +48,7 @@ async function saveRecurring(form: FormData) {
       external_url: httpsUrl(value('external_url'), 'Other action URL'),
       published_at: publish ? (publishedAt || new Date().toISOString()) : null,
     }
-    if (publish) assertPublishable('recurring event', recurringEventPublishProblems(row))
+    if (publish) assertPublishable('recurring event', [...recurringEventPublishProblems(row), ...formUrlPublishProblems(row.churchsuite_form_url, 'ChurchSuite URL')])
     const result = id ? await db.from('recurring_events').update(row).eq('id', id) : await db.from('recurring_events').insert(row)
     if (result.error) throw new Error(result.error.message)
     revalidatePath('/admin/recurring-events'); revalidatePath('/admin/events'); revalidatePath('/events'); revalidatePath(`/events/${slug}`); revalidatePath('/')

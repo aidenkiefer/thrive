@@ -3,7 +3,8 @@
 | File | What it is |
 |---|---|
 | `schema.sql` | The current full schema. Source of truth for a **new** project. |
-| `migrations/20261107000000_mvp_foundation.sql` | Brings a database created from the **June** schema (commit `cd012bd`) up to `schema.sql`. |
+| `migrations/20261107000000_mvp_foundation.sql` | Brings a database created from the **June** schema (commit `cd012bd`) up to the Nov 7 foundation schema. |
+| `migrations/20261107010000_ministry_schedule_forms.sql` | Adds nullable `ministries.schedule_description` and `ministries.churchsuite_form_url`. Run after the foundation migration. |
 
 Agents never run either file against a live database. The owner applies them.
 
@@ -14,7 +15,7 @@ Pick **one** path, depending on the database you have.
 **A. Fresh Supabase project (no tables yet)**
 
 1. SQL editor → paste `schema.sql` → Run. Run it **once**: its `create policy` statements are not guarded, so a second run stops with "policy already exists" (harmless, but noisy).
-2. Optional: run the migration afterward. On a fresh project it is a no-op.
+2. Optional: run the migrations afterward, in filename order. On a fresh project they are no-ops.
 3. Seed (see `migration-files/parsed/import-readiness.md`).
 
 **B. Existing database created from the June schema**
@@ -28,7 +29,8 @@ Pick **one** path, depending on the database you have.
    from event_occurrences
    group by 1, 2 having count(*) > 1;
    ```
-4. Seed.
+4. SQL editor → paste `migrations/20261107010000_ministry_schedule_forms.sql` → Run. It only adds two nullable columns, so it is safe to run twice.
+5. Seed.
 
 With the Supabase CLI instead of the SQL editor, `supabase db push` applies `migrations/` in filename order.
 
@@ -53,6 +55,12 @@ Every statement is guarded (`add column if not exists`, `create unique index if 
 | Current `schema.sql` → migration | Succeeds, no-op |
 | June schema + one duplicated occurrence → migration | Stops with the duplicate message; transaction rolled back (no `external_url` column added) |
 | Catalog comparison (columns, types, defaults, nullability, indexes, policies, RLS flags) of both migrated June DBs vs a fresh `schema.sql` DB | Identical: 180 columns, 12 policies, RLS on 12/12 tables |
+
+### Ministry schedule + form fields (2026-11-07)
+
+`ministries.schedule_description` (free text) and `ministries.churchsuite_form_url` (signup form). The column name matches the one on `recurring_events`, `one_time_events`, `groups` and `outreach`. It may hold a ChurchSuite **or** Google Forms link. Admin blocks publishing any other host, and public pages embed only links that pass `isApprovedFormUrl()` in `src/lib/form-urls.ts`. RLS is unchanged.
+
+Verified on a throwaway local `postgres:16` (not a live DB): main `schema.sql` → this migration ×2 → foundation migration again, all succeed; the migrated `ministries` columns match a fresh `schema.sql` exactly (15 columns); existing rows read NULL for both fields.
 
 ## RLS review (2026-11-07)
 

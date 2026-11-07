@@ -27,7 +27,7 @@ Three tools (Claude Code, Cursor, Codex) work in parallel. Read `docs/workflow/w
 - **Admin routes require auth.** `src/middleware.ts` protects `/admin/**` via NextAuth. Never bypass it.
 - **Never invent ministry data:** no fabricated dates, staff names, contact info, descriptions, or form URLs. Unknowns go to the owner.
 - **SEO redirects:** any public URL change from the WordPress site needs a 301 in `next.config.ts` (see `docs/04-seo-url-migration-map.md`).
-- **ChurchSuite is forms only:** link/embed destination, no API calls, no sync.
+- **Forms:** embedded ChurchSuite forms (link/embed only, no API calls, no sync). Google Forms embeds are allowed for forms ChurchSuite doesn't cover.
 - **No secrets in git.** `.env*` stays local (except `.env.local.example`).
 
 ## Map

@@ -6,7 +6,8 @@
 <!-- ≤3 lines, kept current by scribe: done / in progress / parked / blocked -->
 D1 T1 done (d16db4d): `requireAdmin()` added and called first in all 10 inline admin server actions.
 D2 T1 done (ee2d908): publish-time validation for announcements, sermons, events, recurring events, occurrences.
-Gate run: unknown. Next ticket: unknown.
+D3 T2 done (fdf4b0a): idempotent June->current migration + RLS review; tightened occurrences policy.
+BLOCKED: owner decision on anon-readable speakers.email, staff.email/phone (see blocker entry).
 
 ## Entries
 <!-- Append-only, oldest first. Types: decision · change · blocker · request · note -->
@@ -19,3 +20,7 @@ Gate run: unknown. Next ticket: unknown.
   One-time event needs description or short summary; recurring event needs description or summary + schedule description + typical time; location NOT required (32/55 imported one-time events lack it).
 - `03:06` **decision**: feedback travels in the query string (admin-only page, React-escaped text, capped at 500 chars). Limitation: on a rejected save the form re-renders with stored values, so unsaved edits are lost.
 - `03:06` **note**: untracked `tsconfig.tsbuildinfo` appears after typecheck; not committed (`.gitignore` is not in the data lane).
+- `03:10` **change** D3 T2: idempotent June->current migration + `supabase/README.md` (apply order, verification, RLS review); `supabase/schema.sql` synced. Verified on throwaway local postgres:16 (not live DB): June schema x2 OK, June-without-patch x2 OK, fresh schema + migration no-op, duplicate occurrence gives clear error + full rollback; migrated June catalog identical to fresh schema.sql (180 cols, 12 policies, RLS 12/12). (opus-5.5) [fdf4b0a]
+  Key files: `supabase/migrations/20261107000000_mvp_foundation.sql`, `supabase/README.md`, `supabase/schema.sql`.
+- `03:10` **decision**: tightened `public_read_event_occurrences` (schema.sql + migration) to require the parent recurring event be published. June policy exposed draft events' occurrences via the anon key. Public queries already filter in JS, so pages are unaffected. (opus-5.5) [fdf4b0a]
+- `03:10` **blocker**: owner decision needed. `speakers.email`, `staff.email`, `staff.phone` are anon-readable (all-rows policies; RLS is row-level). Options: keep public, leave empty, or revoke column select from anon. Recommended: leave speakers.email empty or revoke; staff contact per owner. Not changed.

@@ -4,7 +4,8 @@
 
 ## Status
 <!-- ≤3 lines, kept current by scribe: done / in progress / parked / blocked -->
-D1-D5 done: d16db4d (D1), ee2d908 (D2), fdf4b0a (D3), d612aa3 (D4), 991c8dc (D5).
+D1-D5 done: d16db4d (D1), ee2d908 (D2), fdf4b0a (D3), d612aa3 (D4), 991c8dc (D5). None parked. GATE: PASS.
+PR #6 open (https://github.com/aidenkiefer/thrive/pull/6), not merged; awaiting senior QA + Codex /review on D1/D5.
 Lane NOT blocked; owner decision on speakers/staff contact columns is non-blocking (see blocker entry).
 
 ## Entries
@@ -35,3 +36,4 @@ Lane NOT blocked; owner decision on speakers/staff contact columns is non-blocki
 - `03:20` **request** ops-quality (Q2): add Vitest unit tests for `src/lib/admin-validation.ts` (pure, no Next/Supabase imports). Cover parseInstant DST cases (2026-03-08 02:30 reject; 2026-11-01 01:30 accept at -05:00 and -06:00; -05:00 on 2026-11-15 reject; +00:00 accept), parseDateOnly 2026-02-29 reject, and the *PublishProblems functions. Express(o) rule lives in `migration-files/parse-current-exports.py` OWNER_SCHEDULES (Python), not src/lib. Target lane: ops-quality.
 - `03:20` **request** ops-quality: add `tsconfig.tsbuildinfo` to `.gitignore` (appears untracked after every typecheck). Target lane: ops-quality.
 - `03:20` **request** audit (A5 launch checklist), owner steps from data lane: (1) apply schema per `supabase/README.md` (fresh DB: `schema.sql` once; June DB: backup, then `migrations/20261107000000_mvp_foundation.sql`); (2) read `migration-files/parsed/import-readiness.md` before `npm run seed`; (3) seed once before admin editing starts (re-seed overwrites admin edits on imported slugs); (4) decide whether speakers.email / staff.email / staff.phone stay anon-readable. Target lane: audit.
+- `03:22` **note**: session end. D1-D5 done, none parked; GATE: PASS; PR #6 open (https://github.com/aidenkiefer/thrive/pull/6), not merged. Next per assignment: claude ops-quality lane (Q1-Q3) on claude/ops-quality-gates. (haiku-5.5)

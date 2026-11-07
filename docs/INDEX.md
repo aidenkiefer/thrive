@@ -2,7 +2,7 @@
 
 All documentation for the Thrive Vineyard website project.
 
-**Current phase:** v0.1.0 done → starting **v0.2.0** (Supabase + data layer). Full status, checklist, and roadmap: [plans/PROGRESS.md](plans/PROGRESS.md).
+**Current phase:** November 2026 MVP launch readiness. See [08-mvp-status-roadmap.md](./08-mvp-status-roadmap.md), [09-implementation-handoff.md](./09-implementation-handoff.md), and [10-launch-checklist.md](./10-launch-checklist.md).
 
 ---
 
@@ -17,7 +17,11 @@ All documentation for the Thrive Vineyard website project.
 | `docs/06-integrations.md` | Supabase, NextAuth, ChurchSuite, Vercel, Google Ads, future integrations | M |
 | `supabase/schema.sql` | Full Postgres schema (tables, indexes, RLS policies) | L |
 
-**Written from live site audit (2026-06-20):**
+**Site evidence and migration planning:**
+- [audit/2026-11/README.md](./audit/2026-11/README.md) — November 7 live page, URL, and integration audit
+- [10-launch-checklist.md](./10-launch-checklist.md) — owner release checks for November 13
+
+**June 2026 references (historical):**
 - [01-current-site-audit.md](./01-current-site-audit.md) — WordPress crawl: URLs, content, forms, integrations
 - [02-content-inventory.md](./02-content-inventory.md) — Parsed events/sermons export → Supabase mapping
 - [04-seo-url-migration-map.md](./04-seo-url-migration-map.md) — Draft redirect map (needs Search Console to finalize)

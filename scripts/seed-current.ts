@@ -54,9 +54,17 @@ async function main() {
   console.log(`Importing ${sermons.length} sermons, ${recurring.length + oneTime.length} events, ${occurrences.length} occurrences`)
   const speakerIds = new Map<string, string>()
   for (const s of speakers) speakerIds.set(s.slug, (await upsert('speakers', { slug: s.slug, name: s.name })).id)
+  // A series is published as of its earliest published sermon. Deterministic, so
+  // re-running the seed doesn't move the timestamp (it used to be "now").
+  const seriesPublishedAt = new Map<string, string>()
+  for (const s of sermons) {
+    if (!s.series_slug || !s.published_at) continue
+    const current = seriesPublishedAt.get(s.series_slug)
+    if (!current || Date.parse(s.published_at) < Date.parse(current)) seriesPublishedAt.set(s.series_slug, s.published_at)
+  }
   const seriesIds = new Map<string, string>()
   for (const s of series) seriesIds.set(s.slug, (await upsert('sermon_series', {
-    slug: s.slug, title: s.title, published_at: new Date().toISOString(),
+    slug: s.slug, title: s.title, published_at: seriesPublishedAt.get(s.slug) ?? null,
   })).id)
   for (const s of sermons) {
     if (s.speaker_slug && !speakerIds.has(s.speaker_slug)) throw new Error(`Missing speaker for ${s.slug}`)

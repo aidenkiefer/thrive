@@ -1,4 +1,5 @@
-import type { NextAuthOptions } from 'next-auth'
+import { getServerSession, type NextAuthOptions } from 'next-auth'
+import { redirect } from 'next/navigation'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { scryptSync, timingSafeEqual } from 'node:crypto'
 
@@ -30,4 +31,20 @@ export const adminAuthOptions: NextAuthOptions = {
   })],
   pages: { signIn: '/admin/login' },
   session: { strategy: 'jwt' },
+}
+
+/**
+ * Server-side admin check for Server Components and Server Actions.
+ * Middleware is not enough: server actions are POST endpoints that write with
+ * the service-role key, so each one must verify the session itself.
+ * Fails closed: no session, a non-admin email, or missing config redirects to login.
+ */
+export async function requireAdmin(): Promise<{ email: string }> {
+  const configuredEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase()
+  const session = configuredEmail && process.env.NEXTAUTH_SECRET
+    ? await getServerSession(adminAuthOptions)
+    : null
+  const email = session?.user?.email?.trim().toLowerCase()
+  if (!configuredEmail || !email || email !== configuredEmail) redirect('/admin/login')
+  return { email }
 }

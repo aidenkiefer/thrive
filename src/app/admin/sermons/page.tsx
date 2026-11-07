@@ -1,60 +1,73 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
+import { requireAdmin } from '@/lib/admin-auth'
+import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
+import {
+  assertPublishable, fail, httpsUrl, parseDateOnly, requireSlug, requireText, sermonPublishProblems,
+} from '@/lib/admin-validation'
+import { FormFeedback, feedbackTargets } from '../_components/form-feedback'
 
 const list = (value: FormDataEntryValue | null) =>
   String(value || '').split(',').map(item => item.trim()).filter(Boolean)
 
-const httpsUrl = (value: FormDataEntryValue | null) => {
-  const url = String(value || '').trim()
-  if (!url) return null
-  if (!url.startsWith('https://')) throw new Error('Media URLs must use HTTPS')
-  return url
-}
-
 async function saveSermon(form: FormData) {
   'use server'
-  const db = await adminDb()
+  await requireAdmin()
   const id = String(form.get('id') || '')
-  const slug = String(form.get('slug') || '').trim().toLowerCase()
-  const title = String(form.get('title') || '').trim()
-  const date = String(form.get('preached_at') || '')
-  if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new Error('Title and valid URL slug are required')
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) throw new Error('Enter a valid preached date')
-  let currentPublished: string | null = null
-  if (id) {
-    const { data, error } = await db.from('sermons').select('slug,published_at').eq('id', id).single()
-    if (error) throw new Error(error.message)
-    if (data.slug !== slug) throw new Error('Changing a sermon URL requires a redirect plan')
-    currentPublished = data.published_at
-  } else {
-    const { data, error } = await db.from('sermons').select('id').eq('slug', slug).maybeSingle()
-    if (error) throw new Error(error.message)
-    if (data) throw new Error('That sermon URL already exists')
-  }
-  const speakerId = String(form.get('speaker_id') || '') || null
-  const seriesId = String(form.get('series_id') || '') || null
-  const publish = form.get('published') === 'on'
-  const row = {
-    slug, title, preached_at: date,
-    description: String(form.get('description') || '').trim() || null,
-    speaker_id: speakerId, series_id: seriesId,
-    scripture_references: list(form.get('scripture_references')),
-    topics: list(form.get('topics')),
-    service_type: String(form.get('service_type') || '').trim() || null,
-    youtube_url: httpsUrl(form.get('youtube_url')),
-    audio_url: httpsUrl(form.get('audio_url')),
-    video_url: httpsUrl(form.get('video_url')),
-    thumbnail_url: httpsUrl(form.get('thumbnail_url')),
-    published_at: publish ? (currentPublished || new Date().toISOString()) : null,
-  }
-  const result = id
-    ? await db.from('sermons').update(row).eq('id', id)
-    : await db.from('sermons').insert(row)
-  if (result.error) throw new Error(result.error.message)
-  revalidatePath('/admin/sermons')
-  revalidatePath('/sermons')
-  revalidatePath(`/sermons/${slug}`)
-  revalidatePath('/')
+  await saveWithFeedback('/admin/sermons', id || 'new', async () => {
+    const db = await adminDb()
+    const value = (key: string) => String(form.get(key) || '')
+    const slug = requireSlug(value('slug'))
+    const title = requireText(value('title'), 'Title')
+    const date = parseDateOnly(value('preached_at'), 'Preached date') ?? fail('Preached date is required')
+    let currentPublished: string | null = null
+    if (id) {
+      const { data, error } = await db.from('sermons').select('slug,published_at').eq('id', id).single()
+      if (error) throw new Error(error.message)
+      if (data.slug !== slug) fail('Changing a sermon URL requires a redirect plan')
+      currentPublished = data.published_at
+    } else {
+      const { data, error } = await db.from('sermons').select('id').eq('slug', slug).maybeSingle()
+      if (error) throw new Error(error.message)
+      if (data) fail('That sermon URL already exists')
+    }
+    const speakerId = value('speaker_id') || null
+    const seriesId = value('series_id') || null
+    if (speakerId) {
+      const { data, error } = await db.from('speakers').select('id').eq('id', speakerId).maybeSingle()
+      if (error) throw new Error(error.message)
+      if (!data) fail('The selected speaker no longer exists')
+    }
+    const publish = form.get('published') === 'on'
+    if (seriesId) {
+      const { data, error } = await db.from('sermon_series').select('id,published_at').eq('id', seriesId).maybeSingle()
+      if (error) throw new Error(error.message)
+      if (!data) fail('The selected series no longer exists')
+      if (publish && !data.published_at) fail("Can't publish this sermon yet: its series is a draft. Publish the series first or choose another")
+    }
+    const row = {
+      slug, title, preached_at: date,
+      description: value('description').trim() || null,
+      speaker_id: speakerId, series_id: seriesId,
+      scripture_references: list(form.get('scripture_references')),
+      topics: list(form.get('topics')),
+      service_type: value('service_type').trim() || null,
+      youtube_url: httpsUrl(value('youtube_url'), 'YouTube URL'),
+      audio_url: httpsUrl(value('audio_url'), 'Audio URL'),
+      video_url: httpsUrl(value('video_url'), 'Video URL'),
+      thumbnail_url: httpsUrl(value('thumbnail_url'), 'Thumbnail URL'),
+      published_at: publish ? (currentPublished || new Date().toISOString()) : null,
+    }
+    if (publish) assertPublishable('sermon', sermonPublishProblems(row))
+    const result = id
+      ? await db.from('sermons').update(row).eq('id', id)
+      : await db.from('sermons').insert(row)
+    if (result.error) throw new Error(result.error.message)
+    revalidatePath('/admin/sermons')
+    revalidatePath('/sermons')
+    revalidatePath(`/sermons/${slug}`)
+    revalidatePath('/')
+  })
 }
 
 type Speaker = { id: string; name: string }
@@ -66,8 +79,10 @@ type Sermon = {
   audio_url: string | null; video_url: string | null; thumbnail_url: string | null; published_at: string | null
 }
 
-function SermonForm({ item, speakers, series }: { item?: Sermon; speakers: Speaker[]; series: Series[] }) {
-  return <form action={saveSermon} className="space-y-3 rounded border bg-white p-5">
+function SermonForm({ item, speakers, series, feedback }: { item?: Sermon; speakers: Speaker[]; series: Series[]; feedback?: AdminFeedback }) {
+  const formKey = item?.id || 'new'
+  return <form id={`form-${formKey}`} action={saveSermon} className="space-y-3 rounded border bg-white p-5">
+    <FormFeedback feedback={feedback} formKey={formKey} />
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Title<input name="title" defaultValue={item?.title} required className="mt-1 block w-full rounded border p-2" /></label>
     <label className="block text-sm">URL slug<input name="slug" defaultValue={item?.slug} required readOnly={Boolean(item)} className="mt-1 block w-full rounded border p-2 read-only:bg-gray-100" /></label>
@@ -87,7 +102,8 @@ function SermonForm({ item, speakers, series }: { item?: Sermon; speakers: Speak
   </form>
 }
 
-export default async function AdminSermonsPage() {
+export default async function AdminSermonsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const feedback = await readFeedback(searchParams)
   const db = await adminDb()
   const [sermonsResult, speakersResult, seriesResult] = await Promise.all([
     db.from('sermons').select('*').order('preached_at', { ascending: false }),
@@ -102,11 +118,11 @@ export default async function AdminSermonsPage() {
   const series = (seriesResult.data || []) as unknown as Series[]
   return <div className="max-w-3xl space-y-8">
     <h1 className="text-2xl font-bold">Sermons</h1>
-    <section><h2 className="mb-3 text-lg font-semibold">New sermon</h2><SermonForm speakers={speakers} series={series} /></section>
+    <section><h2 className="mb-3 text-lg font-semibold">New sermon</h2><SermonForm speakers={speakers} series={series} feedback={feedback} /></section>
     <section className="space-y-4"><h2 className="text-lg font-semibold">Existing sermons</h2>
-      {sermons.map(item => <details key={item.id} className="rounded border bg-gray-50 p-4">
+      {sermons.map(item => <details key={item.id} open={feedbackTargets(feedback, item.id)} className="rounded border bg-gray-50 p-4">
         <summary className="cursor-pointer font-medium">{item.title} — {item.published_at ? 'Published' : 'Draft'}</summary>
-        <div className="mt-4"><SermonForm item={item} speakers={speakers} series={series} /></div>
+        <div className="mt-4"><SermonForm item={item} speakers={speakers} series={series} feedback={feedback} /></div>
       </details>)}
     </section>
   </div>

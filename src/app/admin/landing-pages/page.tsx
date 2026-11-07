@@ -1,5 +1,6 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
+import { requireAdmin } from '@/lib/admin-auth'
 
 const reserved = new Set(['plan-a-visit', 'sermons', 'events', 'groups', 'kids-youth', 'outreach', 'about', 'give', 'ministries', 'admin'])
 function secureUrl(value: FormDataEntryValue | null) {
@@ -11,6 +12,7 @@ function secureUrl(value: FormDataEntryValue | null) {
 
 async function saveLanding(form: FormData) {
   'use server'
+  await requireAdmin()
   const db = await adminDb()
   const id = String(form.get('id') || '')
   const slug = String(form.get('slug') || '').trim().toLowerCase()

@@ -20,6 +20,72 @@ legacy = importlib.util.module_from_spec(legacy_spec)
 legacy_spec.loader.exec_module(legacy)
 
 
+CHICAGO = ZoneInfo("America/Chicago")
+WEEKDAY_PLURALS = ["Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays", "Saturdays", "Sundays"]
+
+# Schedules the owner confirmed directly. They override the export's rule and
+# are recorded in the parsed row (schedule_source) and the migration report.
+OWNER_SCHEDULES = {
+    "expresso-service": {
+        "repeat_type": "weekly",
+        "repeat_interval": "7",
+        "repeat_end": "never",
+        "isoweekday": 7,
+        "hour": 8,
+        "minute": 30,
+        "typical_time": "8:30 AM",
+        "venue": "Cafe",
+        "source": "Owner, 2026-11-07: weekly, Sundays 8:30 AM America/Chicago, in the cafe",
+    },
+}
+
+
+def describe_recurrence(repeat_type, interval, start_date, certain_weekdays):
+    """Visitor-facing schedule text built only from the export's rule fields."""
+    if repeat_type == "weekly":
+        days = int(interval or 7)
+        weekday = WEEKDAY_PLURALS[start_date.isoweekday() - 1]
+        if days == 7:
+            return weekday
+        if days == 14:
+            return f"Every other {weekday[:-1]}"
+        if days % 7 == 0:
+            return f"Every {days // 7} weeks on {weekday}"
+        return f"Every {days} days"
+    if repeat_type == "certain_weekdays":
+        names = [WEEKDAY_PLURALS[int(d) - 1] for d in certain_weekdays if str(d).isdigit() and 1 <= int(d) <= 7]
+        if names:
+            return " and ".join(names)
+    return "Selected dates"
+
+
+def apply_owner_schedule(event):
+    schedule = OWNER_SCHEDULES.get(event["slug"])
+    if not schedule:
+        return event
+    anchor = date.fromisoformat(event["mec_start"])
+    anchor += timedelta(days=(schedule["isoweekday"] - anchor.isoweekday()) % 7)
+    start = datetime.combine(anchor, datetime.min.time(), CHICAGO).replace(hour=schedule["hour"], minute=schedule["minute"])
+    end = None
+    if event.get("end_datetime") and event.get("start_datetime"):
+        duration = datetime.fromisoformat(event["end_datetime"]) - datetime.fromisoformat(event["start_datetime"])
+        if timedelta(0) < duration <= timedelta(hours=12):
+            end = start + duration
+    return {
+        **event,
+        "repeat_type": schedule["repeat_type"],
+        "repeat_interval": schedule["repeat_interval"],
+        "repeat_end": schedule["repeat_end"],
+        "mec_start": anchor.isoformat(),
+        "start_datetime": start.isoformat(),
+        "end_datetime": end.isoformat() if end else None,
+        "typical_time": schedule["typical_time"],
+        "venue": schedule["venue"],
+        "recurrence_description": describe_recurrence(schedule["repeat_type"], schedule["repeat_interval"], anchor, []),
+        "schedule_source": schedule["source"],
+    }
+
+
 def local_datetime(meta, prefix, zone):
     date = meta.get(f"mec_{prefix}_date")
     if not date:
@@ -95,21 +161,25 @@ def parse_events(path):
         if str(meta.get("mec_repeat_status")) == "1":
             repeat_type = meta.get("mec_repeat_type") or "unknown"
             interval = meta.get("mec_repeat_interval") or "1"
-            recurring.append({
+            certain_weekdays = (meta.get("mec_date") or {}).get("repeat", {}).get("certain_weekdays") or []
+            mec_start = (item.get("mec") or {}).get("start")
+            recurring.append(apply_owner_schedule({
                 **base,
-                "recurrence_description": f"Every {interval} {repeat_type}",
+                "recurrence_description": describe_recurrence(
+                    repeat_type, interval, date.fromisoformat(mec_start) if mec_start else None, certain_weekdays
+                ) if mec_start or repeat_type != "weekly" else "Selected dates",
                 "typical_time": (item.get("time") or {}).get("start"),
                 "repeat_type": repeat_type,
                 "repeat_interval": interval,
                 "repeat_end": meta.get("mec_repeat_end") or "never",
                 "advanced_days": meta.get("mec_advanced_days") or [],
-                "certain_weekdays": (meta.get("mec_date") or {}).get("repeat", {}).get("certain_weekdays") or [],
+                "certain_weekdays": certain_weekdays,
                 "custom_days": meta.get("mec_in_days") or "",
-                "mec_start": (item.get("mec") or {}).get("start"),
+                "mec_start": mec_start,
                 "mec_end": (item.get("mec") or {}).get("end"),
                 "start_datetime": start,
                 "end_datetime": end,
-            })
+            }))
         else:
             one_time.append({**base, "start_datetime": start, "end_datetime": end})
     return recurring, one_time, issues, len(records)
@@ -122,9 +192,6 @@ def build_occurrences(events, today=None, horizon_days=90):
     rows, issues = [], []
     for event in events:
         slug = event["slug"]
-        if slug == "expresso-service":
-            issues.append({"type": "editorial_schedule_review", "slug": slug})
-            continue
         start = date.fromisoformat(event["mec_start"])
         if event["repeat_type"] == "custom_days":
             original = datetime.fromisoformat(event["start_datetime"])
@@ -193,8 +260,18 @@ def build_occurrences(events, today=None, horizon_days=90):
     return rows, issues
 
 
+def chicago_timestamp(value):
+    """WordPress post_date is site-local (Chicago) with no offset; attach the correct one."""
+    if not value or re.search(r"(Z|[+-]\d{2}:?\d{2})$", value):
+        return value
+    return datetime.fromisoformat(value.replace(" ", "T")).replace(tzinfo=CHICAGO).isoformat()
+
+
 def parse_sermons(path):
-    return legacy.parse_sermons(path)
+    sermons = legacy.parse_sermons(path)
+    for row in sermons["sermons"]:
+        row["published_at"] = chicago_timestamp(row.get("published_at"))
+    return sermons
 
 
 def main():
@@ -224,6 +301,7 @@ def main():
         "sermons": sermons["stats"],
         "event_issues": event_issues,
         "occurrence_issues": occurrence_issues,
+        "owner_schedules": [{"slug": e["slug"], "source": e["schedule_source"]} for e in recurring if e.get("schedule_source")],
         "occurrences": {"generated": len(occurrences), "source_events": len(set(x["recurring_slug"] for x in occurrences))},
         "sermon_issues": sermons["issues"],
         "event_issue_counts": dict(Counter(i["type"] for i in event_issues)),

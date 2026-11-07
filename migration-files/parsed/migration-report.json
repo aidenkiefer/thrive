@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-06T19:39:43-06:00",
+  "generated_at": "2026-11-07T03:12:53-06:00",
   "source_files": [
     "mec-events-20261107UTC0059.json",
     "thrivevineyardchurch.wordpress.2026-11-07.xml"
@@ -25,15 +25,16 @@
       "url": "https://www.signupgenius.com/go/10C0F4DACA92BA3FBC25-67318157-pjs"
     }
   ],
-  "occurrence_issues": [
+  "occurrence_issues": [],
+  "owner_schedules": [
     {
-      "type": "editorial_schedule_review",
-      "slug": "expresso-service"
+      "slug": "expresso-service",
+      "source": "Owner, 2026-11-07: weekly, Sundays 8:30 AM America/Chicago, in the cafe"
     }
   ],
   "occurrences": {
-    "generated": 43,
-    "source_events": 8
+    "generated": 56,
+    "source_events": 9
   },
   "sermon_issues": [
     {

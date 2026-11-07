@@ -9,9 +9,11 @@ export interface Speaker {
   title: string | null
   bio: string | null
   photo_url: string | null
-  email: string | null
   created_at: string
 }
+
+/** Public speaker columns. `email` is not readable with the anon key (supabase/README.md, column privacy). */
+const SPEAKER_COLUMNS = 'id,slug,name,title,bio,photo_url,created_at'
 
 export interface SermonSeries {
   id: string
@@ -65,7 +67,7 @@ export async function getLatestSermon(): Promise<Sermon | null> {
 
   const { data, error } = await supabase
     .from('sermons')
-    .select('*, speaker:speakers(*), series:sermon_series(*)')
+    .select(`*, speaker:speakers(${SPEAKER_COLUMNS}), series:sermon_series(*)`)
     .not('published_at', 'is', null)
     .order('preached_at', { ascending: false })
     .limit(1)
@@ -84,7 +86,7 @@ export async function getSermons(limit?: number): Promise<Sermon[]> {
 
   let query = supabase
     .from('sermons')
-    .select('*, speaker:speakers(*), series:sermon_series(*)')
+    .select(`*, speaker:speakers(${SPEAKER_COLUMNS}), series:sermon_series(*)`)
     .not('published_at', 'is', null)
     .order('preached_at', { ascending: false })
 
@@ -106,7 +108,7 @@ export async function getSermonBySlug(slug: string): Promise<Sermon | null> {
 
   const { data, error } = await supabase
     .from('sermons')
-    .select('*, speaker:speakers(*), series:sermon_series(*)')
+    .select(`*, speaker:speakers(${SPEAKER_COLUMNS}), series:sermon_series(*)`)
     .not('published_at', 'is', null)
     .eq('slug', slug)
     .single()
@@ -151,7 +153,7 @@ export async function getSermonsBySeriesSlug(seriesSlug: string): Promise<Sermon
 
   const { data, error } = await supabase
     .from('sermons')
-    .select('*, speaker:speakers(*), series:sermon_series(*)')
+    .select(`*, speaker:speakers(${SPEAKER_COLUMNS}), series:sermon_series(*)`)
     .not('published_at', 'is', null)
     .eq('series_id', seriesId)
     .order('preached_at', { ascending: false })

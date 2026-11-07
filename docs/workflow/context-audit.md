@@ -111,3 +111,13 @@
 - [ ] `context-flow.md` updated if structural changes found
 - [ ] `docs/INDEX.md` updated if new or removed docs found
 - [ ] `task-type-reference-map.md` updated if doc paths changed
+
+---
+
+## Multi-agent workflow checks (v2, add to every audit)
+
+- [ ] `docs/workflow/model-routing.md` model names still match each tool's picker (update the "checked" date)
+- [ ] `roles-and-lanes.md` lane paths still match the real directory layout (`find src -maxdepth 3 -type d`)
+- [ ] `.agents/skills/*/SKILL.md` still match how sessions actually ran. Read the last 2–3 QA reports' **Workflow friction** sections
+- [ ] **Harness stress-test:** each workflow component encodes an assumption about what agents can't do alone. Pick one (for example contract PRs, scribe checkpoints, or budgets) and ask whether it still pays for itself. Remove what newer models no longer need.
+- [ ] `AGENTS.md` is still under ~60 lines, with no rule duplicated in `CLAUDE.md` or `.cursor/rules/`

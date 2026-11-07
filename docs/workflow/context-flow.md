@@ -1,152 +1,53 @@
-# Context Flow Through Agent Workflow — Thrive Vineyard Website
+# Context flow
 
-**Purpose:** How context documents flow through the complete lifecycle of agent work in this project.
-
----
-
-## 1. Startup Context (What Agents Receive)
-
-### Core project files
-
-- **`.claude/CLAUDE.md`** — Minimal project memory: mission, how to work, hard constraints, project map
-- **`CLAUDE.md`** (root) — Fuller context: full architecture overview, commands, constraints, key doc map
-
-### Workflow documentation (`docs/workflow/`)
-
-- **`workflow.md`** — Entrypoint: specs vs tickets, session ritual, pointers
-- **`execution-rules.md`** — Runtime rules: budgets, constraints, what not to do, where things are
-- **`ticket-template.md`** — Bounded job structure for every task
-- **`skill-map.md`** — Layer 1/2/3 skills; ticket names the pack
-- **`task-type-reference-map.md`** — Task type → refs, agent type, domain skills
-- **`claude-opt.md`** — Not loaded at startup; planning agents and orchestration prompts read it when writing specs or tickets
-
-### What is NOT loaded at startup
-
-- Full specs (read once per session during hydration)
-- Design system / brand guide (loaded only for UI tasks)
-- Architecture/integration docs (loaded only for backend/data tasks)
-- Full skill registry (only skills named in the ticket are loaded)
+**Purpose:** What each tool loads automatically, what each role reads on demand, and how artifacts carry context between agents, so nobody re-reads what another agent already summarized.
 
 ---
 
-## 2. Session Hydration Pattern
+## 1. Loaded automatically (keep these small)
 
-See `workflow.md` → "Session start ritual" for full steps.
-
-**Summary:** When batching 3–8 related tickets on a sprint:
-1. Read the relevant spec(s) **once**
-2. Produce a Spec Summary (10–20 lines: constraints, invariants, key quotes)
-3. Reuse the summary for all tickets in the batch
-4. Do not re-read full specs per ticket
-
----
-
-## 3. Ticket-Driven Context Loading
-
-Each ticket defines exactly what context the agent loads.
-
-**Load order:**
-1. Required References first (from ticket)
-2. Small (S) before Large (L)
-3. HIGH priority before MEDIUM/LOW
-4. Optional References only if relevant or within budget
-
-### Sub-agent routing
-
-| Agent Type | Load these references | Load these skills |
+| Tool | Always loaded | Notes |
 |---|---|---|
-| `frontend-agent` | `docs/03-information-architecture.md`, `docs/07-design-system.md` (when created) | `frontend-design`, `react-best-practices`, `tailwind-patterns` |
-| `backend-agent` | `docs/05-content-models.md`, `docs/06-integrations.md` | `backend-dev-guidelines` |
-| `data-agent` | `docs/05-content-models.md`, `supabase/schema.sql` | `postgres-best-practices`, `backend-dev-guidelines` |
-| `seo-agent` | `docs/03-information-architecture.md`, `docs/04-seo-url-migration-map.md` | `seo` |
-| `admin-agent` | `docs/05-content-models.md`, `docs/06-integrations.md` | `backend-dev-guidelines`, `react-best-practices` |
-| `auth-agent` | `docs/06-integrations.md`, `src/middleware.ts` | `nextjs-supabase-auth`, `backend-dev-guidelines` |
-| `debugging-agent` | `docs/03-information-architecture.md`, `docs/06-integrations.md` | `systematic-debugging` |
-| `docs-agent` | `docs/INDEX.md`, `docs/workflow/workflow.md` | `writing-plans` |
+| Claude Code | `CLAUDE.md` → imports `AGENTS.md`; skill descriptions from `.claude/skills` (→ `.agents/skills`) | Skill bodies load only when invoked |
+| Codex | `AGENTS.md` (global → repo → nearest subdir); skill descriptions from `.agents/skills` | |
+| Cursor | `.cursor/rules/00-core.mdc` (always-apply) → points to `AGENTS.md`; skill descriptions from `.agents/skills` | |
 
----
+**Budget:** `AGENTS.md` stays under ~60 lines. Everything else is on demand. Add a rule only after an agent repeats a mistake.
 
-## 4. Reference Document Mapping by Task Type
+## 2. Read on demand, by role
 
-### UI Component or Page Design
+| Role | Reads | Never reads |
+|---|---|---|
+| PM | roles-and-lanes, latest QA report, PROGRESS status section, roadmap/spec, open PRs | Source code (beyond `ls`) |
+| Lane builder | Its lane section of the assignment + ≤3 "read first" refs + files it edits | Other lanes' sections, full specs every turn, PROGRESS.md |
+| Scribe | Caller's notes, git log/diff `--stat`, its session log | Source code |
+| Senior QA | Assignment header, PR bodies, session logs, then diffs (risk-weighted) | Specs (the assignment already distilled them) |
 
-```
-Ticket
-  ↓
-docs/03-information-architecture.md   [routes, page types, homepage sections]
-  ↓
-docs/07-design-system.md              [when created — colors, typography, tokens]
-  ↓
-Relevant spec                         [if available]
-```
-
-### Backend / API / Admin
+## 3. Handoff artifacts (the context pipeline)
 
 ```
-Ticket
-  ↓
-docs/05-content-models.md             [Supabase tables, fields, relationships]
-  ↓
-docs/06-integrations.md               [Supabase client, NextAuth, ChurchSuite]
-  ↓
-Relevant spec                         [if available]
+roadmap / specs / QA report (prev)
+        │  PM distills
+        ▼
+assignment  ──►  builder reads ONLY its lane section
+        │
+        ▼
+session log (scribe, per branch)  ──►  PR body (scribe pr)
+        │                                   │
+        └──────────────► senior QA ◄────────┘
+                             │  scribe consolidate
+                             ▼
+                PROGRESS.md + QA report  ──►  next PM
 ```
 
-### SEO / WordPress Migration
+Each artifact is the **compressed** form of the step before it. Downstream agents read the artifact, not the raw source. If a downstream agent has to re-read the source, the upstream artifact was too thin, and that goes in the QA report under "Workflow friction".
 
-```
-Ticket
-  ↓
-docs/03-information-architecture.md   [URL structure, route types]
-  ↓
-docs/04-seo-url-migration-map.md      [when written — old URLs → new URLs]
-  ↓
-next.config.ts                        [redirect list, if adding redirects]
-```
+## 4. Reference bundles for code tasks
 
----
+Unchanged from v1. Use `task-type-reference-map.md`. Load required references first, small before large, and optional references only within budget.
 
-## 5. The 3-Layer Skill System
+## 5. Session boundaries
 
-Skills are **lazy-loaded** — the ticket names which skills to invoke. See `skill-map.md`.
-
-### Layer 1: Core workflow process skills
-
-| When | Skill |
-|------|-------|
-| Starting a multi-step feature | `writing-plans` |
-| Clarifying requirements or design | `brainstorming` |
-| Implementing with tests | `test-driven-development` |
-| Any bug or failure | `systematic-debugging` |
-| Before claiming work complete | `verification-before-completion` |
-
-### Layer 2: Workflow management skills
-
-`using-git-worktrees` · `finishing-a-development-branch` · `dispatching-parallel-agents`
-
-### Layer 3: Project domain skills
-
-See `skill-map.md` Layer 3 for the full table. Common picks:
-
-- **Frontend:** `frontend-design`, `react-best-practices`, `nextjs-app-router-patterns`, `tailwind-patterns`, `shadcn`
-- **Backend/Data:** `backend-dev-guidelines`, `nextjs-supabase-auth`, `postgres-best-practices`
-- **SEO:** `seo`
-- **Deployment:** `vercel-deployment`
-
----
-
-## 6. Context Audit
-
-Run a quarterly context audit using `docs/workflow/context-audit.md`. Log results to `docs/workflow/audits/audit-results-[YYYY-MM].md`.
-
----
-
-## 7. Best Practices
-
-**For spec writers:** List all reference docs explicitly. Explain why each is needed. Keep specs focused — one feature per spec.
-
-**For ticket writers:** Minimize Allowed Files. Name skills explicitly. Set realistic budgets (8 reads, 6 grep/glob, 12 tool calls).
-
-**For agents:** Read spec once → Spec Summary → tickets. Respect Allowed Files. Stay within budgets. Load only named skills.
-
-**For humans:** Keep CLAUDE.md current. Review docs quarterly. Add new docs to `docs/INDEX.md` when created.
+- One chat per lane per session. Use `/clear` or a new chat when switching lanes or roles.
+- PM and QA always start in **fresh** sessions, so their judgment isn't colored by builder context.
+- For long lanes, run `/compact` after a ticket checkpoint. The session log is the durable memory, not the chat.

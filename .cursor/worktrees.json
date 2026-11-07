@@ -1,0 +1,6 @@
+{
+  "setup-worktree-unix": [
+    "npm ci --no-audit --no-fund --loglevel=error",
+    "cp \"$ROOT_WORKTREE_PATH/.env.local\" .env.local 2>/dev/null || true"
+  ]
+}

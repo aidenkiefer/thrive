@@ -1,69 +1,97 @@
-# Agent workflow — Thrive Vineyard Website
+# Agent workflow: entrypoint
 
-**Use this as the entrypoint for agentic work in this repo.**
+**Read this first.** It describes how three coding agents (Claude Code, Cursor, Codex) work on this repo at the same time without colliding, and how their work gets reviewed and merged.
 
----
-
-## How we work
-
-Bounded, cost-efficient: minimal persistent context, specs read once per session, every task is a ticket with Allowed Files and budgets.
-
-- **Execution rules:** [execution-rules.md](./execution-rules.md) — session strategy, budgets, constraints, where things are
-- **Ticket template:** [ticket-template.md](./ticket-template.md) — use for every agent task
-- **Skill map:** [skill-map.md](./skill-map.md) — workflow process skills (Layer 1); ticket names the pack
-- **Task-type reference map:** [task-type-reference-map.md](./task-type-reference-map.md) — which docs and domain skills to load for each code task type
-- **Context flow:** [context-flow.md](./context-flow.md) — how context flows through this project's workflow lifecycle
-- **Context audit:** [context-audit.md](./context-audit.md) — quarterly guide for keeping reference docs accurate
-- **Claude optimization:** [claude-opt.md](./claude-opt.md) — token-efficient prompting, session hygiene, output contracts. Canonical copy: `~/projects/workflow-core/claude-opt.md`
-
-**Specs** live in `docs/plans/specs/` (read-only; summarize once per session). **Tickets** live in `docs/plans/tickets/` (one bounded task per run). Do not re-attach full specs every turn; use a Spec Summary when batching 3–8 tickets.
-
-Human-only philosophy: `docs/workflow/philosophy.md` (do not load into agent context).
+> Version 2 (2026-11-07). This replaces the single-agent "one ticket per run" model with a **multi-agent session model**. The ticket system still exists. Tickets now live inside lane assignments.
 
 ---
 
-## Session start ritual
+## The operating model in one picture
 
-Use when batching 3–8 related tickets that share the same spec(s). Skip for single one-off tasks.
+```
+           ┌─────────────────────────────────────────────┐
+ PLAN      │ product-manager  (one fresh session, heavy)  │
+           │  reads status → writes ONE assignment file   │
+           │  with 3 lane assignments + merge order       │
+           └───────────────┬─────────────────────────────┘
+                           │ assignment committed to main
+        ┌──────────────────┼──────────────────┐
+ BUILD  ▼                  ▼                  ▼
+  claude/<slug>      cursor/<slug>      codex/<slug>      ← one worktree + branch each
+  lane-builder       lane-builder       lane-builder      ← optional subagents inside lane
+     │ scribe            │ scribe           │ scribe      ← cheap session logs, no conflicts
+     ▼                   ▼                  ▼
+   PR (gate ✔)        PR (gate ✔)        PR (gate ✔)
+        └──────────────────┼──────────────────┘
+ MERGE                     ▼
+           ┌─────────────────────────────────────────────┐
+           │ senior-qa (fresh session, heavy)             │
+           │  reviews in merge order → human "go" →       │
+           │  squash-merge → PROGRESS.md → QA report      │
+           └───────────────┬─────────────────────────────┘
+                           └──► QA report "next session" feeds the next PLAN
+```
 
-### When to use
+## The four rules that make it work
 
-- You are working through a sprint or multi-ticket chunk of related work
-- Multiple tickets reference the same spec or design doc
-- You want to amortize the cost of reading a large spec across several tickets
-
-### When to skip
-
-- Single one-off task with clear Allowed Files and no spec context needed
-- The ticket provides its own 1–2 read-only references
-- A short manual context note at the start of the message covers it
+1. **Lanes don't overlap.** Each lane owns a set of paths. No two agents edit the same file in one session. Shared "hot files" have exactly one owner per session. See [roles-and-lanes.md](./roles-and-lanes.md).
+2. **One agent = one worktree = one branch, named by tool.** `claude/*`, `cursor/*`, `codex/*`. See [git-and-worktrees.md](./git-and-worktrees.md).
+3. **Communication goes through files, never shared edits.** Assignments, per-branch session logs, PR bodies, and QA reports are each owned by one writer. Nothing like `PROGRESS.md` is edited by three agents at once.
+4. **Right model for the job.** Heavy models plan, review, and debug. Standard models implement. Fast models do docs and grunt work. See [model-routing.md](./model-routing.md).
 
 ---
 
-### Steps
+## Session lifecycle
 
-**1. Project memory is already loaded.**
-`.claude/CLAUDE.md` (or root `CLAUDE.md`) is already in context. Do not load more global instructions.
+| Phase | Who | Skill | Output | Model tier |
+|---|---|---|---|---|
+| 1. Plan | Any one tool, fresh session | `product-manager` | `docs/agents/assignments/<date>-<name>.md` | Heavy |
+| 2. Set up | Human (or each agent) | `scripts/agents/worktree.sh new <tool> <slug>` | 3 worktrees on `<tool>/<slug>` branches | — |
+| 3. Build | Claude, Cursor, Codex in parallel | `lane-builder` (+ `scribe`) | Commits, session log, PR | Standard (escalate per ticket) |
+| 4. Review + merge | One tool, fresh session | `senior-qa` (+ `scribe consolidate`) | Merged PRs, `PROGRESS.md`, `docs/agents/qa/<date>-<name>.md` | Heavy |
+| 5. Clean up | QA or human | `scripts/agents/worktree.sh prune` | Removed worktrees and branches | — |
 
-**2. Read the spec(s) for the next chunk of work — once.**
-Typically from `docs/plans/specs/` or the current sprint doc in `docs/plans/`.
-Read each spec **once**. Do not re-read it for every ticket.
+**Human checkpoints (you):** approve the plan (end of phase 1), relay blockers between agents if needed (phase 3), and say "go" before anything merges to `main`, because `main` is production (phase 4).
 
-**3. Produce a Spec Summary (10–20 lines).**
-Extract:
-- Constraints and invariants (data access rules, immutable entities, service-layer rules)
-- Success metrics or definition of done for the chunk
-- Key reference quotes — snippets to re-anchor on if needed
+### Launch prompts (copy-paste)
 
-**4. Confirm scope.**
-- Current sprint or phase
-- Allowed Files defaults and budget defaults: max 8 file reads, 6 grep/glob, 12 tool calls
+```text
+# Phase 1, in any tool:
+Use the product-manager skill. Goal for this session: <one sentence, or "pick from the roadmap">.
 
-**5. Run tickets from the summary.**
-- Use Spec Summary + each ticket (Task, Allowed Files, Read-only references, Budget, Done criteria)
-- Do not re-attach full spec(s) to every message
-- If a ticket needs a detail not in the summary, re-anchor to one small quote rather than reloading the whole doc
+# Phase 3, in each tool, from inside its worktree:
+Use the lane-builder skill. Assignment: docs/agents/assignments/<file>.md. Lane: <data|experience|ops>.
 
-**6. At context boundary.**
-- Use /clear (or new thread) when switching to unrelated work
-- Optionally save a short session summary (decisions, modified files) to `docs/plans/summaries/`
+# Phase 4, in a fresh session (main checkout):
+Use the senior-qa skill. Assignment: docs/agents/assignments/<file>.md.
+```
+
+The product-manager prints these prompts, already filled in, at the end of phase 1.
+
+---
+
+## When NOT to use the full model
+
+- **Tiny fix (one file, under 15 minutes):** one agent, one branch `<tool>/fix-<slug>`, gate, PR. Skip the PM and QA ceremony. QA reviews it with the next batch, or you merge it yourself after CI is green.
+- **Only one or two lanes have real work:** run only those lanes. Never invent work to fill a lane.
+- **Exploration or brainstorming:** use a plain session (`brainstorming` skill). No worktree needed until code changes start.
+
+---
+
+## Where everything lives
+
+| What | Path |
+|---|---|
+| Agent skills (cross-tool) | `.agents/skills/` (Claude Code reads it through the `.claude/skills` symlink) |
+| Assignments, session logs, QA reports | `docs/agents/` |
+| Specs / tickets / progress | `docs/plans/specs/`, `docs/plans/tickets/`, `docs/plans/PROGRESS.md` |
+| Runtime rules + constraints | [execution-rules.md](./execution-rules.md) |
+| Lanes + ownership map | [roles-and-lanes.md](./roles-and-lanes.md) |
+| Branches, worktrees, PRs, merging | [git-and-worktrees.md](./git-and-worktrees.md) |
+| Model + effort selection | [model-routing.md](./model-routing.md) |
+| CI, quality gate, automations | [devops-automation.md](./devops-automation.md) |
+| Reusing this on another project | [portability.md](./portability.md) |
+| Ticket shape | [ticket-template.md](./ticket-template.md) |
+| Skills by workflow event / domain | [skill-map.md](./skill-map.md), [task-type-reference-map.md](./task-type-reference-map.md) |
+| Token discipline | [claude-opt.md](./claude-opt.md) |
+| Research behind these choices | [research-sources.md](./research-sources.md) |

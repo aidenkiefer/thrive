@@ -1,0 +1,16 @@
+---
+description: Core rules for every agent task in this repository (points to the canonical AGENTS.md).
+globs: "**/*"
+alwaysApply: true
+---
+
+# Core rules (Cursor)
+
+Canonical project brief and hard constraints: **`AGENTS.md`**. Workflow: **`docs/workflow/workflow.md`**.
+
+- **Own worktree + `cursor/<lane>-<slug>` branch.** Open the worktree folder from `scripts/agents/worktree.sh new cursor …` in its own window. Never edit the main checkout. Check `git branch --show-current` before the first edit.
+- **Stay in your lane** (`docs/workflow/roles-and-lanes.md`). Other files → cross-lane request via the `scribe` skill.
+- **Skills** in `.agents/skills/`: `lane-builder` to execute an assignment, `scribe` for logs and PR bodies (use a fast model), `product-manager` / `senior-qa` when asked.
+- **Model per ticket** (`docs/workflow/model-routing.md`): fast model for docs and grunt work, standard for implementation, heavy for planning and unknown bugs. Use best-of-N across model families for hard UI choices.
+- **Plan mode** (Shift+Tab) for M tickets. Start a new chat when switching tickets or when the agent repeats mistakes.
+- **`scripts/agents/gate.sh` must pass before every push.** Open the PR with the template; never merge your own PR.

@@ -1,6 +1,6 @@
 # Claude optimization guide
 
-**Purpose:** General guidelines for prompting Claude Code / Cursor agents so work stays **bounded, correct, and token-efficient**. Use when writing specs, tickets, multi-repo orchestration prompts, or any long agent session.
+**Purpose:** General guidelines for prompting Claude Code / Cursor / Codex agents so work stays **bounded, correct, and token-efficient**. Use when writing specs, tickets, multi-repo orchestration prompts, or any long agent session.
 
 **Audience:** Humans writing prompts; **planning agents** (spec/ticket writers); **orchestration agents** (workflow sync, portfolio updates).
 
@@ -96,11 +96,7 @@ No step-by-step play-by-play. No repeating the user prompt. No quoting canonical
 
 ## 7. Model choice
 
-| Model | Use for |
-|-------|---------|
-| **Haiku** | Mechanical, well-scoped edits (template sync, copy paths, populate tables from a checklist) when instructions are explicit |
-| **Sonnet** | Default implementation, UI, multi-file reasoning |
-| **Opus** | Hard architecture / ambiguous debugging only |
+See **`model-routing.md`**: tiers T0 (fast) → T3 (max) mapped per tool, switching rules, and defaults by activity. The short version: heavy models plan, review, and debug unknowns; standard models implement; fast models (scribe) document.
 
 ---
 
@@ -121,8 +117,18 @@ Reads      → path + line range; never re-read canonical docs
 Output     → 3 bullets + file list + table
 Specs      → once → Spec Summary → tickets
 Skills     → ticket pack only; Layer 3 map for paths
-Models     → Haiku for mechanical; Sonnet default
+Models     → model-routing.md tiers; T1 default; scribe on T0
+Parallel   → one worktree per tool; artifacts (assignment → session log → PR → QA report), not shared edits
 ```
+
+---
+
+## 10. Multi-tool notes
+
+- **One canonical brief:** `AGENTS.md`. Claude imports it from `CLAUDE.md`; Cursor's always-apply rule points to it. Don't duplicate rules across files; duplication drifts and costs tokens in every tool.
+- **Codex:** prompts carry goal, context, constraints, and done-when (our compact ticket form). Use `/review` for second opinions and `/compact` for long chats.
+- **Cursor:** plan mode (Shift+Tab) for M tickets; best-of-N across model families for UI choices; start a new chat when the agent repeats mistakes.
+- **Every tool:** each subagent pays its own startup context. Spawn one only when it saves more context than it costs, which usually means broad reads or independent parallel work.
 
 ---
 

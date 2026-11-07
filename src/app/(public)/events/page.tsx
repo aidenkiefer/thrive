@@ -32,6 +32,7 @@ export default async function EventsPage({ searchParams }: Props) {
 
   return <Section background="light"><Container>
     <Heading level="h1" className="mb-6">Upcoming Events</Heading>
+    <p className="mb-6"><a href="/events/calendar" className="text-sm font-medium text-brand-800 underline">Download calendar file</a></p>
     <form method="get" className="mb-8 flex flex-wrap items-end gap-3">
       <label className="text-sm font-medium">Month
         <select name="month" defaultValue={selectedMonth} className="mt-1 block rounded border bg-white px-3 py-2">

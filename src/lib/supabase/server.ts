@@ -17,7 +17,7 @@ export async function createClient() {
             cookieStore.set(name, value, options)
           )
         } catch {
-          // Server Component — cookie writes are best-effort; middleware refreshes sessions
+          // Server Component — cookie writes are best-effort (no Supabase Auth sessions are used)
         }
       },
     },

@@ -4,10 +4,8 @@
 
 ## Status
 <!-- ≤3 lines, kept current by scribe: done / in progress / parked / blocked -->
-D1 T1 done (d16db4d): `requireAdmin()` added and called first in all 10 inline admin server actions.
-D2 T1 done (ee2d908): publish-time validation for announcements, sermons, events, recurring events, occurrences.
-D3 T2 done (fdf4b0a): idempotent June->current migration + RLS review; tightened occurrences policy.
-BLOCKED: owner decision on anon-readable speakers.email, staff.email/phone (see blocker entry).
+D1-D4 done: d16db4d (D1), ee2d908 (D2), fdf4b0a (D3), d612aa3 (D4 readiness + Express(o) as recurring).
+D5 next. Lane NOT blocked; owner decision on speakers/staff contact columns is non-blocking (see blocker entry).
 
 ## Entries
 <!-- Append-only, oldest first. Types: decision · change · blocker · request · note -->
@@ -24,3 +22,7 @@ BLOCKED: owner decision on anon-readable speakers.email, staff.email/phone (see 
   Key files: `supabase/migrations/20261107000000_mvp_foundation.sql`, `supabase/README.md`, `supabase/schema.sql`.
 - `03:10` **decision**: tightened `public_read_event_occurrences` (schema.sql + migration) to require the parent recurring event be published. June policy exposed draft events' occurrences via the anon key. Public queries already filter in JS, so pages are unaffected. (opus-5.5) [fdf4b0a]
 - `03:10` **blocker**: owner decision needed. `speakers.email`, `staff.email`, `staff.phone` are anon-readable (all-rows policies; RLS is row-level). Options: keep public, leave empty, or revoke column select from anon. Recommended: leave speakers.email empty or revoke; staff contact per owner. Not changed.
+- `03:14` **change** D4 T1/opus-5.5: import readiness pass. Counts 120 sermons, 80 events (55+25); slugs unique + admin-valid (234); 0/246 datetimes with wrong Chicago offset; DST checked 2026-03-08 and 2026-11-01; relationships pass; seed re-run idempotent after fix. Express(o) resolved via OWNER_SCHEDULES (weekly Sun 8:30 AM Chicago, cafe; source "owner, 2026-11-07"); 13 occurrences 2026-11-08..2027-01-31; editorial hold removed. (opus-5.5) [d612aa3]
+  Bugs fixed: (1) sermon published_at now Chicago offset, 180/180 match post_date_gmt; (2) recurrence_description now from rule fields ("Wednesdays", "Every other Thursday", "Selected dates"); (3) seed-current.ts series published_at = earliest sermon, not now(). parsed/ regenerated (occurrences 43->56).
+  Key files: `migration-files/parse-current-exports.py`, `migration-files/parsed/import-readiness.md`, `scripts/seed-current.ts`, `migration-files/parsed/event_occurrences.json`, `migration-files/parsed/migration-report.json`, `migration-files/parsed/sermons.json`.
+- `03:14` **note**: seed re-run overwrites admin edits on imported slugs. Documented as owner note in import-readiness.md.

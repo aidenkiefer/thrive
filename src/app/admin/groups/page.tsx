@@ -1,52 +1,52 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
-
-const safeUrl = (value: FormDataEntryValue | null) => {
-  const url = String(value || '').trim()
-  if (!url) return null
-  if (!url.startsWith('https://')) throw new Error('Signup links must use HTTPS')
-  return url
-}
+import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
+import { assertPublishable, fail, formUrlPublishProblems, httpsUrl, requireSlug, requireText } from '@/lib/admin-validation'
+import { AdminForm } from '../_components/admin-form'
+import { FormFeedback, feedbackTargets, formInstanceKey } from '../_components/form-feedback'
 
 async function saveGroup(form: FormData) {
   'use server'
   await requireAdmin()
-  const db = await adminDb()
   const id = String(form.get('id') || '')
-  const slug = String(form.get('slug') || '').trim().toLowerCase()
-  const name = String(form.get('name') || '').trim()
-  if (!name || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new Error('Name and valid URL slug are required')
-  let publishedAt: string | null = null
-  if (id) {
-    const { data, error } = await db.from('groups').select('slug,published_at').eq('id', id).single()
-    if (error) throw new Error(error.message)
-    if (data.slug !== slug) throw new Error('Changing a group URL requires a redirect plan')
-    publishedAt = data.published_at
-  } else {
-    const { data, error } = await db.from('groups').select('id').eq('slug', slug).maybeSingle()
-    if (error) throw new Error(error.message)
-    if (data) throw new Error('That group URL already exists')
-  }
-  const publish = form.get('published') === 'on'
-  const row = {
-    slug, name,
-    description: String(form.get('description') || '').trim() || null,
-    short_summary: String(form.get('short_summary') || '').trim() || null,
-    category: String(form.get('category') || '').trim() || null,
-    meeting_schedule: String(form.get('meeting_schedule') || '').trim() || null,
-    location: String(form.get('location') || '').trim() || null,
-    leader: String(form.get('leader') || '').trim() || null,
-    contact_email: String(form.get('contact_email') || '').trim() || null,
-    contact_phone: String(form.get('contact_phone') || '').trim() || null,
-    featured_image_url: safeUrl(form.get('featured_image_url')),
-    churchsuite_form_url: safeUrl(form.get('churchsuite_form_url')),
-    is_open: form.get('is_open') === 'on',
-    published_at: publish ? (publishedAt || new Date().toISOString()) : null,
-  }
-  const result = id ? await db.from('groups').update(row).eq('id', id) : await db.from('groups').insert(row)
-  if (result.error) throw new Error(result.error.message)
-  revalidatePath('/admin/groups'); revalidatePath('/groups'); revalidatePath(`/groups/${slug}`); revalidatePath('/')
+  await saveWithFeedback('/admin/groups', id || 'new', async () => {
+    const db = await adminDb()
+    const text = (key: string) => String(form.get(key) || '').trim() || null
+    const name = requireText(String(form.get('name') || ''), 'Name')
+    const slug = requireSlug(String(form.get('slug') || ''))
+    let publishedAt: string | null = null
+    if (id) {
+      const { data, error } = await db.from('groups').select('slug,published_at').eq('id', id).single()
+      if (error) throw new Error(error.message)
+      if (data.slug !== slug) fail('Changing a group URL requires a redirect plan')
+      publishedAt = data.published_at
+    } else {
+      const { data, error } = await db.from('groups').select('id').eq('slug', slug).maybeSingle()
+      if (error) throw new Error(error.message)
+      if (data) fail('That group URL already exists')
+    }
+    const publish = form.get('published') === 'on'
+    const row = {
+      slug, name,
+      description: text('description'),
+      short_summary: text('short_summary'),
+      category: text('category'),
+      meeting_schedule: text('meeting_schedule'),
+      location: text('location'),
+      leader: text('leader'),
+      contact_email: text('contact_email'),
+      contact_phone: text('contact_phone'),
+      featured_image_url: httpsUrl(String(form.get('featured_image_url') || ''), 'Image URL'),
+      churchsuite_form_url: httpsUrl(String(form.get('churchsuite_form_url') || ''), 'Signup URL'),
+      is_open: form.get('is_open') === 'on',
+      published_at: publish ? (publishedAt || new Date().toISOString()) : null,
+    }
+    if (publish) assertPublishable('group', formUrlPublishProblems(row.churchsuite_form_url, 'Signup URL'))
+    const result = id ? await db.from('groups').update(row).eq('id', id) : await db.from('groups').insert(row)
+    if (result.error) throw new Error(result.error.message)
+    revalidatePath('/admin/groups'); revalidatePath('/groups'); revalidatePath(`/groups/${slug}`); revalidatePath('/')
+  })
 }
 
 type Group = {
@@ -56,8 +56,10 @@ type Group = {
   churchsuite_form_url: string | null; is_open: boolean; published_at: string | null;
 }
 
-function GroupForm({ item }: { item?: Group }) {
-  return <form action={saveGroup} className="space-y-3 rounded border bg-white p-5">
+function GroupForm({ item, feedback }: { item?: Group; feedback?: AdminFeedback }) {
+  const formKey = item?.id || 'new'
+  return <AdminForm key={formInstanceKey(feedback, formKey)} id={`form-${formKey}`} action={saveGroup} className="space-y-3 rounded border bg-white p-5">
+    <FormFeedback feedback={feedback} formKey={formKey} />
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Name<input name="name" defaultValue={item?.name} required className="mt-1 block w-full rounded border p-2" /></label>
     <label className="block text-sm">URL slug<input name="slug" defaultValue={item?.slug} required readOnly={Boolean(item)} className="mt-1 block w-full rounded border p-2 read-only:bg-gray-100" /></label>
@@ -74,19 +76,20 @@ function GroupForm({ item }: { item?: Group }) {
     <label className="flex gap-2 text-sm"><input type="checkbox" name="is_open" defaultChecked={item?.is_open ?? true} />Open to new participants</label>
     <label className="flex gap-2 text-sm"><input type="checkbox" name="published" defaultChecked={Boolean(item?.published_at)} />Published</label>
     <button type="submit" className="rounded bg-brand-800 px-4 py-2 text-white">{item ? 'Save group' : 'Create group'}</button>
-  </form>
+  </AdminForm>
 }
 
-export default async function AdminGroupsPage() {
+export default async function AdminGroupsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const feedback = await readFeedback(searchParams)
   const db = await adminDb()
   const { data, error } = await db.from('groups').select('*').order('name')
   if (error) throw new Error(error.message)
   const items = (data || []) as unknown as Group[]
   return <div className="max-w-3xl space-y-8">
     <h1 className="text-2xl font-bold">Groups</h1>
-    <section><h2 className="mb-3 text-lg font-semibold">New group</h2><GroupForm /></section>
+    <section><h2 className="mb-3 text-lg font-semibold">New group</h2><GroupForm feedback={feedback} /></section>
     <section className="space-y-4"><h2 className="text-lg font-semibold">Existing groups</h2>
-      {items.map(item => <details key={item.id} className="rounded border bg-gray-50 p-4"><summary className="cursor-pointer font-medium">{item.name} — {item.published_at ? 'Published' : 'Draft'}</summary><div className="mt-4"><GroupForm item={item} /></div></details>)}
+      {items.map(item => <details key={item.id} open={feedbackTargets(feedback, item.id)} className="rounded border bg-gray-50 p-4"><summary className="cursor-pointer font-medium">{item.name} — {item.published_at ? 'Published' : 'Draft'}</summary><div className="mt-4"><GroupForm item={item} feedback={feedback} /></div></details>)}
     </section>
   </div>
 }

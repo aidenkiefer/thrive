@@ -5,7 +5,8 @@ import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-
 import {
   assertPublishable, fail, httpsUrl, parseDateOnly, requireSlug, requireText, sermonPublishProblems,
 } from '@/lib/admin-validation'
-import { FormFeedback, feedbackTargets } from '../_components/form-feedback'
+import { AdminForm } from '../_components/admin-form'
+import { FormFeedback, feedbackTargets, formInstanceKey } from '../_components/form-feedback'
 
 const list = (value: FormDataEntryValue | null) =>
   String(value || '').split(',').map(item => item.trim()).filter(Boolean)
@@ -81,7 +82,7 @@ type Sermon = {
 
 function SermonForm({ item, speakers, series, feedback }: { item?: Sermon; speakers: Speaker[]; series: Series[]; feedback?: AdminFeedback }) {
   const formKey = item?.id || 'new'
-  return <form id={`form-${formKey}`} action={saveSermon} className="space-y-3 rounded border bg-white p-5">
+  return <AdminForm key={formInstanceKey(feedback, formKey)} id={`form-${formKey}`} action={saveSermon} className="space-y-3 rounded border bg-white p-5">
     <FormFeedback feedback={feedback} formKey={formKey} />
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Title<input name="title" defaultValue={item?.title} required className="mt-1 block w-full rounded border p-2" /></label>
@@ -99,7 +100,7 @@ function SermonForm({ item, speakers, series, feedback }: { item?: Sermon; speak
     <label className="block text-sm">Thumbnail URL<input name="thumbnail_url" defaultValue={item?.thumbnail_url || ''} className="mt-1 block w-full rounded border p-2" /></label>
     <label className="flex gap-2 text-sm"><input type="checkbox" name="published" defaultChecked={Boolean(item?.published_at)} />Published</label>
     <button type="submit" className="rounded bg-brand-800 px-4 py-2 text-white">{item ? 'Save sermon' : 'Create sermon'}</button>
-  </form>
+  </AdminForm>
 }
 
 export default async function AdminSermonsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {

@@ -3,10 +3,11 @@ import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import {
-  assertEndAfterStart, assertPublishable, fail, httpsUrl, oneTimeEventPublishProblems,
+  assertEndAfterStart, assertPublishable, fail, formUrlPublishProblems, httpsUrl, oneTimeEventPublishProblems,
   parseInstant, requireInstant, requireSlug, requireText,
 } from '@/lib/admin-validation'
-import { FormFeedback, feedbackTargets } from '../_components/form-feedback'
+import { AdminForm } from '../_components/admin-form'
+import { FormFeedback, feedbackTargets, formInstanceKey } from '../_components/form-feedback'
 import Link from 'next/link'
 
 async function saveEvent(formData: FormData) {
@@ -50,7 +51,7 @@ async function saveEvent(formData: FormData) {
       external_url: httpsUrl(value('external_url'), 'Other action URL'),
       published_at: publish ? (currentPublishedAt || new Date().toISOString()) : null,
     }
-    if (publish) assertPublishable('event', oneTimeEventPublishProblems(row))
+    if (publish) assertPublishable('event', [...oneTimeEventPublishProblems(row), ...formUrlPublishProblems(row.churchsuite_form_url, 'ChurchSuite URL')])
     const result = id
       ? await db.from('one_time_events').update(row).eq('id', id)
       : await db.from('one_time_events').insert(row)
@@ -71,7 +72,7 @@ type EventRow = {
 
 function EventForm({ item, feedback }: { item?: EventRow; feedback?: AdminFeedback }) {
   const formKey = item?.id || 'new'
-  return <form id={`form-${formKey}`} action={saveEvent} className="space-y-3 rounded border bg-white p-5">
+  return <AdminForm key={formInstanceKey(feedback, formKey)} id={`form-${formKey}`} action={saveEvent} className="space-y-3 rounded border bg-white p-5">
     <FormFeedback feedback={feedback} formKey={formKey} />
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Name<input name="name" defaultValue={item?.name} required className="mt-1 block w-full rounded border p-2" /></label>
@@ -88,7 +89,7 @@ function EventForm({ item, feedback }: { item?: EventRow; feedback?: AdminFeedba
     <label className="block text-sm">Other action URL<input name="external_url" defaultValue={item?.external_url || ''} className="mt-1 block w-full rounded border p-2" /></label>
     <label className="flex gap-2 text-sm"><input type="checkbox" name="published" defaultChecked={Boolean(item?.published_at)} />Published</label>
     <button type="submit" className="rounded bg-brand-800 px-4 py-2 text-white">{item ? 'Save event' : 'Create event'}</button>
-  </form>
+  </AdminForm>
 }
 
 export default async function AdminEventsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {

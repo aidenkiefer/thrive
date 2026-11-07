@@ -3,10 +3,11 @@ import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import {
-  assertEndAfterStart, assertPublishable, fail, httpsUrl, parseInstant, recurringEventPublishProblems,
+  assertEndAfterStart, assertPublishable, fail, formUrlPublishProblems, httpsUrl, parseInstant, recurringEventPublishProblems,
   requireInstant, requireSlug, requireText,
 } from '@/lib/admin-validation'
-import { FormFeedback, feedbackTargets } from '../_components/form-feedback'
+import { AdminForm } from '../_components/admin-form'
+import { FormFeedback, feedbackTargets, formInstanceKey } from '../_components/form-feedback'
 
 async function saveRecurring(form: FormData) {
   'use server'
@@ -48,7 +49,7 @@ async function saveRecurring(form: FormData) {
       external_url: httpsUrl(value('external_url'), 'Other action URL'),
       published_at: publish ? (publishedAt || new Date().toISOString()) : null,
     }
-    if (publish) assertPublishable('recurring event', recurringEventPublishProblems(row))
+    if (publish) assertPublishable('recurring event', [...recurringEventPublishProblems(row), ...formUrlPublishProblems(row.churchsuite_form_url, 'ChurchSuite URL')])
     const result = id ? await db.from('recurring_events').update(row).eq('id', id) : await db.from('recurring_events').insert(row)
     if (result.error) throw new Error(result.error.message)
     revalidatePath('/admin/recurring-events'); revalidatePath('/admin/events'); revalidatePath('/events'); revalidatePath(`/events/${slug}`); revalidatePath('/')
@@ -96,7 +97,7 @@ type Occurrence = {
 
 function RecurringForm({ item, feedback }: { item?: Recurring; feedback?: AdminFeedback }) {
   const formKey = item?.id || 'rec-new'
-  return <form id={`form-${formKey}`} action={saveRecurring} className="space-y-3 rounded border bg-white p-5">
+  return <AdminForm key={formInstanceKey(feedback, formKey)} id={`form-${formKey}`} action={saveRecurring} className="space-y-3 rounded border bg-white p-5">
     <FormFeedback feedback={feedback} formKey={formKey} />
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Name<input name="name" defaultValue={item?.name} required className="mt-1 block w-full rounded border p-2" /></label>
@@ -113,12 +114,12 @@ function RecurringForm({ item, feedback }: { item?: Recurring; feedback?: AdminF
     <label className="block text-sm">Other action URL<input name="external_url" defaultValue={item?.external_url || ''} className="mt-1 block w-full rounded border p-2" /></label>
     <label className="flex gap-2 text-sm"><input type="checkbox" name="published" defaultChecked={Boolean(item?.published_at)} />Published</label>
     <button type="submit" className="rounded bg-brand-800 px-4 py-2 text-white">{item ? 'Save event' : 'Create event'}</button>
-  </form>
+  </AdminForm>
 }
 
 function OccurrenceForm({ item, events, feedback }: { item?: Occurrence; events: Recurring[]; feedback?: AdminFeedback }) {
   const formKey = item?.id || 'occ-new'
-  return <form id={`form-${formKey}`} action={saveOccurrence} className="grid gap-3 rounded border bg-white p-4 md:grid-cols-2">
+  return <AdminForm key={formInstanceKey(feedback, formKey)} id={`form-${formKey}`} action={saveOccurrence} className="grid gap-3 rounded border bg-white p-4 md:grid-cols-2">
     <div className="md:col-span-2"><FormFeedback feedback={feedback} formKey={formKey} /></div>
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Recurring event<select name="recurring_event_id" defaultValue={item?.recurring_event_id || ''} required className="mt-1 block w-full rounded border p-2"><option value="">Select event</option>{events.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select></label>
@@ -128,7 +129,7 @@ function OccurrenceForm({ item, events, feedback }: { item?: Occurrence; events:
     <label className="block text-sm">Notes<input name="notes" defaultValue={item?.notes || ''} className="mt-1 block w-full rounded border p-2" /></label>
     <label className="flex gap-2 text-sm"><input type="checkbox" name="cancelled" defaultChecked={item?.cancelled} />Cancelled</label>
     <button type="submit" className="rounded bg-brand-800 px-4 py-2 text-white">{item ? 'Save occurrence' : 'Add occurrence'}</button>
-  </form>
+  </AdminForm>
 }
 
 export default async function AdminRecurringEventsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {

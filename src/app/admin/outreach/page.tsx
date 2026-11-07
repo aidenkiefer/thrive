@@ -1,52 +1,53 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
-
-function https(value: FormDataEntryValue | null) {
-  const url = String(value || '').trim()
-  if (!url) return null
-  if (!url.startsWith('https://')) throw new Error('Links must use HTTPS')
-  return url
-}
+import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
+import { assertPublishable, fail, formUrlPublishProblems, httpsUrl, requireSlug, requireText } from '@/lib/admin-validation'
+import { AdminForm } from '../_components/admin-form'
+import { FormFeedback, feedbackTargets, formInstanceKey } from '../_components/form-feedback'
 
 async function saveOutreach(form: FormData) {
   'use server'
   await requireAdmin()
-  const db = await adminDb()
   const id = String(form.get('id') || '')
-  const slug = String(form.get('slug') || '').trim().toLowerCase()
-  const name = String(form.get('name') || '').trim()
-  if (!name || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new Error('Name and valid URL slug are required')
-  let publishedAt: string | null = null
-  if (id) {
-    const { data, error } = await db.from('outreach').select('slug,published_at').eq('id', id).single()
-    if (error) throw new Error(error.message)
-    if (data.slug !== slug) throw new Error('Changing an outreach URL requires a redirect plan')
-    publishedAt = data.published_at
-  } else {
-    const { data, error } = await db.from('outreach').select('id').eq('slug', slug).maybeSingle()
-    if (error) throw new Error(error.message)
-    if (data) throw new Error('That outreach URL already exists')
-  }
-  const start = String(form.get('start_date') || '') || null
-  const end = String(form.get('end_date') || '') || null
-  if (start && Number.isNaN(Date.parse(start)) || end && Number.isNaN(Date.parse(end))) throw new Error('Enter valid dates')
-  if (start && end && end < start) throw new Error('End date must follow start date')
-  const row = {
-    slug, name,
-    description: String(form.get('description') || '').trim() || null,
-    short_summary: String(form.get('short_summary') || '').trim() || null,
-    featured_image_url: https(form.get('featured_image_url')),
-    contact_email: String(form.get('contact_email') || '').trim() || null,
-    volunteer_signup_url: https(form.get('volunteer_signup_url')),
-    churchsuite_form_url: https(form.get('churchsuite_form_url')),
-    is_ongoing: form.get('is_ongoing') === 'on',
-    start_date: start, end_date: end,
-    published_at: form.get('published') === 'on' ? (publishedAt || new Date().toISOString()) : null,
-  }
-  const result = id ? await db.from('outreach').update(row).eq('id', id) : await db.from('outreach').insert(row)
-  if (result.error) throw new Error(result.error.message)
-  revalidatePath('/admin/outreach'); revalidatePath('/outreach'); revalidatePath(`/outreach/${slug}`); revalidatePath('/')
+  await saveWithFeedback('/admin/outreach', id || 'new', async () => {
+    const db = await adminDb()
+    const text = (key: string) => String(form.get(key) || '').trim() || null
+    const name = requireText(String(form.get('name') || ''), 'Name')
+    const slug = requireSlug(String(form.get('slug') || ''))
+    let publishedAt: string | null = null
+    if (id) {
+      const { data, error } = await db.from('outreach').select('slug,published_at').eq('id', id).single()
+      if (error) throw new Error(error.message)
+      if (data.slug !== slug) fail('Changing an outreach URL requires a redirect plan')
+      publishedAt = data.published_at
+    } else {
+      const { data, error } = await db.from('outreach').select('id').eq('slug', slug).maybeSingle()
+      if (error) throw new Error(error.message)
+      if (data) fail('That outreach URL already exists')
+    }
+    const start = String(form.get('start_date') || '') || null
+    const end = String(form.get('end_date') || '') || null
+    if ((start && Number.isNaN(Date.parse(start))) || (end && Number.isNaN(Date.parse(end)))) fail('Enter valid dates')
+    if (start && end && end < start) fail('End date must follow start date')
+    const publish = form.get('published') === 'on'
+    const row = {
+      slug, name,
+      description: text('description'),
+      short_summary: text('short_summary'),
+      featured_image_url: httpsUrl(String(form.get('featured_image_url') || ''), 'Image URL'),
+      contact_email: text('contact_email'),
+      volunteer_signup_url: httpsUrl(String(form.get('volunteer_signup_url') || ''), 'Volunteer signup URL'),
+      churchsuite_form_url: httpsUrl(String(form.get('churchsuite_form_url') || ''), 'ChurchSuite URL'),
+      is_ongoing: form.get('is_ongoing') === 'on',
+      start_date: start, end_date: end,
+      published_at: publish ? (publishedAt || new Date().toISOString()) : null,
+    }
+    if (publish) assertPublishable('outreach initiative', formUrlPublishProblems(row.churchsuite_form_url, 'ChurchSuite URL'))
+    const result = id ? await db.from('outreach').update(row).eq('id', id) : await db.from('outreach').insert(row)
+    if (result.error) throw new Error(result.error.message)
+    revalidatePath('/admin/outreach'); revalidatePath('/outreach'); revalidatePath(`/outreach/${slug}`); revalidatePath('/')
+  })
 }
 
 type Outreach = {
@@ -56,8 +57,10 @@ type Outreach = {
   end_date: string | null; published_at: string | null;
 }
 
-function OutreachForm({ item }: { item?: Outreach }) {
-  return <form action={saveOutreach} className="space-y-3 rounded border bg-white p-5">
+function OutreachForm({ item, feedback }: { item?: Outreach; feedback?: AdminFeedback }) {
+  const formKey = item?.id || 'new'
+  return <AdminForm key={formInstanceKey(feedback, formKey)} id={`form-${formKey}`} action={saveOutreach} className="space-y-3 rounded border bg-white p-5">
+    <FormFeedback feedback={feedback} formKey={formKey} />
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Name<input name="name" defaultValue={item?.name} required className="mt-1 block w-full rounded border p-2" /></label>
     <label className="block text-sm">URL slug<input name="slug" defaultValue={item?.slug} required readOnly={Boolean(item)} className="mt-1 block w-full rounded border p-2 read-only:bg-gray-100" /></label>
@@ -72,19 +75,20 @@ function OutreachForm({ item }: { item?: Outreach }) {
     <label className="flex gap-2 text-sm"><input type="checkbox" name="is_ongoing" defaultChecked={item?.is_ongoing} />Ongoing</label>
     <label className="flex gap-2 text-sm"><input type="checkbox" name="published" defaultChecked={Boolean(item?.published_at)} />Published</label>
     <button type="submit" className="rounded bg-brand-800 px-4 py-2 text-white">{item ? 'Save outreach' : 'Create outreach'}</button>
-  </form>
+  </AdminForm>
 }
 
-export default async function AdminOutreachPage() {
+export default async function AdminOutreachPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const feedback = await readFeedback(searchParams)
   const db = await adminDb()
   const { data, error } = await db.from('outreach').select('*').order('name')
   if (error) throw new Error(error.message)
   const rows = (data || []) as unknown as Outreach[]
   return <div className="max-w-3xl space-y-8">
     <h1 className="text-2xl font-bold">Outreach</h1>
-    <section><h2 className="mb-3 text-lg font-semibold">New initiative</h2><OutreachForm /></section>
+    <section><h2 className="mb-3 text-lg font-semibold">New initiative</h2><OutreachForm feedback={feedback} /></section>
     <section className="space-y-4"><h2 className="text-lg font-semibold">Existing initiatives</h2>
-      {rows.map(item => <details key={item.id} className="rounded border bg-gray-50 p-4"><summary className="cursor-pointer font-medium">{item.name} — {item.published_at ? 'Published' : 'Draft'}</summary><div className="mt-4"><OutreachForm item={item} /></div></details>)}
+      {rows.map(item => <details key={item.id} open={feedbackTargets(feedback, item.id)} className="rounded border bg-gray-50 p-4"><summary className="cursor-pointer font-medium">{item.name} — {item.published_at ? 'Published' : 'Draft'}</summary><div className="mt-4"><OutreachForm item={item} feedback={feedback} /></div></details>)}
     </section>
   </div>
 }

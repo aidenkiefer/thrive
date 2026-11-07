@@ -2,7 +2,7 @@
 
 - Captured: 2026-11-07
 - Source: https://thrivevineyard.com/wp-sitemap.xml and child sitemaps; all 985 listed URLs were fetched for HTTP status and HTML title. Every fetch returned HTTP 200 at capture time. Sitemap coverage does not prove that unlisted URLs do not exist.
-- Redirect suggestions below are recommendations. The experience lane owns implementation; owner approval is needed for undecided mappings.
+- Redirect suggestions below are recommendations. A proposed route is not proof that corresponding content has been migrated. The experience lane owns implementation; owner approval is needed for undecided mappings.
 
 ## Sitemap URL count
 
@@ -318,40 +318,40 @@
 | post_tag | https://thrivevineyard.com/tag/womens-event/ | 200 | Women's Event Archives - Thrive Vineyard Church | pending review |
 | post_tag | https://thrivevineyard.com/tag/worship/ | 200 | Worship Archives - Thrive Vineyard Church | pending review |
 | post_tag | https://thrivevineyard.com/tag/youth/ | 200 | Youth Archives - Thrive Vineyard Church | pending review |
-| wpfc_preacher | https://thrivevineyard.com/speaker/carley-lapointe/ | 200 | Carley LaPointe Archives - Thrive Vineyard Church | pending review |
-| wpfc_preacher | https://thrivevineyard.com/speaker/cathi-basler/ | 200 | Cathi Basler Archives - Thrive Vineyard Church | pending review |
-| wpfc_preacher | https://thrivevineyard.com/speaker/jjay-neumaier/ | 200 | Jjay Neumaier Archives - Thrive Vineyard Church | pending review |
-| wpfc_preacher | https://thrivevineyard.com/speaker/john-elmer/ | 200 | John Elmer Archives - Thrive Vineyard Church | pending review |
-| wpfc_preacher | https://thrivevineyard.com/speaker/kevin-kiefer/ | 200 | Kevin Kiefer Archives - Thrive Vineyard Church | pending review |
-| wpfc_preacher | https://thrivevineyard.com/speaker/luke-chandler/ | 200 | Luke Chandler Archives - Thrive Vineyard Church | pending review |
-| wpfc_preacher | https://thrivevineyard.com/speaker/mike-woetzel/ | 200 | Mike Woetzel Archives - Thrive Vineyard Church | pending review |
-| wpfc_preacher | https://thrivevineyard.com/speaker/molly-kiefer/ | 200 | Molly Kiefer Archives - Thrive Vineyard Church | pending review |
-| wpfc_preacher | https://thrivevineyard.com/speaker/nathan-gerdts/ | 200 | Nathan Gerdts Archives - Thrive Vineyard Church | pending review |
-| wpfc_preacher | https://thrivevineyard.com/speaker/patti-velotta/ | 200 | Patti Velotta Archives - Thrive Vineyard Church | pending review |
-| wpfc_preacher | https://thrivevineyard.com/speaker/ted-humphrey/ | 200 | Ted Humphrey Archives - Thrive Vineyard Church | pending review |
-| wpfc_preacher | https://thrivevineyard.com/speaker/wendy-seidman/ | 200 | Wendy Seidman Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/easter/ | 200 | Easter Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/easter-sunday/ | 200 | Easter Sunday Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/empowered/ | 200 | Empowered Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/entrusted/ | 200 | Entrusted Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/ephesians/ | 200 | Ephesians Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/faithful-through-the-ages/ | 200 | Faithful Through the Ages Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/genesis-rewind/ | 200 | Genesis Rewind Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/kings-kingdoms/ | 200 | Kings & Kingdoms Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/light-in-the-darkness/ | 200 | Light in the Darkness Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/live-your-best-life-for-the-rest-of-your-life/ | 200 | Live Your Best Life for the Rest of Your Life Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/mediterranean-messages/ | 200 | Mediterranean Messages Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/miracle-grow/ | 200 | Miracle Grow Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/more-like-jesus/ | 200 | More Like Jesus Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/on-your-mark-get-set-go/ | 200 | On Your Mark Get Set GO! Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/renovate-us/ | 200 | Renovate Us Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/study-with-the-savior/ | 200 | Study with the Savior Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/suffering-101/ | 200 | Suffering 101 Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/the-story-beneath-the-star/ | 200 | The Story Beneath the Star Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/this-is-church/ | 200 | This is Church Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/unwrapping-the-gift-of-gods-presence/ | 200 | Unwrapping the Gift of God's Presence Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/vip-sunday/ | 200 | VIP Sunday Archives - Thrive Vineyard Church | pending review |
-| wpfc_sermon_series | https://thrivevineyard.com/series/your-kingdom-come/ | 200 | Your Kingdom Come Archives - Thrive Vineyard Church | pending review |
+| wpfc_preacher | https://thrivevineyard.com/speaker/carley-lapointe/ | 200 | Carley LaPointe Archives - Thrive Vineyard Church | /sermons (temporary; speaker filter pending) |
+| wpfc_preacher | https://thrivevineyard.com/speaker/cathi-basler/ | 200 | Cathi Basler Archives - Thrive Vineyard Church | /sermons (temporary; speaker filter pending) |
+| wpfc_preacher | https://thrivevineyard.com/speaker/jjay-neumaier/ | 200 | Jjay Neumaier Archives - Thrive Vineyard Church | /sermons (temporary; speaker filter pending) |
+| wpfc_preacher | https://thrivevineyard.com/speaker/john-elmer/ | 200 | John Elmer Archives - Thrive Vineyard Church | /sermons (temporary; speaker filter pending) |
+| wpfc_preacher | https://thrivevineyard.com/speaker/kevin-kiefer/ | 200 | Kevin Kiefer Archives - Thrive Vineyard Church | /sermons (temporary; speaker filter pending) |
+| wpfc_preacher | https://thrivevineyard.com/speaker/luke-chandler/ | 200 | Luke Chandler Archives - Thrive Vineyard Church | /sermons (temporary; speaker filter pending) |
+| wpfc_preacher | https://thrivevineyard.com/speaker/mike-woetzel/ | 200 | Mike Woetzel Archives - Thrive Vineyard Church | /sermons (temporary; speaker filter pending) |
+| wpfc_preacher | https://thrivevineyard.com/speaker/molly-kiefer/ | 200 | Molly Kiefer Archives - Thrive Vineyard Church | /sermons (temporary; speaker filter pending) |
+| wpfc_preacher | https://thrivevineyard.com/speaker/nathan-gerdts/ | 200 | Nathan Gerdts Archives - Thrive Vineyard Church | /sermons (temporary; speaker filter pending) |
+| wpfc_preacher | https://thrivevineyard.com/speaker/patti-velotta/ | 200 | Patti Velotta Archives - Thrive Vineyard Church | /sermons (temporary; speaker filter pending) |
+| wpfc_preacher | https://thrivevineyard.com/speaker/ted-humphrey/ | 200 | Ted Humphrey Archives - Thrive Vineyard Church | /sermons (temporary; speaker filter pending) |
+| wpfc_preacher | https://thrivevineyard.com/speaker/wendy-seidman/ | 200 | Wendy Seidman Archives - Thrive Vineyard Church | /sermons (temporary; speaker filter pending) |
+| wpfc_sermon_series | https://thrivevineyard.com/series/easter/ | 200 | Easter Archives - Thrive Vineyard Church | /sermons/series/easter |
+| wpfc_sermon_series | https://thrivevineyard.com/series/easter-sunday/ | 200 | Easter Sunday Archives - Thrive Vineyard Church | /sermons/series/easter-sunday |
+| wpfc_sermon_series | https://thrivevineyard.com/series/empowered/ | 200 | Empowered Archives - Thrive Vineyard Church | /sermons/series/empowered |
+| wpfc_sermon_series | https://thrivevineyard.com/series/entrusted/ | 200 | Entrusted Archives - Thrive Vineyard Church | /sermons/series/entrusted |
+| wpfc_sermon_series | https://thrivevineyard.com/series/ephesians/ | 200 | Ephesians Archives - Thrive Vineyard Church | /sermons/series/ephesians |
+| wpfc_sermon_series | https://thrivevineyard.com/series/faithful-through-the-ages/ | 200 | Faithful Through the Ages Archives - Thrive Vineyard Church | /sermons/series/faithful-through-the-ages |
+| wpfc_sermon_series | https://thrivevineyard.com/series/genesis-rewind/ | 200 | Genesis Rewind Archives - Thrive Vineyard Church | /sermons/series/genesis-rewind |
+| wpfc_sermon_series | https://thrivevineyard.com/series/kings-kingdoms/ | 200 | Kings & Kingdoms Archives - Thrive Vineyard Church | /sermons/series/kings-kingdoms |
+| wpfc_sermon_series | https://thrivevineyard.com/series/light-in-the-darkness/ | 200 | Light in the Darkness Archives - Thrive Vineyard Church | /sermons/series/light-in-the-darkness |
+| wpfc_sermon_series | https://thrivevineyard.com/series/live-your-best-life-for-the-rest-of-your-life/ | 200 | Live Your Best Life for the Rest of Your Life Archives - Thrive Vineyard Church | /sermons/series/live-your-best-life-for-the-rest-of-your-life |
+| wpfc_sermon_series | https://thrivevineyard.com/series/mediterranean-messages/ | 200 | Mediterranean Messages Archives - Thrive Vineyard Church | /sermons/series/mediterranean-messages |
+| wpfc_sermon_series | https://thrivevineyard.com/series/miracle-grow/ | 200 | Miracle Grow Archives - Thrive Vineyard Church | /sermons/series/miracle-grow |
+| wpfc_sermon_series | https://thrivevineyard.com/series/more-like-jesus/ | 200 | More Like Jesus Archives - Thrive Vineyard Church | /sermons/series/more-like-jesus |
+| wpfc_sermon_series | https://thrivevineyard.com/series/on-your-mark-get-set-go/ | 200 | On Your Mark Get Set GO! Archives - Thrive Vineyard Church | /sermons/series/on-your-mark-get-set-go |
+| wpfc_sermon_series | https://thrivevineyard.com/series/renovate-us/ | 200 | Renovate Us Archives - Thrive Vineyard Church | /sermons/series/renovate-us |
+| wpfc_sermon_series | https://thrivevineyard.com/series/study-with-the-savior/ | 200 | Study with the Savior Archives - Thrive Vineyard Church | /sermons/series/study-with-the-savior |
+| wpfc_sermon_series | https://thrivevineyard.com/series/suffering-101/ | 200 | Suffering 101 Archives - Thrive Vineyard Church | /sermons/series/suffering-101 |
+| wpfc_sermon_series | https://thrivevineyard.com/series/the-story-beneath-the-star/ | 200 | The Story Beneath the Star Archives - Thrive Vineyard Church | /sermons/series/the-story-beneath-the-star |
+| wpfc_sermon_series | https://thrivevineyard.com/series/this-is-church/ | 200 | This is Church Archives - Thrive Vineyard Church | /sermons/series/this-is-church |
+| wpfc_sermon_series | https://thrivevineyard.com/series/unwrapping-the-gift-of-gods-presence/ | 200 | Unwrapping the Gift of God's Presence Archives - Thrive Vineyard Church | /sermons/series/unwrapping-the-gift-of-gods-presence |
+| wpfc_sermon_series | https://thrivevineyard.com/series/vip-sunday/ | 200 | VIP Sunday Archives - Thrive Vineyard Church | /sermons/series/vip-sunday |
+| wpfc_sermon_series | https://thrivevineyard.com/series/your-kingdom-come/ | 200 | Your Kingdom Come Archives - Thrive Vineyard Church | /sermons/series/your-kingdom-come |
 | wpfc_sermon_topics | https://thrivevineyard.com/topics/2-corinthians-516-20/ | 200 | 2 Corinthians 5:16-20 Archives - Thrive Vineyard Church | /sermons (temporary; owner review) |
 | wpfc_sermon_topics | https://thrivevineyard.com/topics/abandon/ | 200 | Abandon Archives - Thrive Vineyard Church | /sermons (temporary; owner review) |
 | wpfc_sermon_topics | https://thrivevineyard.com/topics/abiding/ | 200 | Abiding Archives - Thrive Vineyard Church | /sermons (temporary; owner review) |
@@ -1008,18 +1008,18 @@
 | wpfc_bible_book | https://thrivevineyard.com/book/romans-831-39/ | 200 | Romans 8:31-39 Archives - Thrive Vineyard Church | /sermons (temporary; owner review) |
 | wpfc_bible_book | https://thrivevineyard.com/book/zechariah-99-10/ | 200 | Zechariah 9:9-10 Archives - Thrive Vineyard Church | /sermons (temporary; owner review) |
 | wpfc_service_type | https://thrivevineyard.com/service-type/sunday-service/ | 200 | Sunday Service Archives - Thrive Vineyard Church | /sermons (temporary; owner review) |
-| mec_category | https://thrivevineyard.com/mec-category/christmas-event/ | 200 | Christmas Event Archives - Thrive Vineyard Church | pending review |
-| mec_category | https://thrivevineyard.com/mec-category/community-event/ | 200 | Community Event Archives - Thrive Vineyard Church | pending review |
-| mec_category | https://thrivevineyard.com/mec-category/fundraising-event/ | 200 | Fundraising Event Archives - Thrive Vineyard Church | pending review |
-| mec_category | https://thrivevineyard.com/mec-category/joy-drop/ | 200 | Joy Drop Archives - Thrive Vineyard Church | pending review |
-| mec_category | https://thrivevineyard.com/mec-category/kids-ministry/ | 200 | Kid's Ministry Archives - Thrive Vineyard Church | pending review |
-| mec_category | https://thrivevineyard.com/mec-category/meal/ | 200 | Meal Archives - Thrive Vineyard Church | pending review |
-| mec_category | https://thrivevineyard.com/mec-category/prayer/ | 200 | Prayer Archives - Thrive Vineyard Church | pending review |
-| mec_category | https://thrivevineyard.com/mec-category/small-group/ | 200 | Small Group Archives - Thrive Vineyard Church | pending review |
-| mec_category | https://thrivevineyard.com/mec-category/sunday-service/ | 200 | Sunday Service Archives - Thrive Vineyard Church | pending review |
-| mec_category | https://thrivevineyard.com/mec-category/training/ | 200 | Training Archives - Thrive Vineyard Church | pending review |
-| mec_category | https://thrivevineyard.com/mec-category/womens-event/ | 200 | Women's Event Archives - Thrive Vineyard Church | pending review |
-| mec_category | https://thrivevineyard.com/mec-category/worship-night/ | 200 | Worship Night Archives - Thrive Vineyard Church | pending review |
+| mec_category | https://thrivevineyard.com/mec-category/christmas-event/ | 200 | Christmas Event Archives - Thrive Vineyard Church | /events (temporary; category filter pending) |
+| mec_category | https://thrivevineyard.com/mec-category/community-event/ | 200 | Community Event Archives - Thrive Vineyard Church | /events (temporary; category filter pending) |
+| mec_category | https://thrivevineyard.com/mec-category/fundraising-event/ | 200 | Fundraising Event Archives - Thrive Vineyard Church | /events (temporary; category filter pending) |
+| mec_category | https://thrivevineyard.com/mec-category/joy-drop/ | 200 | Joy Drop Archives - Thrive Vineyard Church | /events (temporary; category filter pending) |
+| mec_category | https://thrivevineyard.com/mec-category/kids-ministry/ | 200 | Kid's Ministry Archives - Thrive Vineyard Church | /events (temporary; category filter pending) |
+| mec_category | https://thrivevineyard.com/mec-category/meal/ | 200 | Meal Archives - Thrive Vineyard Church | /events (temporary; category filter pending) |
+| mec_category | https://thrivevineyard.com/mec-category/prayer/ | 200 | Prayer Archives - Thrive Vineyard Church | /events (temporary; category filter pending) |
+| mec_category | https://thrivevineyard.com/mec-category/small-group/ | 200 | Small Group Archives - Thrive Vineyard Church | /events (temporary; category filter pending) |
+| mec_category | https://thrivevineyard.com/mec-category/sunday-service/ | 200 | Sunday Service Archives - Thrive Vineyard Church | /events (temporary; category filter pending) |
+| mec_category | https://thrivevineyard.com/mec-category/training/ | 200 | Training Archives - Thrive Vineyard Church | /events (temporary; category filter pending) |
+| mec_category | https://thrivevineyard.com/mec-category/womens-event/ | 200 | Women's Event Archives - Thrive Vineyard Church | /events (temporary; category filter pending) |
+| mec_category | https://thrivevineyard.com/mec-category/worship-night/ | 200 | Worship Night Archives - Thrive Vineyard Church | /events (temporary; category filter pending) |
 | author | https://thrivevineyard.com/author/admin/ | 200 | admin, Author at Thrive Vineyard Church | pending review |
 
 ## Navigation-only URLs

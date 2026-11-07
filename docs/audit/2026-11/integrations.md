@@ -66,3 +66,23 @@ Every Gravity Forms row above is a Google Form candidate if ChurchSuite cannot p
 No podcast RSS feed URL or GA4 measurement ID was observed in the fetched page HTML. The June audit mentions RSS.com, but the current destination needs direct confirmation. The IDs visibly present in November HTML are the GTM container and Google Ads ID listed above.
 
 Two pages embed ChurchSuite event forms directly: /goldengoose/ and /free-movie-night/. Their exact iframe URLs are listed in the media table; confirm whether those campaigns remain active before migration.
+
+## Forms and ChurchSuite embeds beyond the page sitemap
+
+Checked 950 additional URLs from the post, sermon, event, taxonomy, portfolio, category, and author sitemaps on 2026-11-07. 0 fetches failed. The rows below are form/ChurchSuite embed instances found outside the page-sitemap audit.
+
+| Type | Page | Form ID | Provider | Action / embed URL |
+|---|---|---|---|---|
+| mec-events | https://thrivevineyard.com/upcoming-events/ | mec_search_form_348 | Unidentified | https://thrivevineyard.com/upcoming-events/ |
+| mec-events | https://thrivevineyard.com/upcoming-events/womens-dbs/ | iframe | ChurchSuite iframe | https://thrivevineyard.churchsuite.com/events/7rgkth9z?details=0&photo=0&description=0&location=0&gmap=0&signup_form=1 |
+| mec-events | https://thrivevineyard.com/upcoming-events/prayer-ministry-training/ | iframe | ChurchSuite iframe | https://thrivevineyard.churchsuite.com/events/kcgyzbfk?details=0&photo=0&description=0&location=0&gmap=0&signup_form=1 |
+| mec-events | https://thrivevineyard.com/upcoming-events/golden-goose-chase/ | iframe | ChurchSuite iframe | https://thrivevineyard.churchsuite.com/events/7xfi48sx?details=0&photo=0&description=0&location=0&gmap=0&signup_form=1 |
+| mec-events | https://thrivevineyard.com/upcoming-events/contend-prayer-group/ | iframe | ChurchSuite iframe | https://thrivevineyard.churchsuite.com/events/m9b2wisy?details=0&photo=0&description=0&location=0&gmap=0&signup_form=1 |
+| mec-events | https://thrivevineyard.com/upcoming-events/come-to-the-table-conversations-that-lead-to-jesus/ | iframe | ChurchSuite iframe | https://thrivevineyard.churchsuite.com/events/j3cao18q?details=0&photo=0&description=0&location=0&gmap=0&signup_form=1 |
+| mec-events | https://thrivevineyard.com/upcoming-events/puerto-rico-mission-2026-info-meeting/ | iframe | ChurchSuite iframe | https://thrivevineyard.churchsuite.com/events/loshx5o3?details=0&photo=0&description=0&location=0&gmap=0&signup_form=1 |
+| mec-events | https://thrivevineyard.com/upcoming-events/rooted-small-group/ | iframe | ChurchSuite iframe | https://thrivevineyard.churchsuite.com/events/b78k1pn9?details=0&photo=0&description=0&location=0&gmap=0&signup_form=1 |
+| mec-events | https://thrivevineyard.com/upcoming-events/fuel-the-fire/ | iframe | ChurchSuite iframe | https://thrivevineyard.churchsuite.com/events/bc0whgqu?details=1&photo=0&description=0&location=1&gmap=0&signup_form=0 |
+| mec-events | https://thrivevineyard.com/upcoming-events/joy-drop-outreach/ | iframe | ChurchSuite iframe | https://thrivevineyard.churchsuite.com/events/mlvtlkgo?details=0&photo=1&description=0&location=0&gmap=0&signup_form=1 |
+| mec-events | https://thrivevineyard.com/upcoming-events/pack-the-pantry-2026/ | iframe | ChurchSuite iframe | https://thrivevineyard.churchsuite.com/events/xjljbtva?details=0&photo=0&description=0&location=1&gmap=0&signup_form=1 |
+| mec-events | https://thrivevineyard.com/upcoming-events/low-pressure-prophetic-training/ | iframe | ChurchSuite iframe | https://thrivevineyard.churchsuite.com/events/8kjanebo?details=0&photo=0&description=0&location=0&gmap=0&signup_form=1 |
+| mec-events | https://thrivevineyard.com/upcoming-events/the-chosen-season-6-early-access-screening/ | iframe | ChurchSuite iframe | https://thrivevineyard.churchsuite.com/events/nhp6blzz?details=0&photo=0&description=0&location=0&gmap=0&signup_form=1 |

@@ -41,3 +41,17 @@ export async function getActiveOutreach(limit: number = 3): Promise<Outreach[]> 
   if (error || !data) return []
   return data as Outreach[]
 }
+
+export async function getOutreachItems(): Promise<Outreach[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('outreach').select('*').not('published_at', 'is', null).order('start_date', { ascending: true, nullsFirst: false })
+  if (error || !data) return []
+  return data as Outreach[]
+}
+
+export async function getOutreachBySlug(slug: string): Promise<Outreach | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('outreach').select('*').eq('slug', slug).not('published_at', 'is', null).maybeSingle()
+  if (error || !data) return null
+  return data as Outreach
+}

@@ -33,4 +33,8 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci --no-audit --no-fund
+      # The shared gate runs npm test, lint, typecheck, and the production build.
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
       - run: bash scripts/agents/gate.sh --ci

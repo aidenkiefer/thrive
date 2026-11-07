@@ -55,7 +55,7 @@ Do not fabricate event dates, staff names, phone numbers, email addresses, minis
 Any route added or changed that differs from the existing WordPress URL structure must be accompanied by a 301 redirect entry in `next.config.ts` (ops lane owns it; others file a request). See `docs/04-seo-url-migration-map.md`.
 
 **[PROJECT-SPECIFIC] ChurchSuite is forms only.**
-The website stores a `churchsuite_form_url` field on entities and renders a link/button to it. No API calls to ChurchSuite. No sync or import of ChurchSuite data.
+The website stores a `churchsuite_form_url` field on entities and renders a link/button or embed for it. No API calls to ChurchSuite. No sync or import of ChurchSuite data. For a form ChurchSuite doesn't provide, an embedded Google Form is allowed (owner decision, 2026-11-07).
 
 <!-- /PRESERVE -->
 

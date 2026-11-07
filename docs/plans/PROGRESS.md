@@ -4,46 +4,37 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 
 ---
 
-## Current status (2026-06-20)
+## Current status (2026-11-07)
 
-**Phase:** **Sprint 01 Demo Draft COMPLETE** — all 10 tickets shipped. Next: Sprint 02 (admin panel stub).
+**Phase:** **MVP foundation merged** (PR #2) + **multi-agent workflow v2** (PR #1). Next: session `mvp-launch-readiness-1` for the **Nov 13, 2026** MVP target.
 
-**Spec:** [`docs/plans/specs/sprint-01-demo-draft.md`](specs/sprint-01-demo-draft.md)  
-**Tickets:** `docs/plans/tickets/01-*` through `10-*` — all done
+**Active plan:** [`docs/agents/assignments/2026-11-07-mvp-launch-readiness-1.md`](../agents/assignments/2026-11-07-mvp-launch-readiness-1.md) (data: claude · experience: cursor · ops: codex)
+**Status sources:** [`docs/08-mvp-status-roadmap.md`](../08-mvp-status-roadmap.md) (roadmap) · [`docs/09-implementation-handoff.md`](../09-implementation-handoff.md) (PR #2 handoff)
 
-**Human action required before first run:**
-1. Create Supabase project + copy `.env.local.example` → `.env.local` with real keys
-2. Apply `supabase/schema.sql` via Supabase dashboard SQL editor
-3. Run `npm install` (next-mdx-remote upgraded to v6)
-4. Run `npm run seed` to import parsed WordPress data
-
-### What's done (Sprint 01 complete)
+### What's done
 
 | Area | Status | Notes |
 |------|--------|-------|
-| Architecture docs | Complete | `00`, `01`, `03`, `04` (draft), `05`, `06`; `floorplan.md`; session notes |
-| Agent workflow | Complete | CLAUDE.md, AGENTS.md, workflow docs, ticket template |
-| Next.js scaffold | Complete | Next 15, TypeScript, Tailwind, ESLint; `npm install` works |
-| Supabase schema (DDL) | Complete | `supabase/schema.sql` — all tables + Sprint 01 patch (topics, service_type, venue) |
-| Supabase client helpers | Complete | `src/lib/supabase/server.ts`, `client.ts` |
-| Query layer | Complete | `src/lib/queries/` — sermons, events, announcements, groups, outreach |
-| Seed import script | Complete | `scripts/seed-from-parsed.ts` — run `npm run seed` after applying schema |
-| Design tokens | Complete | `tailwind.config.ts` brand/accent/neutral tokens + Fraunces/Inter fonts |
-| UI primitives | Complete | `src/components/ui/` — Button, Card, Section, Container, Heading |
-| GlobalNav + Footer | Complete | `src/components/layout/` — sticky navy nav, mobile drawer, brand-900 footer |
-| Homepage | Complete | 7 Supabase-backed sections, ISR 60s |
-| Sermons pages | Complete | `/sermons`, `/sermons/[slug]`, `/sermons/series`, `/sermons/series/[slug]` |
-| Events pages | Complete | `/events`, `/events/[slug]` — one-time + recurring |
-| Plan a Visit MDX | Complete | `/plan-a-visit` — next-mdx-remote v6, content from site audit |
-| Admin middleware | Wired | `middleware.ts` protects `/admin/**`; auth handler is a stub |
+| App foundation | Code complete | Next 15.5 App Router, server-side Supabase helpers, 12-table schema, query layer |
+| Migration prep | Parsed, **not seeded** | Refreshed WXR + MEC JSON → 120 published sermons, 80 events, 43 occurrences across 8 recurring events; Express(o) held for review |
+| Admin | Code complete, **runtime unverified** | NextAuth credentials (scrypt) + create/edit/publish for announcements, sermons, events, recurring events/occurrences, ministries, groups, outreach, staff, landing pages |
+| Public routes | Partial | Sermons, events (month + grid/list, iCal), groups, outreach, ministries, campaign pages backed by records; About / Give / Kids & Youth are still shells |
+| SEO | Partial | 5 legacy redirects, sitemap, robots; ~30-row redirect map not fully implemented |
+| Workflow | v2 | PM → 3 lanes (worktrees `<tool>/*`) → scribe → senior QA; `scripts/agents/gate.sh` + CI gate on every PR |
+| Build | Green | `npm ci && npm run build` (Codex, Nov 7) and CI `gate` on PR #1 both passed |
 
-### Still pending (Sprint 02 scope)
+### Still pending before launch
 
-| Area | Status | Notes |
+| Area | Status | Owner |
 |------|--------|-------|
-| Supabase project | Needs human | No `.env.local`; schema not applied to a live project |
-| Generated DB types | Stub only | `src/lib/supabase/types.ts` is empty — run `supabase gen types` after applying schema |
-| Admin auth | Stub | NextAuth `authorize()` always returns `null`; login form not built |
+| Admin server actions verify session themselves | Missing (middleware-only) | data lane, D1 |
+| Schema applied to the live Supabase project | Unverified | Human (D3 prepares the migration) |
+| Seed import run + reviewed | Not run | Human (D4 readiness check first) |
+| Vercel Preview/Production env vars | Not configured | Human |
+| Visitor pages (About, Give, Kids & Youth), forms, giving URL | Shells / undecided | experience lane + owner decisions |
+| Redirect coverage vs Search Console + Ads URLs | Partial | ops lane O1 + human data export |
+| Lint config, tests, `npm audit` (2 critical / 7 high) | Missing / open | ops lane O2–O4 |
+| Launch checklist, church content approval | Not started | ops lane O5 + human |
 
 ---
 
@@ -66,10 +57,10 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 | **v0.3.0** | **Homepage + public routes** | Done | 2026-06-20 | — | Sprint 01 Phase B–C | Design system, nav/footer, homepage, plan-a-visit |
 | **v0.4.0** | **Sermon archive + watch page** | Done | 2026-06-20 | — | Ticket 08 | Sermons archive, detail, series pages |
 | **v0.5.0** | **Events system** | Done | 2026-06-20 | — | Ticket 09 | Events listing + detail, one-time + recurring |
-| **v0.6.0** | **Groups + ministries** | Not started | — | — | `docs/plans/specs/` (TBD) | Groups listing, individual group pages |
-| **v0.7.0** | **Admin panel — core CRUD** | Not started | — | — | `docs/plans/specs/` (TBD) | Sermon, event, group, announcement management |
-| **v0.8.0** | **Google Ads landing pages** | Not started | — | — | `docs/plans/specs/` (TBD) | `landing_pages` table + `/[slug]` catch-all |
-| **v0.9.0** | **SEO + WordPress migration** | Not started | — | — | `docs/04-seo-url-migration-map.md` (TBD) | 301 redirects, meta tags, structured data, sitemap |
+| **v0.6.0** | **Groups + ministries** | Done (code) | 2026-11-07 | — | PR #2 | Group, outreach, ministry public routes backed by published records |
+| **v0.7.0** | **Admin panel — core CRUD** | Done (code, runtime unverified) | 2026-11-07 | Server-action auth (D1), publish validation (D2) | PR #2 | Credential sign-in + CRUD for all MVP content types |
+| **v0.8.0** | **Google Ads landing pages** | Done (code) | 2026-11-07 | Active Ads URL confirmation | PR #2 | `/[slug]` renders published landing-page records |
+| **v0.9.0** | **SEO + WordPress migration** | In progress | — | Redirect coverage (O1), seed run, Search Console review | `docs/04-seo-url-migration-map.md` | 5 redirects + sitemap/robots done; exports parsed, not seeded |
 | **v1.0.0** | **Launch** | Not started | — | — | — | First public deployment |
 
 ---
@@ -105,6 +96,8 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 | **v0.5.9** | Public detail page foundations | 2026-07-16 | Frontend | Applied the shared page shell to team, group, outreach, and pending landing-page routes while preserving route safeguards and avoiding invented content. |
 | **v0.6.0** | Homepage editorial refresh | 2026-07-16 | Frontend | Standardized editorial labels and event CTAs, and removed fabricated hub-card copy in favor of approved dynamic summaries or intentional temporary states. |
 | **v0.6.1** | UI rollout governance | 2026-07-16 | Frontend | Applied shared MDX prose styling to Plan a Visit. No URLs changed, so no redirects were added; no build, dev, test, or compile command was run under project rules. |
+| **v0.8.1** | MVP foundation (PR #2, Codex) | 2026-11-07 | Full stack | Migration prep, admin auth + CRUD, public record routes, event filters + iCal, redirects/sitemap/robots, roadmap + handoff docs (`docs/08`, `docs/09`). Seed not run; DB state unverified. |
+| **v0.8.2** | Multi-agent workflow v2 (PR #1, Claude) | 2026-11-07 | Workflow | `.agents/skills` (product-manager, lane-builder, scribe, senior-qa), lanes + worktree rules, model routing, `scripts/agents/{worktree,gate}.sh`, CI gate, PR template. Gate-before-push replaces "no verification runs". |
 
 ---
 

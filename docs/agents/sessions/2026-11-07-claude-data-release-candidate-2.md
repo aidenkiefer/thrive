@@ -5,7 +5,7 @@
 ## Status
 <!-- ≤3 lines, kept current by scribe: done / in progress / parked / blocked -->
 D1 01aeb00 (contract PR #11), D2 518301f, D3 7f51563, D4 91f483b done. D5 parked on owner decision 3.
-D3 needs a runtime check in a configured env (no local Supabase/admin env in this worktree).
+PR #12 open (lane) + #11 (contract); not merged. D3 needs a runtime check in a configured env.
 
 ## Entries
 <!-- Append-only, oldest first. Types: decision · change · blocker · request · note -->
@@ -21,3 +21,4 @@ D3 needs a runtime check in a configured env (no local Supabase/admin env in thi
 - **note** D3: not exercised at runtime. This worktree has no `.env.local` and Preview env vars aren't configured. QA: in a configured env, publish an announcement with a passed expiry and confirm the inputs keep their values and show the error; fix it and confirm the save succeeds and the "new" form clears. (opus-5.5)
 - **change** D4 T1: Express(o) `isPaused: false`, `pauseNote: null`; time/location unchanged; owner source noted in a comment. Only consumer: `src/components/home/ServiceTimesSection.tsx` (experience; renders the pause note only when paused, so no change needed there). (opus-5.5) [91f483b]
 - **note**: lint warnings unchanged at 12. The pre-existing `prefer-const` in `src/app/admin/staff/page.tsx:16` was left alone (not in a ticket). (opus-5.5)
+- **note**: session end. GATE: PASS. PR #11 [contract] + PR #12 [data] open for senior QA; D5 parked on owner decision 3. (opus-5.5)

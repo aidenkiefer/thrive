@@ -71,6 +71,6 @@ No image URL found in main content.
 
 ## Difference from current MDX
 
-The live page lists Express(o) at 8:30 and Family Worship at 9:30 as current service choices. `content/pages/plan-a-visit.mdx` says Express(o) is paused for renovations. The live HTML does not state that pause in this page; staff should resolve the discrepancy before publishing schedule copy.
+The live page lists Express(o) at 8:30 and Family Worship at 9:30 as current service choices. `content/pages/plan-a-visit.mdx` says Express(o) is paused for renovations. The live HTML does not state that pause in this page. The owner confirmed Express(o) meets weekly on Sundays at 8:30 AM America/Chicago in the cafe (assignment owner decision 5, 2026-11-07). The MDX pause statement needs correction before publishing.
 
 The MDX adds a five-step narrative, child age-band details, and a ChurchSuite visitor URL that are not present as such in the live `/im-new/` page. The live page has an inline form submitted to `/im-new/`. Confirm approved copy and form destination.

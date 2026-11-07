@@ -28,7 +28,7 @@
 | /get-connected/ | Prefer a new contact hub; /about only if the forms and newsletter are retained there | Live page has contact form, service/location/contact details, and Mailchimp signup; /about alone lacks those forms. Prefer a contact hub if built. |
 | /prayer/ | dedicated prayer page or intentional contact form with prayer option | Live page is a prayer request form and prayer ministry content; a generic /about redirect loses the request path. |
 | /volunteering/ | /give#ways-to-give (Time/Talent) only if volunteer contact remains visible; otherwise dedicated volunteer page | Live page lists teams and direct volunteer email. |
-| /expresso/ | /plan-a-visit#services | Live page describes the 8:30 cafe service; current MDX says paused, so schedule must be confirmed first. |
+| /expresso/ | /plan-a-visit#services | Live page describes the 8:30 cafe service; the owner confirmed Sunday 8:30 AM in the cafe; update the stale MDX pause statement. |
 | /youth-alpha/ | /ministries/youth-alpha | Owner decided canonical ministry page; live page has Youth Alpha-specific copy and signup. |
 | Sermon taxonomy /topics/*, /book/*, /service-type/* | /sermons temporarily | Filters are not built; preserve taxonomy URLs without a permanent claim of equivalence. |
 

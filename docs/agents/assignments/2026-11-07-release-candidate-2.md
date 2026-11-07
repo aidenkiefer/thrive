@@ -3,7 +3,7 @@
 **Session goal:** Close every launch gap agents can close without new owner data (form-URL plumbing, Ads/GTM and newsletter parity, a Get Connected contact hub, admin error feedback, contact-field privacy, approved redirects) and produce repeatable release-candidate evidence, so only owner inputs stand between `main` and the Nov 13 launch.
 **Inputs read:** `docs/workflow/roles-and-lanes.md`; QA checkpoint `docs/agents/qa/2026-11-07-mvp-launch-readiness-1.md` and QA's draft `2026-11-07-mvp-release-candidate-2.md` (both on PR #9); `docs/08-mvp-status-roadmap.md`; `docs/plans/PROGRESS.md`; open PRs #5, #8, #9; session logs from #4/#6/#7/#8; `docs/audit/2026-11/{integrations,url-inventory}.md` (PR #5); spot checks of `supabase/schema.sql`, `src/lib/constants/service-times.ts`, `src/components/home/NewsletterSection.tsx`.
 **Supersedes:** QA's draft `docs/agents/assignments/2026-11-07-mvp-release-candidate-2.md`. QA drops that file from #9 before merging. Its lanes are kept here and revised: C2 also covers Google Forms, and tracking, newsletter, forms register and privacy tickets are added.
-**Owner approval:** approved 2026-11-07 (owner decisions 1–4 still open; D5 waits on decision 3)
+**Owner approval:** approved 2026-11-07 · **Owner decisions 1–4: all accepted as recommended (2026-11-07)**. D1 contract merged as #11.
 
 ## Start conditions (carry-over first, never re-assigned)
 
@@ -81,7 +81,7 @@ Experience may **import** from `src/lib/form-urls.ts` and the ministry query. It
 - Files: `src/lib/constants/service-times.ts`
 - Done when: `isPaused` is false or removed; no new schedule facts were added; the public files that consume it are listed in the session log for experience/QA.
 
-**D5 · Contact-column privacy** · S · T2 · **gated on owner decision 3**
+**D5 · Contact-column privacy** · S · T2 · owner decision 3: **yes, revoke**
 - Task: Apply the owner's choice for `speakers.email`, `staff.email`, `staff.phone`, which anon can read today. Recommended: revoke anon `SELECT` on those columns via a guarded migration.
 - Files: new `supabase/migrations/20261107020000_contact_column_privacy.sql`, `supabase/README.md`, `src/lib/queries/{staff,speakers,sermons}.ts` (explicit column lists)
 - Done when: no public query on `staff`/`speakers` uses `select('*')` or a join star (column revokes make those error); admin (service role) still reads all columns; no public page loses data. A PM spot check found none of these fields rendered publicly. Re-confirm.
@@ -102,7 +102,7 @@ Experience may **import** from `src/lib/form-urls.ts` and the ministry query. It
 
 ### Tickets
 
-**E1 · Preserve GTM + Google Ads tags** · S · T1 · **gated on owner decision 1**
+**E1 · Preserve GTM + Google Ads tags** · S · T1 · owner decision 1: **yes**
 - Task: Load `GTM-NQV3Z3N7`, plus `AW-16575196430` if the live site loads it separately (check `integrations.md`), from the root layout with `next/script`. Load them in production only.
 - Files: `src/app/layout.tsx`, optionally `src/components/analytics/**`
 - Done when: IDs match the audit exactly; tags render only when `VERCEL_ENV === 'production'` (none on Preview or dev); GTM `noscript` iframe included; no new npm dependency.
@@ -112,7 +112,7 @@ Experience may **import** from `src/lib/form-urls.ts` and the ministry query. It
 - Files: `content/pages/get-connected.mdx`, `src/app/(public)/get-connected/page.tsx`, `src/components/layout/GlobalNav.tsx`, `src/components/layout/Footer.tsx`
 - Done when: every fact has a source comment; the WordPress Gravity Forms action is not used as an embed; metadata is set; the session log tells ops to add the route to the sitemap.
 
-**E3 · Mailchimp newsletter signup** · S · T1 · **gated on owner decision 2**
+**E3 · Mailchimp newsletter signup** · S · T1 · owner decision 2: **yes**
 - Task: Replace the "Mailchimp embed coming" placeholder with a shared signup component that does a plain HTML form `POST` to the audited `list-manage.com` action URL. No API calls or keys. Use it on the homepage and Get Connected.
 - Files: `src/components/home/NewsletterSection.tsx`, new `src/components/forms/NewsletterSignup.tsx`
 - Done when: the action URL matches `integrations.md` exactly, including the honeypot field Mailchimp expects; the form has a label and works with the keyboard; it has no Supabase dependency.
@@ -145,7 +145,7 @@ Experience may **import** from `src/lib/form-urls.ts` and the ministry query. It
 - Files: new `docs/audit/2026-11/forms-register.md`, `docs/10-launch-checklist.md`
 - Done when: every form in `integrations.md` has a row; nothing is invented in the provider/URL columns; must-launch rows are at the top.
 
-**O2 · URL reconciliation + approved redirects** · M · T1 · redirect rows gated on owner decision 4
+**O2 · URL reconciliation + approved redirects** · M · T1 · owner decision 4: **yes** (see table)
 - Task: Reconcile `docs/04` with the 985-URL inventory and the merged routes; implement the redirects the owner approves in decision 4; add `/get-connected` to the sitemap once E2 lands (or log it as a follow-up).
 - Files: `next.config.ts`, `src/app/sitemap.ts`, `src/app/robots.ts`, `docs/04-seo-url-migration-map.md`, `docs/10-launch-checklist.md`
 - Done when: no loops; no rule shadows a live route (`/get-connected`, `/sermons/:slug`, `/events/:slug`); taxonomy redirects stay temporary; unapproved rows stay `pending` with a reason; Search Console/Ads review is listed as an owner step, not marked verified.
@@ -177,12 +177,14 @@ Experience may **import** from `src/lib/form-urls.ts` and the ministry query. It
 
 ## Owner decisions needed
 
-| # | Decision | Recommended answer | Blocks |
+All four were answered **yes** (accept the recommendation) by the owner on 2026-11-07.
+
+| # | Decision | Answer | Blocks |
 |---|---|---|---|
-| 1 | Keep the live tracking tags `GTM-NQV3Z3N7` + `AW-16575196430` on the new site? | **Yes**, as observed, production only. Active Ads conversions depend on them. | E1 |
-| 2 | Keep the live Mailchimp list (`thrivevineyard.us14.list-manage.com`, from the audit) as the newsletter destination? | **Yes** | E3 |
-| 3 | `speakers.email`, `staff.email`, `staff.phone` are readable by anyone today. | **Revoke anon read** (no public page shows them) | D5 |
-| 4 | Undecided legacy URLs (audit A2 recommendations) | `/expresso/` → `/plan-a-visit#services` **301**. `/prayer/` and `/volunteering/` → `/get-connected` **302 (temporary)** until dedicated pages exist. `/get-connected/` is the same path, so no redirect. | O2 |
+| 1 | Keep the live tracking tags `GTM-NQV3Z3N7` + `AW-16575196430` on the new site? | **Decided: yes**, as observed, production only. | E1 |
+| 2 | Keep the live Mailchimp list (`thrivevineyard.us14.list-manage.com`, from the audit) as the newsletter destination? | **Decided: yes** | E3 |
+| 3 | `speakers.email`, `staff.email`, `staff.phone` are readable by anyone today. | **Decided: revoke anon read.** Done in #12 (D5). | D5 |
+| 4 | Undecided legacy URLs (audit A2 recommendations) | **Decided:** `/expresso/` → `/plan-a-visit#services` **301**. `/prayer/` and `/volunteering/` → `/get-connected` **302 (temporary)** until dedicated pages exist. `/get-connected/` is the same path, so no redirect. | O2 |
 | 5 | Replacement forms (ChurchSuite first, else Google Forms) | The owner fills the URLs into O1's register, must-launch rows first. Agents never guess. | E2/E4 embeds (not ticket completion) |
 
 Owner steps unchanged (not agent work): apply schema + migrations per `supabase/README.md`, seed per `import-readiness.md`, Vercel Preview env vars, giving-link approval, Youth Alpha current dates + record entry, Search Console/Ads export review, church content approval, domain/DNS, rollback plan.

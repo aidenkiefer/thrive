@@ -3,7 +3,7 @@
 **Assignment:** `docs/agents/assignments/2026-11-07-mvp-launch-readiness-1.md` · **Lane:** experience · **Tool:** cursor · **Started:** 2026-11-07
 
 ## Status
-In progress: E4 complete; E1–E3 and E6 await C1; R1 and E5 remain.
+In progress: E1–E6 and R1 implementation complete; clean-install and full-gate verification remain.
 
 ## Entries
 <!-- Append-only, oldest first. Types: decision · change · blocker · request · note -->
@@ -13,3 +13,9 @@ In progress: E4 complete; E1–E3 and E6 await C1; R1 and E5 remain.
 - `03:01` **change** R1: Added approved Youth Alpha and temporary taxonomy redirects, recorded redirect status, and indexed visitor-essential static routes. T1 standard [0d85b3f] `next.config.ts`, `src/app/sitemap.ts`, `docs/04-seo-url-migration-map.md`.
 - `03:03` **request** data: E6 needs canonical ministry fields for schedule and ChurchSuite form URL so `/ministries/youth-alpha` can render the required schedule and form slot. (T1 standard)
 - `03:03` **note** C1 remains absent after `git fetch` and `git rebase origin/main`; E1–E3 are still parked. (T1 standard)
+- `03:20` **change** E5: Preserved mobile keyboard updates through rebase: 44px menu target, visible skip link, and focus restoration after Escape. T1 standard [d9f9bf0] `src/components/layout/GlobalNav.tsx`, `src/components/layout/SiteShell.tsx`.
+- `03:31` **change** E1–E3: Replaced About, Give, and Kids placeholders with C1-audit-sourced MDX pages. The known ChurchSuite donation CTA is used; Kids form remains intentionally pending because C1 contains only an unusable legacy Gravity Form. T1 standard `content/pages/{about,give,kids-youth}.mdx`, corresponding public pages.
+- `03:32` **blocker** E3: Kids contact CTA cannot be published until the owner confirms a ChurchSuite or Google Form URL. The legacy Gravity Form from C1 was not carried forward. (T1 standard)
+- `03:33` **change** E6: Expanded the dynamic ministry template with intentional empty states and a Youth Alpha schedule/signup-pending panel. T1 standard `src/app/(public)/ministries/[slug]/page.tsx`.
+- `03:33` **handoff** data/content owner: Enter the C1 Youth Alpha name, description, and media in the ministry admin record. Add canonical schedule and ChurchSuite form fields before publishing its schedule or signup destination. (T1 standard)
+- `03:35` **change** Owner confirmation superseded the stale Express(o) pause notice: Sundays at 8:30 AM in the cafe. T1 standard `content/pages/plan-a-visit.mdx`.

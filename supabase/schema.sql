@@ -81,6 +81,7 @@ create table if not exists recurring_events (
   gallery_urls            text[],
   video_urls              text[],
   churchsuite_form_url    text,
+  external_url            text,
   -- SEO
   seo_title               text,
   seo_description         text,
@@ -102,6 +103,7 @@ create table if not exists event_occurrences (
 
 create index if not exists event_occurrences_start_datetime_idx on event_occurrences(start_datetime);
 create index if not exists event_occurrences_recurring_event_id_idx on event_occurrences(recurring_event_id);
+create unique index if not exists event_occurrences_identity_idx on event_occurrences(recurring_event_id, start_datetime);
 
 create table if not exists one_time_events (
   id                    uuid primary key default gen_random_uuid(),
@@ -117,6 +119,7 @@ create table if not exists one_time_events (
   contact_email         text,
   featured_image_url    text,
   churchsuite_form_url  text,
+  external_url          text,
   -- SEO
   seo_title             text,
   seo_description       text,
@@ -312,3 +315,5 @@ alter table sermons add column if not exists topics text[];
 alter table sermons add column if not exists service_type text default 'Sunday Service';
 alter table recurring_events add column if not exists venue text;
 alter table one_time_events add column if not exists venue text;
+alter table recurring_events add column if not exists external_url text;
+alter table one_time_events add column if not exists external_url text;

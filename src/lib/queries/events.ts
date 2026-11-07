@@ -17,6 +17,7 @@ export interface OneTimeEvent {
   contact_email: string | null
   featured_image_url: string | null
   churchsuite_form_url: string | null
+  external_url: string | null
   seo_title: string | null
   seo_description: string | null
   og_image_url: string | null
@@ -42,6 +43,7 @@ export interface RecurringEvent {
   gallery_urls: string[] | null
   video_urls: string[] | null
   churchsuite_form_url: string | null
+  external_url: string | null
   seo_title: string | null
   seo_description: string | null
   og_image_url: string | null

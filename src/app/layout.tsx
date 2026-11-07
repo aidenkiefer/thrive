@@ -16,6 +16,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://thrivevineyard.com'),
   title: { default: 'Thrive Vineyard', template: '%s | Thrive Vineyard' },
   description: 'Thrive Vineyard Church — Spirit Filled. Down to Earth.',
   openGraph: { siteName: 'Thrive Vineyard', type: 'website' },

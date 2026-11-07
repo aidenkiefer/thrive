@@ -43,3 +43,17 @@ export async function getHighlightedGroups(limit: number = 3): Promise<Group[]> 
   if (error || !data) return []
   return data as Group[]
 }
+
+export async function getGroups(): Promise<Group[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('groups').select('*').not('published_at', 'is', null).order('name')
+  if (error || !data) return []
+  return data as Group[]
+}
+
+export async function getGroupBySlug(slug: string): Promise<Group | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('groups').select('*').eq('slug', slug).not('published_at', 'is', null).maybeSingle()
+  if (error || !data) return null
+  return data as Group
+}

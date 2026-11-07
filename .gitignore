@@ -35,3 +35,6 @@ supabase/.temp/
 # Agent worktrees (Claude Code built-in location)
 .claude/worktrees/
 docs/agents/sessions/*.pr.md
+# Python parser cache and Windows download metadata
+__pycache__/
+*:Zone.Identifier

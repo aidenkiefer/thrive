@@ -1,36 +1,40 @@
 {
-  "generated_at": "2026-06-20T22:12:09",
+  "generated_at": "2026-11-06T19:39:43-06:00",
   "source_files": [
-    "events.xml",
-    "sermons.xml"
+    "mec-events-20261107UTC0059.json",
+    "thrivevineyardchurch.wordpress.2026-11-07.xml"
   ],
   "events": {
-    "total": 64,
-    "recurring": 18,
-    "one_time": 46,
-    "with_churchsuite": 12,
-    "past": 63,
-    "upcoming": 1
+    "source": 80,
+    "recurring": 25,
+    "one_time": 55
   },
   "sermons": {
-    "total": 104,
+    "total": 120,
     "speakers": 12,
-    "series": 20,
-    "with_youtube": 100,
+    "series": 22,
+    "with_youtube": 111,
     "with_audio": 41,
-    "with_scripture": 81,
-    "with_topics": 91
+    "with_scripture": 93,
+    "with_topics": 107
   },
   "event_issues": [
     {
-      "type": "multiple_churchsuite_urls",
-      "slug": "pjs-and-pancakes",
-      "urls": [
-        "https://thrivevineyard.churchsuite.com/events/ht6rjjys",
-        "https://thrivevineyard.churchsuite.com/events/ht6rjjys?details=0&amp;photo=0&amp;description=0&amp;location=0&amp;gmap=0&amp;signup_form=1"
-      ]
+      "type": "external_action_url",
+      "slug": "pjs-pancakes-christmas-bash",
+      "url": "https://www.signupgenius.com/go/10C0F4DACA92BA3FBC25-67318157-pjs"
     }
   ],
+  "occurrence_issues": [
+    {
+      "type": "editorial_schedule_review",
+      "slug": "expresso-service"
+    }
+  ],
+  "occurrences": {
+    "generated": 43,
+    "source_events": 8
+  },
   "sermon_issues": [
     {
       "type": "missing_media",
@@ -51,46 +55,37 @@
       "type": "missing_media",
       "slug": "more-than-less-sin-molly-kiefer",
       "title": "More Than Less Sin - Kevin Kiefer"
+    },
+    {
+      "type": "missing_media",
+      "slug": "faithful-through-the-ages-in-the-beginning-mike-woetzel",
+      "title": "Faithful Through the Ages: In the Beginning - Mike Woetzel"
+    },
+    {
+      "type": "missing_media",
+      "slug": "faithful-through-the-ages-facets-of-the-fathers-heart-kevin-kiefer",
+      "title": "Faithful Through the Ages: Facets of the Father&#039;s Heart - Kevin Kiefer"
+    },
+    {
+      "type": "missing_media",
+      "slug": "faithful-through-the-ages-the-eden-project-kevin-kiefer",
+      "title": "Faithful Through the Ages: The Eden Project - Kevin Kiefer"
+    },
+    {
+      "type": "missing_media",
+      "slug": "faithful-through-the-ages-wisdom-for-real-life-kevin-kiefer",
+      "title": "Faithful Through the Ages: Wisdom for Real Life - Kevin Kiefer"
+    },
+    {
+      "type": "missing_media",
+      "slug": "entrusted-when-enemies-show-up-kevin-molly-kiefer",
+      "title": "Entrusted: When Enemies Show Up – Kevin &amp; Molly Kiefer"
     }
   ],
-  "sermon_issue_counts": {
-    "missing_media": 4
-  },
   "event_issue_counts": {
-    "multiple_churchsuite_urls": 1
+    "external_action_url": 1
   },
-  "top_event_categories": {
-    "null": 16,
-    "Community Event": 13,
-    "Small Group": 7,
-    "Sunday Service": 6,
-    "Prayer": 5,
-    "Christmas Event": 4,
-    "Joy Drop": 3,
-    "Women's Event": 3,
-    "Kid's Ministry": 2,
-    "Fundraising Event": 2,
-    "Meal": 2,
-    "Worship Night": 1
-  },
-  "recurring_event_slugs": [
-    "joy-drop-outreach",
-    "palatine-lego-users-group",
-    "youth-alpha",
-    "summer-baptisms-2025",
-    "what-makes-you-beautiful-thrive-girls-group",
-    "kingdom-builders-2025",
-    "puerto-rico-mission-trip-fundraisers",
-    "come-to-the-table-conversations-that-lead-to-jesus",
-    "worship-night",
-    "prayer-ministry-training",
-    "rooted-small-group",
-    "contend-prayer-group",
-    "christmas-at-thrive",
-    "november-special-giving-days",
-    "seminary-now",
-    "womens-dbs",
-    "the-chosen-season-4-watch-party",
-    "family-worship-service"
-  ]
+  "sermon_issue_counts": {
+    "missing_media": 9
+  }
 }

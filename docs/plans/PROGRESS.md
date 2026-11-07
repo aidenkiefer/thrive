@@ -6,10 +6,18 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 
 ## Current status (2026-11-07)
 
-**Phase:** **MVP foundation merged** (PR #2) + **multi-agent workflow v2** (PR #1). Next: session `mvp-launch-readiness-1` for the **Nov 13, 2026** MVP target.
+**Phase:** Launch-readiness integration checkpoint. PRs #4, #6 and #7 merged; #8 and #5 remain open for final QA. MVP target remains November 13, 2026.
 
 **Active plan:** [`docs/agents/assignments/2026-11-07-mvp-launch-readiness-1.md`](../agents/assignments/2026-11-07-mvp-launch-readiness-1.md) (data: claude · experience: cursor · ops: codex)
 **Status sources:** [`docs/08-mvp-status-roadmap.md`](../08-mvp-status-roadmap.md) (roadmap) · [`docs/09-implementation-handoff.md`](../09-implementation-handoff.md) (PR #2 handoff)
+
+### Coordination checkpoint (2026-11-07, night handoff)
+
+- Merged #4 (C1 copy contract), #6 (admin/auth/schema/import hardening), and #7 (lint, 33 regression tests, dependency updates); each passed independent review and a clean integrated production gate before merge.
+- `main` is `ba3fe81`; install findings are now 6 moderate, 0 high, 0 critical. Lint has 12 warnings and no errors; final-main gate was not repeated after the wrap-up instruction.
+- #8 remains open: fix mobile link targets, qualify E6 completion, record browser evidence, rebase and run the full gate. #5 remains open for final integration after #8; its corrected audit passed independent review.
+- Schema/seed/live configuration remain unperformed or unverified. QA details and resume order: `docs/agents/qa/2026-11-07-mvp-launch-readiness-1.md`. Next three lanes are drafted in `docs/agents/assignments/2026-11-07-mvp-release-candidate-2.md`; not launched.
+The tables below preserve the pre-session baseline; the coordination checkpoint above supersedes their completed-work and pending-ticket claims until final consolidation after #8/#5.
 
 ### What's done
 

@@ -4,8 +4,8 @@
 
 ## Status
 <!-- ≤3 lines, kept current by scribe: done / in progress / parked / blocked -->
-D1-D4 done: d16db4d (D1), ee2d908 (D2), fdf4b0a (D3), d612aa3 (D4 readiness + Express(o) as recurring).
-D5 next. Lane NOT blocked; owner decision on speakers/staff contact columns is non-blocking (see blocker entry).
+D1-D5 done: d16db4d (D1), ee2d908 (D2), fdf4b0a (D3), d612aa3 (D4), 991c8dc (D5).
+Lane NOT blocked; owner decision on speakers/staff contact columns is non-blocking (see blocker entry).
 
 ## Entries
 <!-- Append-only, oldest first. Types: decision · change · blocker · request · note -->
@@ -26,3 +26,12 @@ D5 next. Lane NOT blocked; owner decision on speakers/staff contact columns is n
   Bugs fixed: (1) sermon published_at now Chicago offset, 180/180 match post_date_gmt; (2) recurrence_description now from rule fields ("Wednesdays", "Every other Thursday", "Selected dates"); (3) seed-current.ts series published_at = earliest sermon, not now(). parsed/ regenerated (occurrences 43->56).
   Key files: `migration-files/parse-current-exports.py`, `migration-files/parsed/import-readiness.md`, `scripts/seed-current.ts`, `migration-files/parsed/event_occurrences.json`, `migration-files/parsed/migration-report.json`, `migration-files/parsed/sermons.json`.
 - `03:14` **note**: seed re-run overwrites admin edits on imported slugs. Documented as owner note in import-readiness.md.
+- `03:20` **change** D5 T1: removed Supabase updateSession from `src/middleware.ts`, deleted `src/lib/supabase/middleware.ts`, matcher narrowed to `/admin/:path*`; NextAuth token gate unchanged. Edge warning gone, middleware bundle 111 kB -> 54.9 kB. (opus-5.5) [991c8dc]
+  Runtime check (`next start`, test secret): no token -> 307 /admin/login; non-admin token passes middleware, requireAdmin() 307 pages / 303 actions; admin token 200; 10 server actions = 10 requireAdmin() calls.
+  Key files: `src/middleware.ts`, `src/lib/supabase/server.ts`, `src/lib/supabase/middleware.ts` (deleted).
+- `03:20` **decision**: dropped Supabase session refresh. Site never uses Supabase Auth (no `supabase.auth` calls outside removed helper; admin = NextAuth; public reads = anon key), so no Supabase auth cookies to refresh. If Supabase Auth is added, restore refresh via a Node-runtime-safe path. (opus-5.5) [991c8dc]
+- `03:20` **decision**: matcher narrowed from all routes to `/admin/:path*`. Side effect: paths like `/adminfoo` no longer redirect to login (no such routes exist). (opus-5.5) [991c8dc]
+- `03:20` **note**: full gate run on D5: GATE PASS. Lint skipped (no ESLint config yet, Q1 in ops lane).
+- `03:20` **request** ops-quality (Q2): add Vitest unit tests for `src/lib/admin-validation.ts` (pure, no Next/Supabase imports). Cover parseInstant DST cases (2026-03-08 02:30 reject; 2026-11-01 01:30 accept at -05:00 and -06:00; -05:00 on 2026-11-15 reject; +00:00 accept), parseDateOnly 2026-02-29 reject, and the *PublishProblems functions. Express(o) rule lives in `migration-files/parse-current-exports.py` OWNER_SCHEDULES (Python), not src/lib. Target lane: ops-quality.
+- `03:20` **request** ops-quality: add `tsconfig.tsbuildinfo` to `.gitignore` (appears untracked after every typecheck). Target lane: ops-quality.
+- `03:20` **request** audit (A5 launch checklist), owner steps from data lane: (1) apply schema per `supabase/README.md` (fresh DB: `schema.sql` once; June DB: backup, then `migrations/20261107000000_mvp_foundation.sql`); (2) read `migration-files/parsed/import-readiness.md` before `npm run seed`; (3) seed once before admin editing starts (re-seed overwrites admin edits on imported slugs); (4) decide whether speakers.email / staff.email / staff.phone stay anon-readable. Target lane: audit.

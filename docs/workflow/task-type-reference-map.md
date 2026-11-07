@@ -35,16 +35,19 @@
 
 ## Sub-Agent Routing
 
-| Agent Type | Load these references | Load these skills |
-|---|---|---|
-| `frontend-agent` | `docs/07-design-system.md` (when created), `docs/03-information-architecture.md` | `frontend-design`, `react-best-practices`, `tailwind-patterns` |
-| `backend-agent` | `docs/05-content-models.md`, `docs/06-integrations.md` | `backend-dev-guidelines` |
-| `data-agent` | `docs/05-content-models.md`, `supabase/schema.sql` | `backend-dev-guidelines`, `postgres-best-practices` |
-| `seo-agent` | `docs/03-information-architecture.md`, `docs/04-seo-url-migration-map.md` | `seo` |
-| `admin-agent` | `docs/05-content-models.md`, `docs/06-integrations.md` | `backend-dev-guidelines`, `react-best-practices` |
-| `debugging-agent` | `docs/03-information-architecture.md`, `docs/06-integrations.md` | `systematic-debugging` |
-| `docs-agent` | `docs/INDEX.md`, `docs/workflow/workflow.md` | `writing-plans` |
-| `auth-agent` | `docs/06-integrations.md`, `src/middleware.ts` (read-only) | `nextjs-supabase-auth`, `backend-dev-guidelines` |
+Agent types are reference bundles. Each maps to the lane that owns its files (`roles-and-lanes.md`). `testing-agent` work belongs to the ops lane.
+
+
+| Agent Type | Lane | Load these references | Load these skills |
+|---|---|---|---|
+| `frontend-agent` | experience | `docs/07-design-system.md` (when created), `docs/03-information-architecture.md` | `frontend-design`, `react-best-practices`, `tailwind-patterns` |
+| `backend-agent` | data | `docs/05-content-models.md`, `docs/06-integrations.md` | `backend-dev-guidelines` |
+| `data-agent` | data | `docs/05-content-models.md`, `supabase/schema.sql` | `backend-dev-guidelines`, `postgres-best-practices` |
+| `seo-agent` | ops | `docs/03-information-architecture.md`, `docs/04-seo-url-migration-map.md` | `seo` |
+| `admin-agent` | data | `docs/05-content-models.md`, `docs/06-integrations.md` | `backend-dev-guidelines`, `react-best-practices` |
+| `debugging-agent` | (owner of the broken files) | `docs/03-information-architecture.md`, `docs/06-integrations.md` | `systematic-debugging` |
+| `docs-agent` | ops | `docs/INDEX.md`, `docs/workflow/workflow.md` | `writing-plans` |
+| `auth-agent` | data | `docs/06-integrations.md`, `src/middleware.ts` (read-only) | `nextjs-supabase-auth`, `backend-dev-guidelines` |
 
 ---
 

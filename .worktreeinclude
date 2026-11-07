@@ -1,0 +1,4 @@
+# Gitignored files Claude Code copies into worktrees it creates (subagent isolation, --worktree).
+# scripts/agents/worktree.sh copies these itself.
+.env
+.env.local

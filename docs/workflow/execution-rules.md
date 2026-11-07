@@ -1,44 +1,44 @@
 # Execution rules (agent runtime)
 
-**For:** Claude / Cursor agents when working in this repo.
-**Goal:** Bounded runs, minimal persistent context, lazy-loaded specs, explicit budgets.
-
-## 1. How to work
-
-### Specs vs tickets
-
-- **Specs** (read-only) live in `docs/plans/specs/`. They describe domain, schema, and sprint scope. Do not re-attach full specs every turn.
-- **Tickets** define one concrete change: Scope boundaries (Allowed files, Read-only references), Skill pack, Context + tool budget, and Done criteria. Use `docs/workflow/ticket-template.md`.
-
-### Session strategy (cost-efficient)
-
-1. **Hydrate (once per session):** Read the spec(s) for the next chunk of work once. Produce a Spec Summary (10–20 lines: constraints, invariants). Use it for subsequent tickets. See `docs/workflow/workflow.md` for the full ritual.
-2. **Batch 3–8 tickets** with the same spec summary. Do not re-load full specs for each ticket.
-3. **Clear at boundaries:** Use /clear (or new thread) between unrelated tasks.
-4. **Exploration in subagents:** If the task would require unbounded "investigate X," ask for narrowed scope or use an investigation subagent that returns a summary (exact paths + 3–6 bullets).
-5. Work from Spec Summary + ticket + Allowed Files. Re-anchor to spec quotes only when necessary.
-
-**Token efficiency:** See `docs/workflow/claude-opt.md` for session hygiene (`/clear`, `/compact`), subagents, minimal output, and multi-repo orchestration patterns.
+**For:** Claude Code, Cursor, and Codex agents working in this repo.
+**Goal:** Bounded, verifiable, conflict-free work at the lowest model cost that gets it right.
 
 ---
 
-## 2. Context + tool budget (enforce in tickets)
+## 1. Two modes
 
-- Max file reads: **8**. Prefer only Allowed Files and the 1–2 required read-only references.
-- Max grep/glob: **6**. Max total tool calls: **12**.
-- Before acting: estimate whether you can complete within budgets. If you will exceed, stop and ask for a narrower ticket or expanded budgets.
-- Do not scan the whole repo. Prefer targeted retrieval; ask for the path if unclear.
-- **Skills:** Ticket names the skill pack (0–2 core, 0–2 domain). Do not load the full skill registry.
+| Mode | When | Unit of work | Docs |
+|---|---|---|---|
+| **Session mode** (default for real progress) | Owner runs a PM → build → QA cycle | A lane in an assignment (2–6 tickets) | `workflow.md`, `lane-builder` skill |
+| **Solo mode** | A tiny fix or a one-off ticket | One ticket on `<tool>/fix-<slug>` | This file + `ticket-template.md` |
 
----
+Both modes use the same branch naming, quality gate, and PR template.
 
-## 3. Constraints (always in effect)
+## 2. Before the first edit (every session, every tool)
 
-- **Allowed Files:** Edit only the paths listed in the ticket. If the change requires editing a file not listed, stop and ask.
-- **Scope:** Implement only what the task or sprint explicitly requests. Do not add out-of-scope features unless asked.
-- **Project-specific constraints:** See Section 3a below.
+1. `git branch --show-current && pwd`: you're on **your** tool prefix (`claude/`, `cursor/`, `codex/`) in **your** worktree, never the main checkout (see `git-and-worktrees.md` §1).
+2. You know your owned paths: the lane in the assignment, or the ticket's Allowed Files.
+3. You picked a model tier for the first ticket (`model-routing.md`).
 
-### 3a. Project-specific constraints
+## 3. Context + tool budgets (by ticket size)
+
+| Size | File reads | grep/glob | Total tool calls |
+|---|---|---|---|
+| **S** (one concern, 1–3 files) | 8 | 6 | 15 |
+| **M** (one feature slice, 3–8 files) | 15 | 10 | 30 |
+| **L** | Not allowed. Split it, or plan it on T2 first | | |
+
+- Estimate before acting. If you'll blow the budget: in **solo mode**, stop and ask. In **session mode**, finish the part that stands alone, `scribe log blocker`, and move to the next ticket. Don't stall the lane.
+- Prefer targeted reads (path + offset/limit). No whole-repo scans; delegate broad exploration to a cheap read-only subagent.
+- Skills: the ticket names the pack (0–2 core, 0–2 domain). The four agent skills (`product-manager`, `lane-builder`, `scribe`, `senior-qa`) are always allowed.
+
+## 4. Constraints (always in effect)
+
+- **Edit only owned paths:** the lane's paths (session mode) or the ticket's Allowed Files (solo mode). Anything else is a cross-lane request (`roles-and-lanes.md` §3), never a quick edit.
+- **Hot files** have one owner per session (named in the assignment).
+- **Scope:** implement only what the ticket asks. Log follow-ups instead of doing them.
+
+### 4a. Project-specific constraints
 
 <!-- PRESERVE: Thrive Vineyard project constraints -->
 
@@ -46,88 +46,58 @@
 All data fetching via Server Components using `src/lib/supabase/server.ts`. The browser client (`src/lib/supabase/client.ts`) is for client-side-only interactions (e.g., auth state listeners). No direct Supabase queries in JSX files unless they are server-only files.
 
 **[PROJECT-SPECIFIC] Admin routes require NextAuth session.**
-`middleware.ts` at the project root protects all `/admin/**` routes. Never implement an admin page without verifying it is inside the protected route group. Do not add bypass logic.
+`src/middleware.ts` protects all `/admin/**` routes. Never implement an admin page without verifying it is inside the protected route group. Do not add bypass logic.
 
 **[PROJECT-SPECIFIC] Never invent ministry data.**
-Do not fabricate event dates, staff names, phone numbers, email addresses, ministry descriptions, or ChurchSuite form URLs. All content comes from the Supabase database or MDX files — never from AI generation without user approval.
+Do not fabricate event dates, staff names, phone numbers, email addresses, ministry descriptions, or ChurchSuite form URLs. All content comes from the Supabase database, MDX files, or source exports, never from AI generation without owner approval.
 
 **[PROJECT-SPECIFIC] SEO redirects for WordPress migration.**
-Any route added or changed that differs from the existing WordPress URL structure must be accompanied by a 301 redirect entry in `next.config.ts`. Unmatched old URLs lose search ranking. See `docs/04-seo-url-migration-map.md` (pending audit).
+Any route added or changed that differs from the existing WordPress URL structure must be accompanied by a 301 redirect entry in `next.config.ts` (ops lane owns it; others file a request). See `docs/04-seo-url-migration-map.md`.
 
 **[PROJECT-SPECIFIC] ChurchSuite is forms only.**
-ChurchSuite handles registrations. The website stores a `churchsuite_form_url` field on entities and renders a link/button to it. Do not make API calls to ChurchSuite. Do not attempt to sync or import ChurchSuite data.
+The website stores a `churchsuite_form_url` field on entities and renders a link/button to it. No API calls to ChurchSuite. No sync or import of ChurchSuite data.
 
 <!-- /PRESERVE -->
 
----
+## 5. Verification
 
-## 4. What not to do
+Cheap during work, mandatory at the boundaries. Full policy: `devops-automation.md` §1.
 
-- Do not run build, dev, test, or compile to "verify" or "confirm" changes. Verification is the user's responsibility.
-- Do not re-read entire files after editing to "self-review" or "double-check."
-- Do not offer to run tests or linters unless the user explicitly asks.
-- Do not duplicate constraints that are already in CLAUDE.md or this file inside tickets.
-- Do not load philosophy or long explanatory docs at runtime.
-- Do not load the full skill registry; use only the skill pack named in the ticket.
+- **Before every push that opens or updates a PR:** `scripts/agents/gate.sh` → `GATE: PASS`. Never push a failing build. Report warnings separately from failures.
+- During work: `scripts/agents/gate.sh --quick` only when it answers a real question.
+- Not allowed: full builds after every edit, re-reading files after edits "to double-check", or idle dev servers.
 
----
+## 6. Git hygiene
 
-## 5. Where things are
+- Stage explicit paths (`git add <paths>`), never `git add -A`. Run `git status --short` before each commit.
+- Commits: `<type>(<lane>): <summary>`, one per logical change, at least one per ticket. Push at least once per ticket.
+- Never force-push shared branches, commit to `main` without the owner's approval, or merge your own PR.
+- Leave the worktree clean at session end: everything committed or deliberately discarded, and no temp artifacts.
 
-- **Repo map:** `docs/INDEX.md`
-- **Specs:** `docs/plans/specs/`
-- **Tickets:** `docs/plans/tickets/`. Sprint summaries: `docs/plans/summaries/`
-- **Progress log:** `docs/plans/PROGRESS.md`
-- **Ticket template:** `docs/workflow/ticket-template.md`
-- **Skill map:** `docs/workflow/skill-map.md`
-- **Task-type reference map:** `docs/workflow/task-type-reference-map.md`
-- **Session hydrate:** `docs/workflow/workflow.md` → "Session start ritual"
-- **Claude optimization:** `docs/workflow/claude-opt.md`
-- **Architecture:** `docs/03-information-architecture.md`
-- **Content models:** `docs/05-content-models.md`
-- **Integrations:** `docs/06-integrations.md`
-- **Schema:** `supabase/schema.sql`
+## 7. Documentation duties
 
-Read only what the current task needs.
+| Who | Writes | Via |
+|---|---|---|
+| Lane builder | Its own session log (decisions, changes, blockers, requests) + PR body | `scribe` (T0) |
+| Senior QA | `docs/plans/PROGRESS.md` entry + QA report | `scribe consolidate` + own review |
+| PM | Assignment file | `product-manager` |
+| Milestone / architecture change | `docs/plans/summaries/<YYYY-MM-DD>-<name>.md`, linked from PROGRESS | QA or PM |
 
----
+**Builders never edit `PROGRESS.md`.** It's the most conflict-prone file in a parallel workflow; QA writes it once per session.
 
-## 6. Sub-agent routing and context priority
+## 8. Anti-patterns
 
-When a ticket specifies `Agent type: <type>`, use `docs/workflow/task-type-reference-map.md` to look up:
-- The required reference bundle for that agent type
-- The domain skills to invoke
-- The typical file scope
+- **Shared checkout:** two agents in one directory. Each agent gets its own worktree.
+- **Feature-split lanes:** splitting by feature instead of by files. Lanes are file ownership; features cross lanes through contracts.
+- **"Just one line" in another lane:** file a request instead.
+- **Heavy model on grunt work:** Opus or Sol writing logs, PR bodies, or renames. Use the scribe or a T0 subagent.
+- **Light model on irreversible decisions:** schema, auth, migration mapping, URL structure. Escalate.
+- **Kitchen-sink threads:** use `/clear` or a new chat between unrelated work. One chat per lane per session.
+- **Re-attaching big specs every turn:** read once, then work from the assignment + Spec Summary.
+- **Self-approval:** builders don't review or merge their own work. A separate, skeptical QA does.
 
-**Context load order (within a ticket):**
-1. Required references — must-read docs in the ticket
-2. Small (S) before Large (L) — lower token cost first
-3. HIGH-priority before MEDIUM/LOW — primary source of truth first
-4. Optional references — only if relevant or within budget
+## 9. Where things are
 
-If no agent type is specified, infer from task type using the full table in `task-type-reference-map.md`.
+`docs/workflow/workflow.md` (entrypoint) · `roles-and-lanes.md` · `git-and-worktrees.md` · `model-routing.md` · `devops-automation.md` · `ticket-template.md` · `skill-map.md` · `task-type-reference-map.md` · `claude-opt.md` · `docs/agents/` (assignments, sessions, QA) · `docs/plans/` (specs, tickets, PROGRESS) · `docs/INDEX.md` · `docs/03-information-architecture.md` · `docs/05-content-models.md` · `docs/06-integrations.md` · `supabase/schema.sql`
 
----
-
-## 7. Completion documentation rule
-
-**PROGRESS.md (always required):** On completion, append a short dated entry to `docs/plans/PROGRESS.md`. Keep it concise (1–3 bullets): what changed, key files/area, and why if non-obvious.
-
-**Summary files (required for non-trivial work):**
-
-| Work size | Action |
-|---|---|
-| Tiny fix, one-liner, doc or config tweak | PROGRESS.md patch row only |
-| Single meaningful ticket (new route, schema change, component) | PROGRESS.md entry is sufficient |
-| Sprint, feature, or 3+ related tickets completing a surface | Write `docs/plans/summaries/{YYYY-MM-DD}-{name}.md` + link from PROGRESS.md |
-| Major milestone, version bump, or architectural change | Write summary — required |
-
----
-
-## 8. Anti-patterns (avoid)
-
-- **Kitchen-sink threads:** Use /clear. **Infinite exploration:** narrow prompt or investigation subagent.
-- **Overlong CLAUDE.md:** Keep project memory minimal. **Re-attaching large specs every ticket:** read once, summarize once, then ticket.
-- **Loading huge skill registries:** ticket-driven activation only. **Planning + implementation + verification in one run:** split phases.
-- **Scanning whole repo:** use targeted reads and explicit paths. **Re-reading files after edits:** trust your work.
-- **Pasting canonical docs into chat:** read from disk once; use summaries and tables instead of full file bodies.
+Read only what the current ticket needs.

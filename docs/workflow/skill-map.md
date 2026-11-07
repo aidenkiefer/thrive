@@ -1,8 +1,21 @@
-# Skill map — Layer 1: Workflow Process Skills
+# Skill map
 
-Skills are a **routing layer**, not "load the encyclopedia." The ticket names the exact skill(s) to invoke. Do not load any skills unless the ticket lists them.
+Skills are a **routing layer**, not an encyclopedia to load up front. The ticket names the exact skill(s) to invoke. Layer 0 skills are always allowed; load other skills only when the ticket lists them.
 
 **For domain skills and project-specific skills (Layers 2 & 3), see `task-type-reference-map.md`** — the "Skills" column for each task type lists the domain skills to invoke.
+
+---
+
+## Layer 0: Multi-agent role skills (this repo, cross-tool)
+
+Live in `.agents/skills/` (Codex and Cursor read it natively; Claude Code reads it through the `.claude/skills` symlink). See `workflow.md`.
+
+| When | Skill | Tier |
+|---|---|---|
+| Planning a parallel session / "what's next" | `product-manager` | T2 (pinned opus/high in Claude) |
+| Executing a lane in a worktree | `lane-builder` | per ticket |
+| Logging, checkpoints, PR bodies, PROGRESS consolidation | `scribe` | T0 (forks onto haiku/low in Claude) |
+| Reviewing, gating, and merging lane PRs | `senior-qa` | T2 (pinned opus/high in Claude) |
 
 ---
 
@@ -30,7 +43,10 @@ Skills are a **routing layer**, not "load the encyclopedia." The ticket names th
 |------|-------|
 | Starting feature work that needs isolation | `using-git-worktrees` |
 | Implementation is complete and ready to integrate | `finishing-a-development-branch` |
-| Running multiple independent tasks in parallel | `dispatching-parallel-agents` |
+| Running multiple independent tasks in parallel (inside one lane) | `dispatching-parallel-agents` |
+| Reviewing a diff/PR for bugs (QA, risky PRs) | `code-review` (medium; high for auth/schema/migrations) |
+
+**Worktree note:** across tools, create worktrees with `scripts/agents/worktree.sh` (enforces `<tool>/` branch names). `using-git-worktrees` and Claude's `isolation: worktree` are for temporary subagent scratch work inside a lane.
 
 ---
 

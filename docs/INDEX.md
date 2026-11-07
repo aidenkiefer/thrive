@@ -32,7 +32,13 @@ All documentation for the Thrive Vineyard website project.
 
 | Doc | Description | Size |
 |---|---|---|
-| `docs/workflow/workflow.md` | Agent session entrypoint — how to batch tickets, specs vs tickets | S |
+| `docs/workflow/workflow.md` | **Entrypoint (v2 multi-agent)**: operating model, session lifecycle, launch prompts | S |
+| `docs/workflow/roles-and-lanes.md` | Roles, lane ownership map, hot files, contracts, tool ↔ lane fit | S |
+| `docs/workflow/git-and-worktrees.md` | Branch/worktree naming, commits, PRs, merge policy | S |
+| `docs/workflow/model-routing.md` | Model tiers per tool + switching rules | S |
+| `docs/workflow/devops-automation.md` | Verification policy, quality gate, CI, automations, hooks | S |
+| `docs/workflow/portability.md` | Reusing the workflow on other projects | S |
+| `docs/workflow/research-sources.md` | Sources behind workflow v2 | S |
 | `docs/workflow/execution-rules.md` | Runtime rules, budgets, project-specific constraints, completion docs | M |
 | `docs/workflow/ticket-template.md` | Bounded job structure for every agent task | S |
 | `docs/workflow/skill-map.md` | Layer 1/2/3 skills — when to invoke each | M |
@@ -47,7 +53,8 @@ All documentation for the Thrive Vineyard website project.
 
 | Doc | Description |
 |---|---|
-| `docs/plans/PROGRESS.md` | Milestone log, patch history, backlog |
+| `docs/plans/PROGRESS.md` | Milestone log, patch history, backlog (written by senior QA only) |
+| `docs/agents/` | Multi-agent records: assignments (PM), session logs (scribe), QA reports |
 | `docs/plans/specs/` | Feature specs — **active:** `sprint-01-demo-draft.md` |
 | `docs/plans/tickets/` | Bounded agent tasks — **10 tickets** for Sprint 01 |
 | `docs/plans/summaries/` | Sprint and feature completion summaries |

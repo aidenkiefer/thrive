@@ -8,23 +8,23 @@ Redirects are configured in `next.config.ts` → `redirects()`.
 
 ## Priority mapping (named routes)
 
-| Live URL | New URL | Priority | Notes |
-|---|---|---|---|
-| `/im-new/` | `/plan-a-visit` | High | Primary "Plan a Visit" page; high ad/visitor traffic |
-| `/teaching/` | `/sermons` | High | Watch & Listen hub; consider keeping `/teaching/` as alias |
-| `/sermons/` | `/sermons` | — | Same path |
-| `/sermons/[slug]/` | `/sermons/[slug]` | — | Verify slug parity during export |
-| `/events/` | `/events` | — | Same path |
-| `/upcoming-events/[slug]/` | `/events/[slug]` | High | MEC prefix change — all ~62 events |
-| `/groups/` | `/groups` | — | Same path |
-| `/kids/` | `/kids-youth` | High | Path change |
-| `/youth-alpha/` | `/kids-youth#youth-alpha` or `/youth-alpha` | Medium | Decide: anchor vs dedicated route |
-| `/about/` | `/about` | — | Same path |
-| `/give/` | `/give` | — | Same path |
-| `/get-connected/` | `/plan-a-visit` or `/about` | Medium | No 1:1 equivalent — split contact CTAs |
-| `/prayer/` | TBD | Medium | New route or embed in `/about` |
-| `/expresso/` | `/plan-a-visit#expresso` | Medium | Section redirect |
-| `/volunteering/` | `/give#volunteer` | Low | Partial content overlap |
+| Live URL | New URL | Status | Priority | Notes |
+|---|---|---|---|---|
+| `/im-new/` | `/plan-a-visit` | implemented | High | Primary "Plan a Visit" page; high ad/visitor traffic |
+| `/teaching/` | `/sermons` | implemented | High | Watch & Listen hub; consider keeping `/teaching/` as alias |
+| `/sermons/` | `/sermons` | same-path | — | Verify slug parity during export |
+| `/sermons/[slug]/` | `/sermons/[slug]` | same-path | — | Verify slug parity during export |
+| `/events/` | `/events` | same-path | — | Same path |
+| `/upcoming-events/[slug]/` | `/events/[slug]` | implemented | High | MEC prefix change — all ~62 events |
+| `/groups/` | `/groups` | same-path | — | Same path |
+| `/kids/` | `/kids-youth` | implemented | High | Path change |
+| `/youth-alpha/` | `/ministries/youth-alpha` | implemented | Medium | Dedicated ministry page; owner creates the canonical record |
+| `/about/` | `/about` | same-path | — | Same path |
+| `/give/` | `/give` | same-path | — | Same path |
+| `/get-connected/` | TBD | pending-audit | Medium | A2 recommendation and owner decision required |
+| `/prayer/` | TBD | pending-audit | Medium | A2 recommendation and owner decision required |
+| `/expresso/` | TBD | pending-audit | Medium | A2 recommendation and owner decision required |
+| `/volunteering/` | TBD | pending-audit | Low | A2 recommendation and owner decision required |
 
 ---
 
@@ -36,13 +36,13 @@ Live site uses singular taxonomy paths not in planned IA. Options:
 2. **301 to `/sermons/series/[slug]`** for series only; others to `/sermons`
 3. **Keep taxonomy routes** as optional archive pages
 
-| Live pattern | Suggested redirect | Count |
-|---|---|---|
-| `/series/[slug]/` | `/sermons/series/[slug]` | Per series |
-| `/speaker/[slug]/` | `/sermons/speakers/[slug]` | Per speaker |
-| `/topics/[slug]/` | `/sermons?topic=[slug]` | TBD — filter not built yet |
-| `/book/[slug]/` | `/sermons?book=[slug]` | TBD |
-| `/service-type/[slug]/` | `/sermons?type=[slug]` | TBD |
+| Live pattern | Redirect | Status | Count |
+|---|---|---|---|
+| `/series/[slug]/` | `/sermons/series/[slug]` | implemented | Per series |
+| `/speaker/[slug]/` | TBD | pending-audit | Per speaker |
+| `/topics/[slug]/` | `/sermons` | implemented, temporary | Temporary until topic filters exist |
+| `/book/[slug]/` | `/sermons` | implemented, temporary | Temporary until book filters exist |
+| `/service-type/[slug]/` | `/sermons` | implemented, temporary | Temporary until service-type filters exist |
 
 ---
 
@@ -50,17 +50,17 @@ Live site uses singular taxonomy paths not in planned IA. Options:
 
 Live campaign pages at root slugs. Map to `landing_pages` table or named routes:
 
-| Live slug | Suggested handling |
-|---|---|
-| `/joydrop/` | `outreach` entity or landing page |
-| `/pantry/` | Landing page linked to Pack the Pantry event |
-| `/plug/` | `recurring_events` or landing page |
-| `/la-vina/` | `ministries` entity |
-| `/prayer-walk/` | `outreach` entity |
-| `/greenthumbs/` | Landing page |
-| `/sokm/` | Landing page or ministry |
-| `/feel-the-power/`, `/fuelthefire/`, `/fasting/` | Landing pages — check ad traffic in Search Console |
-| `/easter/`, `/christmas-guide/` | Seasonal landing pages — may expire |
+| Live slug | Suggested handling | Status |
+|---|---|---|
+| `/joydrop/` | `outreach` entity or landing page | pending-audit |
+| `/pantry/` | Landing page linked to Pack the Pantry event | pending-audit |
+| `/plug/` | `recurring_events` or landing page | pending-audit |
+| `/la-vina/` | `ministries` entity | pending-audit |
+| `/prayer-walk/` | `outreach` entity | pending-audit |
+| `/greenthumbs/` | Landing page | pending-audit |
+| `/sokm/` | Landing page or ministry | pending-audit |
+| `/feel-the-power/`, `/fuelthefire/`, `/fasting/` | Landing pages — check ad traffic in Search Console | pending-audit |
+| `/easter/`, `/christmas-guide/` | Seasonal landing pages — may expire | pending-audit |
 
 **Google Ads:** Confirm active campaign destination URLs against this list before launch. Conversion ID: `AW-16575196430`.
 
@@ -100,9 +100,12 @@ async redirects() {
     { source: '/teaching', destination: '/sermons', permanent: true },
     { source: '/upcoming-events/:slug', destination: '/events/:slug', permanent: true },
     { source: '/kids', destination: '/kids-youth', permanent: true },
-    // ... per-slug campaign redirects added after Search Console review
+    { source: '/youth-alpha', destination: '/ministries/youth-alpha', permanent: true },
+    { source: '/topics/:slug', destination: '/sermons', permanent: false },
+    { source: '/book/:slug', destination: '/sermons', permanent: false },
+    { source: '/service-type/:slug', destination: '/sermons', permanent: false },
   ]
 }
 ```
 
-Full per-slug redirect list to be appended after content export and Search Console audit.
+Campaign and undecided named-route redirects remain pending until A2 recommendations and owner approval.

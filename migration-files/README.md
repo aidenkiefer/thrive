@@ -1,48 +1,30 @@
 # Migration files
 
-WordPress XML exports and parsed JSON for Supabase import.
+WordPress source exports and parsed JSON for the Supabase import.
 
-## Source exports (manual)
+## Current sources (November 2026)
 
-| File | Plugin | Records |
-|------|--------|--------:|
-| `events.xml` | Modern Events Calendar | 64 |
-| `sermons.xml` | Sermon Manager Pro (WXR) | 106 posts → 104 usable |
+| File | Source | Records |
+|---|---|---:|
+| `mec-events-20261107UTC0059.json` | Modern Events Calendar | 80 published events |
+| `thrivevineyardchurch.wordpress.2026-11-07.xml` | WordPress WXR | 120 published sermons, 2 excluded sermons, 59 attachments |
 
-Re-export from WordPress when content changes, then re-run the parser.
+The older `events.xml` and `sermons.xml` remain for historical comparison. `parse-export.py` reads those older files by default. The current export conversion uses `parse-current-exports.py`.
 
-## Parse into JSON
+## Convert current exports
 
-```bash
-python3 migration-files/parse-export.py
-```
-
-Outputs to `parsed/`:
-
-- `recurring_events.json` — maps to `recurring_events` table
-- `one_time_events.json` — maps to `one_time_events` table
-- `speakers.json`, `sermon_series.json`, `sermons.json`
-- `migration-report.json` — stats and data quality issues
-
-## Documentation
-
-Full field mapping, issues, and enhancement recommendations: [docs/02-content-inventory.md](../docs/02-content-inventory.md).
-
-## Running the seed script
-
-Requires `.env.local` with `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
-
-After applying `supabase/schema.sql` to your Supabase project:
+From the repository root:
 
 ```bash
-npm run seed
+python3 migration-files/parse-current-exports.py
 ```
 
-The script is idempotent — safe to re-run. It will upsert all records on slug conflict.
+The command writes `migration-files/parsed/` for the existing seed script. It accepts `--events`, `--sermons`, and `--out` to read a different source or write a review copy elsewhere. It does not connect to Supabase.
 
-## Next steps
+Review `parsed/migration-report.json` before any seed. The current output contains 25 recurring and 55 one-time events, 120 published sermons, 12 speakers, and 22 series. It also flags one external event action URL and nine sermons without detected media. External action URLs are retained in parsed JSON and imported into the `external_url` event columns. The public event detail page displays external action links alongside confirmed ChurchSuite links.
 
-1. Schema tweaks (`topics`, `service_type`, `venue`) — see content inventory doc
-2. `event_occurrences` expansion script for recurring events
-3. Media re-hosting (audio MP3s, featured images)
-4. ~~Supabase seed/import script~~ — done; see `scripts/seed-from-parsed.ts`
+## Database handoff
+
+`npm run seed` now runs `scripts/seed-current.ts`. It reads `migration-files/parsed/`, requires the Supabase URL and service role key in `.env.local`, and stops on missing or stale inputs and database errors. It imports source records and generated occurrences only; it does not write hand-authored homepage rows. Apply the current `supabase/schema.sql` additions first, including the occurrence identity index and `external_url` columns. Existing duplicate occurrence rows must be reconciled before adding the unique index.
+
+The parser uses each event's reported timezone (defaulting to `America/Chicago`) for one-time event timestamps, preserving daylight-saving offsets. The parser generates a 90-day occurrence window for supported weekly rules and the Sunday family service. The current report contains 43 occurrences across eight recurring events. Explicit `custom_days` dates are expanded; Express(o) is held for editorial schedule review. Review these before relying on the public calendar, and rerun the converter when refreshing its 90-day window.

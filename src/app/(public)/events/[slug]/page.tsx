@@ -46,6 +46,7 @@ export default async function EventDetailPage({ params }: Props) {
           location={event.location}
           venue={event.venue}
           churchsuiteFormUrl={event.churchsuite_form_url}
+          externalUrl={event.external_url}
           startDatetime={isOneTime && 'start_datetime' in event ? event.start_datetime : null}
           endDatetime={isOneTime && 'end_datetime' in event ? event.end_datetime : null}
           recurrenceDescription={isRecurring && 'recurrence_description' in event ? event.recurrence_description : null}

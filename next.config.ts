@@ -21,12 +21,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // 301 redirects from WordPress will be populated here after the SEO audit.
-  // See docs/04-seo-url-migration-map.md (pending Google Search Console audit).
+  // Confirmed legacy paths with a working destination. Campaign URLs still need
+  // Search Console and active Ads destination review before migration.
   async redirects() {
     return [
-      // Example format:
-      // { source: '/old-wordpress-path', destination: '/new-path', permanent: true },
+      { source: '/im-new', destination: '/plan-a-visit', permanent: true },
+      { source: '/teaching', destination: '/sermons', permanent: true },
+      { source: '/upcoming-events/:slug', destination: '/events/:slug', permanent: true },
+      { source: '/kids', destination: '/kids-youth', permanent: true },
+      { source: '/series/:slug', destination: '/sermons/series/:slug', permanent: true },
     ]
   },
 }

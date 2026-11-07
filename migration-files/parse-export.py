@@ -276,8 +276,8 @@ def get_categories(chunk: str) -> dict[str, list[dict[str, str]]]:
     return taxonomies
 
 
-def parse_sermons() -> dict[str, Any]:
-    raw = (ROOT / "sermons.xml").read_text(encoding="utf-8")
+def parse_sermons(source: Path | None = None) -> dict[str, Any]:
+    raw = (source or ROOT / "sermons.xml").read_text(encoding="utf-8")
     raw = re.sub(r"&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)", "&amp;", raw)
     chunks = raw.split("<item>")[1:]
     sermon_chunks = [c.split("</item>")[0] for c in chunks if "wpfc_sermon" in c.split("</item>")[0]]

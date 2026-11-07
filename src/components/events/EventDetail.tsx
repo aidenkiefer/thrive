@@ -8,6 +8,7 @@ interface EventDetailProps {
   location: string | null
   venue: string | null
   churchsuiteFormUrl: string | null
+  externalUrl: string | null
   // For one_time events:
   startDatetime: string | null
   endDatetime: string | null
@@ -19,16 +20,16 @@ interface EventDetailProps {
 
 function formatFullDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', {
-    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'America/Chicago'
   })
 }
 function formatTime(dateStr: string) {
-  return new Date(dateStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+  return new Date(dateStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Chicago' })
 }
 
 export function EventDetail({
   name, description, category, imageUrl, location, venue,
-  churchsuiteFormUrl, startDatetime, endDatetime,
+  churchsuiteFormUrl, externalUrl, startDatetime, endDatetime,
   recurrenceDescription, typicalTime, nextOccurrenceStart,
 }: EventDetailProps) {
   const displayDate = startDatetime
@@ -81,6 +82,11 @@ export function EventDetail({
           <Button href={churchsuiteFormUrl} variant="primary">
             Sign Up / Register
           </Button>
+        </div>
+      )}
+      {externalUrl && externalUrl !== churchsuiteFormUrl && (
+        <div className="mt-8">
+          <Button href={externalUrl} variant="primary">Event details / Sign up</Button>
         </div>
       )}
     </article>

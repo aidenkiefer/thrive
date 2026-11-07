@@ -1,6 +1,7 @@
 -- Thrive Vineyard — Supabase Schema
 -- Source of truth: docs/05-content-models.md
--- Apply via Supabase dashboard SQL editor or `supabase db push`
+-- Fresh project: apply this file once. Existing June database: apply supabase/migrations/ instead.
+-- See supabase/README.md. Apply via Supabase dashboard SQL editor or `supabase db push`
 -- After applying: npx supabase gen types typescript --local > src/lib/supabase/types.ts
 
 -- =============================================================================
@@ -294,7 +295,15 @@ create policy "public_read_staff" on staff for select using (true);
 create policy "public_read_sermon_series" on sermon_series for select using (published_at is not null);
 create policy "public_read_sermons" on sermons for select using (published_at is not null);
 create policy "public_read_recurring_events" on recurring_events for select using (published_at is not null);
-create policy "public_read_event_occurrences" on event_occurrences for select using (cancelled = false);
+-- Occurrences are public only when not cancelled and their recurring event is published
+create policy "public_read_event_occurrences" on event_occurrences for select using (
+  cancelled = false
+  and exists (
+    select 1 from recurring_events r
+    where r.id = event_occurrences.recurring_event_id
+      and r.published_at is not null
+  )
+);
 create policy "public_read_one_time_events" on one_time_events for select using (published_at is not null);
 create policy "public_read_groups" on groups for select using (published_at is not null);
 create policy "public_read_ministries" on ministries for select using (published_at is not null);

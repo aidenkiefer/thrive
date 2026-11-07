@@ -194,7 +194,7 @@
 | wpfc_sermon | https://thrivevineyard.com/sermons/entrusted-molly-kiefer/ | 200 | Entrusted - Molly Kiefer - Thrive Vineyard Church | /sermons/entrusted-molly-kiefer |
 | wpfc_sermon | https://thrivevineyard.com/sermons/entrusted-when-enemies-show-up-kevin-molly-kiefer/ | 200 | Entrusted: When Enemies Show Up – Kevin & Molly Kiefer - Thrive Vineyard Church | /sermons/entrusted-when-enemies-show-up-kevin-molly-kiefer |
 | wpfc_sermon | https://thrivevineyard.com/sermons/entrusted-with-the-kingdom-kevin-kiefer/ | 200 | Entrusted with the Kingdom – Kevin Kiefer - Thrive Vineyard Church | /sermons/entrusted-with-the-kingdom-kevin-kiefer |
-| mec-events | https://thrivevineyard.com/upcoming-events/ | 200 | Events Archive - Thrive Vineyard Church | /events/upcoming-events |
+| mec-events | https://thrivevineyard.com/upcoming-events/ | 200 | Events Archive - Thrive Vineyard Church | /events |
 | mec-events | https://thrivevineyard.com/upcoming-events/nacho-average-fundraiser-benefitting-july-mission-trip-to-puerto-rico/ | 200 | "Nacho" Average Fundraiser: Benefitting July Mission Trip to Puerto Rico - Thrive Vineyard Church | /events/nacho-average-fundraiser-benefitting-july-mission-trip-to-puerto-rico |
 | mec-events | https://thrivevineyard.com/upcoming-events/made-for-more-womens-event/ | 200 | Made for More: Women's Event - Thrive Vineyard Church | /events/made-for-more-womens-event |
 | mec-events | https://thrivevineyard.com/upcoming-events/pack-the-pantry/ | 200 | Pack the Pantry - Thrive Vineyard Church | /events/pack-the-pantry |

@@ -20,4 +20,4 @@ unset THRIVE_ADMIN_PASSWORD
 
 Copy the printed value to `ADMIN_PASSWORD_SCRYPT`. Use a unique password of at least 16 characters. Generate `NEXTAUTH_SECRET` with `openssl rand -base64 32`.
 
-`/admin/login` accepts the configured email and password. Middleware protects `/admin/**` except the login page. The dashboard and CRUD pages still need implementation; successful sign-in currently unlocks their placeholder screens. Rotate the password by generating a new hash and updating the environment value.
+`/admin/login` accepts the configured email and password. Middleware protects `/admin/**` except the login page. The announcements editor supports creating, updating, publishing, and unpublishing records. Other admin sections remain placeholders. Rotate the password by generating a new hash and updating the environment value.

@@ -1,5 +1,7 @@
 # 06 — Integrations
 
+The [current floorplan](../floorplan.md) adds server-side email for Thrive-owned forms and GitHub Projects for development tracking. Hosted integrations still use their own destinations. See [MVP release dependencies](plans/specs/2026-11-18-mvp-preparation.md) for service checks.
+
 ## Supabase
 
 **Role:** Primary data layer for all dynamic content.
@@ -143,8 +145,11 @@ Live `/give/` page supports four channels — all must appear in `/give` MDX:
 
 | ID | Purpose |
 |---|---|
-| `GTM-NQV3Z3N7` | Google Tag Manager container |
+| `GTM-NQV3Z3N7` | Google Tag Manager container (live WordPress site) |
+| `GTM-PRJX6P9H` | Google Tag Manager container (new site, owner choice 2026-11-18) |
 | `AW-16575196430` | Google Ads conversion tracking |
+
+The new site loads only `GTM-PRJX6P9H`; Ads `AW-16575196430` is not loaded directly, and the owner is to confirm it lives inside that container.
 
 Add to new site layout before decommissioning WordPress. Active ad campaigns depend on landing page URLs — see [04-seo-url-migration-map.md](./04-seo-url-migration-map.md).
 

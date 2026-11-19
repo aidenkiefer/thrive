@@ -56,7 +56,7 @@ Live in `.agents/skills/` (Codex and Cursor read it natively; Claude Code reads 
 
 **Last refreshed: 2026-06-11**
 
-**Library root:** `~/projects/skills/`
+**Optional library root:** `~/projects/skills/`. This library is separate from the repository. For a fresh checkout without it, see [agent onboarding](agent-onboarding.md) for the fallback.
 
 ### Frontend skills
 

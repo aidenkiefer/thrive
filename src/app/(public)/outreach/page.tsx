@@ -36,7 +36,7 @@ export default async function OutreachPage() {
               <Link
                 key={item.id}
                 href={`/outreach/${item.slug}`}
-                className="group flex h-full flex-col overflow-hidden rounded-2xl bg-neutral-0 shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+                className="group flex h-full flex-col overflow-hidden rounded-2xl bg-neutral-0 shadow-sm ring-1 ring-black/5 motion-lift hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
               >
                 {item.featured_image_url && (
                   <div className="relative aspect-[3/2] overflow-hidden bg-brand-100">

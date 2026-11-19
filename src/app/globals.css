@@ -257,21 +257,13 @@
         filter 200ms ease;
     }
 
-    .press:active {
+    .press:not(:disabled):active {
       transform: scale(0.98);
     }
 
-    .press:disabled {
-      transform: none;
-    }
-
     @media (hover: hover) {
-      .press:hover {
+      .press:not(:disabled):hover {
         transform: translateY(-1px);
-      }
-
-      .press:active {
-        transform: scale(0.98);
       }
     }
   }
@@ -329,20 +321,6 @@
     }
   }
 
-  /* Loading skeleton pulse (used by route loading states). */
-  @keyframes skeleton-pulse {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.55;
-    }
-  }
-
-  .skeleton {
-    animation: skeleton-pulse 1.6s ease-in-out infinite;
-  }
 
   @media (prefers-reduced-motion: reduce) {
     *,

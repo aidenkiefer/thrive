@@ -22,6 +22,7 @@ D1L-A and D1L-B done on draft PR #23 (stacked on `claude/data-mvp-foundations`, 
 - `21:48` **note** (pre-existing, parked): request-code sends inline, so a Supabase send slower than the 700ms floor can make known emails measurably slower. Recommended follow-up: send via `after()` from `next/server`. Not in this ticket's scope.
 - `21:49` **request** data/docs owner: add `RATE_LIMIT_HASH_SECRET=` to `.env.local.example` and `docs/admin-setup.md`. Neither is in this assignment's owned paths.
 - `21:50` **checkpoint** D1L-B · Opus 5.5 design/review, Sonnet implementation · OTP request/verify and native form limits now shared through D1L-A and fail closed. 143 Data tests pass under the local config.
+- `21:55` **note**: session end. D1L-A (46d8dde) and D1L-B (29e2804) are pushed to draft PR #23 and the gate passes. `gh pr edit` fails on a deprecated Projects (classic) GraphQL field, so the PR description still shows D1L-B as in progress. The current description is posted as a PR comment (issuecomment-6998895505). Owner/QA: paste it into the description.
 
 ## Owner: Preview verification and rollback (D1L)
 

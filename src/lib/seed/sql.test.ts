@@ -18,6 +18,14 @@ describe('upsertSql', () => {
     const sql = upsertSql('event_occurrences', [{ recurring_slug: 'r', start_datetime: 'x', end_datetime: 'y' }])
     expect(sql).toContain('on conflict (recurring_event_id, start_datetime) do update set end_datetime = excluded.end_datetime;')
   })
+  it('writes invisible characters as escapes that parse back to the same text', () => {
+    const name = `a${String.fromCharCode(0xa0)}b${String.fromCharCode(0x200b)}c`
+    const sql = upsertSql('speakers', [{ slug: 'x', name }])
+    expect(sql).toContain('a\\u00a0b\\u200bc')
+    expect(sql).not.toMatch(/[ ​]/)
+    const json = sql.slice(sql.indexOf('$seed$') + 6, sql.lastIndexOf('$seed$'))
+    expect(JSON.parse(json)[0].name).toBe(name)
+  })
   it('refuses data that would close the quote, and odd column names', () => {
     expect(() => upsertSql('speakers', [{ slug: 'x', name: '$seed$; drop table speakers; --' }])).toThrow(/quote tag/)
     expect(() => upsertSql('speakers', [{ slug: 'x', 'name; --': 'y' }])).toThrow(/column name/)

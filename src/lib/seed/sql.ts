@@ -36,8 +36,16 @@ const CONFLICT: Record<SeedTable, string[]> = {
   event_occurrences: ['recurring_event_id', 'start_datetime'],
 }
 
+/**
+ * Characters that look like a space or nothing (non-breaking space, zero-width
+ * and bidi marks, line separators). Written as JSON \u escapes so the SQL can be
+ * copied by hand without silently changing a value (#101: 18 descriptions lost
+ * their U+00A0 that way). Postgres parses the escape back to the same text.
+ */
+const INVISIBLE = new RegExp('[\\u00a0\\u00ad\\u1680\\u180e\\u2000-\\u200f\\u2028-\\u202f\\u205f-\\u206f\\u3000\\ufeff]', 'g')
+
 function literal(value: unknown): string {
-  const json = JSON.stringify(value)
+  const json = JSON.stringify(value).replace(INVISIBLE, c => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`)
   if (json.includes(TAG)) throw new Error(`seed data contains the quote tag ${TAG}`)
   return `${TAG}${json}${TAG}::jsonb`
 }

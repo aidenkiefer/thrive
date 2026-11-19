@@ -1,6 +1,7 @@
-// Google Tag Manager container. Source: docs/01-current-site-audit.md (Analytics row)
-// and docs/06-integrations.md ("Google Tag Manager", site-wide on the live site).
-export const GTM_CONTAINER_ID = 'GTM-NQV3Z3N7'
+// Google Tag Manager container for the new site. Source: owner decision 2026-11-18 (pasted
+// the container GTM-PRJX6P9H). The audit docs (docs/01, docs/06) record GTM-NQV3Z3N7 on the
+// live WordPress site; the owner chose the new container, so the audited ID is not loaded.
+export const GTM_CONTAINER_ID = 'GTM-PRJX6P9H'
 
 // Google Ads conversion ID. Source: docs/01-current-site-audit.md (Analytics row) and
 // docs/06-integrations.md ("Google Ads"). Deliberately NOT loaded directly: the docs show

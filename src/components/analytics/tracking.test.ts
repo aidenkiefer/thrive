@@ -14,7 +14,7 @@ describe('isTrackingEnabled', () => {
 
 describe('tracking ids', () => {
   it('match the audited live-site IDs', () => {
-    expect(GTM_CONTAINER_ID).toBe('GTM-NQV3Z3N7')
+    expect(GTM_CONTAINER_ID).toBe('GTM-PRJX6P9H')
     expect(GOOGLE_ADS_CONVERSION_ID).toBe('AW-16575196430')
   })
 })

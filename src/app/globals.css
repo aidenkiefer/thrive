@@ -21,7 +21,12 @@
   }
 
   .prose-content {
-    @apply max-w-prose text-neutral-600;
+    @apply text-neutral-600;
+  }
+
+  /* Keep running text readable; wide blocks (grids, splits, maps) use the full band. */
+  .prose-content > :is(p, ul, ol, h2, h3, h4, blockquote) {
+    max-width: 65ch;
   }
 
   .prose-content > * + * {
@@ -42,7 +47,8 @@
     @apply text-2xl;
   }
 
-  .prose-content a {
+  /* Only plain Markdown links; links with their own classes (cards, buttons) keep their styling. */
+  .prose-content a:not([class]) {
     @apply font-medium text-brand-800 underline decoration-brand-600/40 underline-offset-4 hover:text-brand-600;
   }
 
@@ -57,6 +63,78 @@
 
   .prose-content ol {
     @apply list-decimal;
+  }
+
+  /* Navy bands: invert prose colors */
+  .prose-invert-content,
+  .prose-invert-content h2,
+  .prose-invert-content h3,
+  .prose-invert-content h4 {
+    @apply text-white;
+  }
+
+  .prose-invert-content p,
+  .prose-invert-content li {
+    @apply text-white/85;
+  }
+
+  .prose-invert-content a:not([class]) {
+    @apply text-accent-400 decoration-accent-400/50 hover:text-white;
+  }
+
+  /* Numbered steps (StepList / Step) */
+  ol.step-list-root,
+  ol:has(> .step-item) {
+    counter-reset: step;
+  }
+
+  .step-item {
+    counter-increment: step;
+  }
+
+  .step-item::before {
+    content: '';
+    @apply absolute left-[21px] top-11 -bottom-8 w-px bg-brand-100;
+  }
+
+  .step-item:last-child::before {
+    display: none;
+  }
+
+  .step-badge::before {
+    content: counter(step);
+  }
+
+  /* Tables written in MDX copy */
+  .prose-content table {
+    @apply w-full overflow-hidden rounded-xl text-left text-sm;
+  }
+
+  .prose-content th {
+    @apply bg-brand-100 px-4 py-2 font-medium text-brand-800;
+  }
+
+  .prose-content td {
+    @apply border-t border-brand-100 px-4 py-2;
+  }
+
+  .prose-content blockquote {
+    @apply border-l-4 border-accent-400 pl-4 italic text-neutral-600;
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-up {
+    animation: fade-up 0.6s ease-out both;
   }
 
   @media (prefers-reduced-motion: reduce) {

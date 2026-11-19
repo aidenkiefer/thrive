@@ -4,7 +4,19 @@ import { createClient } from '@/lib/supabase/server'
 const base = 'https://thrivevineyard.com'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const routes = ['', '/plan-a-visit', '/sermons', '/sermons/series', '/events']
+  const routes = [
+    '',
+    '/plan-a-visit',
+    '/sermons',
+    '/sermons/series',
+    '/events',
+    '/about',
+    '/about/team',
+    '/give',
+    '/kids-youth',
+    '/groups',
+    '/outreach',
+  ]
   const entries: MetadataRoute.Sitemap = routes.map(route => ({ url: `${base}${route}` }))
   const db = await createClient()
   const results = await Promise.all([

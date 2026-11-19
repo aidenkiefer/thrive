@@ -1,0 +1,56 @@
+---
+title: Get Connected
+description: Find a group, pre-register your kids, or let us know if you have any questions.
+---
+
+{/* Source: docs/audit/2026-11/pages/get-connected.md */}
+
+{/* Source: audit get-connected.md, "Get in Touch"; service times from SERVICE_TIMES; address/email/phone from site-info.ts */}
+<Band tone="white" prose={false} id="contact">
+  <SectionIntro
+    eyebrow="Get in touch"
+    title="We can’t wait to meet you"
+    lead="Join us for our worship service, or feel free to reach out and let’s connect."
+  />
+
+  <CardGrid columns={4}>
+    <InfoCard title="Service times" icon={<ClockIcon className="h-5 w-5" />}>
+      <ServiceTimesLines />
+    </InfoCard>
+
+    <InfoCard title="Location" icon={<PinIcon className="h-5 w-5" />} href={SITE.mapsUrl} linkLabel="Get directions">
+      <p>{SITE.addressLine}</p>
+    </InfoCard>
+
+    <InfoCard title="Email us" icon={<MailIcon className="h-5 w-5" />} href={'mailto:' + SITE.email} linkLabel="Send an email">
+      <p>{SITE.email}</p>
+    </InfoCard>
+
+    <InfoCard title="Call us" icon={<PhoneIcon className="h-5 w-5" />} href={SITE.phoneHref} linkLabel="Call now">
+      <p>{SITE.phone}</p>
+    </InfoCard>
+  </CardGrid>
+</Band>
+
+{/* Source: audit get-connected.md (Gravity Form gform_1 is not embeddable). Email/phone from site-info.ts. */}
+<Band tone="light" id="contact-form">
+  <PendingNote title="Contact form">
+    Our online contact form isn’t ready here yet. To find a Group, pre-register your kids, or ask a question, email <a href={'mailto:' + SITE.email}>{SITE.email}</a> or call <a href={SITE.phoneHref}>{SITE.phone}</a>. You can also <a href="/groups">browse our groups</a>.
+  </PendingNote>
+</Band>
+
+{/* Source: site-info.ts (audited Google Maps embed from the live /im-new/ page) */}
+<Band tone="white" prose={false} id="map">
+  <SectionIntro title="Find us" />
+  <div className="mt-8">
+    <MapEmbed />
+  </div>
+</Band>
+
+{/* Source: audit get-connected.md, "Subscribe to the Thrive Newsletter" (Mailchimp form) */}
+<Band tone="navy" prose={false} id="newsletter">
+  <SectionIntro tone="inverse" title="Subscribe to the Thrive newsletter" />
+  <div className="mt-8">
+    <NewsletterSignup tone="inverse" />
+  </div>
+</Band>

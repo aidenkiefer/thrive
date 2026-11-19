@@ -1,6 +1,7 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { Badge } from '@/components/ui'
+import { CalendarIcon } from '@/components/content/icons'
+import { CardImage } from './CardImage'
 
 interface EventCardProps {
   slug: string
@@ -10,6 +11,8 @@ interface EventCardProps {
   imageUrl: string | null
   category: string | null
   location: string | null
+  /** 'list' lays the card out horizontally from the sm breakpoint. Default 'grid'. */
+  layout?: 'grid' | 'list'
 }
 
 function formatEventDate(dateStr: string) {
@@ -23,36 +26,40 @@ function formatEventTime(dateStr: string) {
   })
 }
 
-export function EventCard({ slug, name, date, summary, imageUrl, category, location }: EventCardProps) {
+export function EventCard({ slug, name, date, summary, imageUrl, category, location, layout = 'grid' }: EventCardProps) {
+  const list = layout === 'list'
   return (
-    <Link href={`/events/${slug}`} className="group block overflow-hidden rounded-lg bg-neutral-0 shadow-sm transition-shadow hover:shadow-md">
-      {imageUrl ? (
-        <div className="relative aspect-video">
-          <Image
+    <Link
+      href={`/events/${slug}`}
+      className={`group flex overflow-hidden rounded-2xl bg-neutral-0 shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 ${
+        list ? 'flex-col sm:flex-row' : 'h-full flex-col'
+      }`}
+    >
+      <div className={`relative aspect-[3/2] overflow-hidden bg-brand-100 ${list ? 'sm:w-64 sm:shrink-0 sm:aspect-auto sm:min-h-40' : ''}`}>
+        {imageUrl ? (
+          <CardImage
             src={imageUrl}
-            alt=""
-            fill
-            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            sizes={list ? '(min-width: 640px) 256px, 100vw' : undefined}
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           />
-        </div>
-      ) : (
-        <div className="flex aspect-video items-center justify-center bg-brand-100">
-          <span className="text-sm font-medium text-brand-600">Event details</span>
-        </div>
-      )}
-      <div className="p-5">
-        {category && (
-          <Badge>{category}</Badge>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-brand-100 to-accent-50 text-brand-600">
+            <CalendarIcon className="h-10 w-10" aria-hidden="true" />
+          </div>
         )}
-        <h3 className="mt-3 line-clamp-2 font-display text-xl font-semibold leading-snug text-neutral-950 transition-colors group-hover:text-brand-800">
+      </div>
+      <div className="flex flex-1 flex-col p-5 md:p-6">
+        {category && (
+          <div><Badge>{category}</Badge></div>
+        )}
+        <h3 className={`line-clamp-2 font-display text-xl font-semibold leading-snug text-neutral-950 transition-colors group-hover:text-brand-800 ${category ? 'mt-3' : ''}`}>
           {name}
         </h3>
         <p className="mt-2 text-sm font-medium text-brand-800">
           {formatEventDate(date)} · {formatEventTime(date)}
         </p>
-        {location && <p className="mt-1 text-xs text-neutral-600">{location}</p>}
-        {summary && <p className="mt-2 text-sm text-neutral-600 line-clamp-2">{summary}</p>}
+        {location && <p className="mt-1 text-sm text-neutral-600">{location}</p>}
+        {summary && <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-neutral-600">{summary}</p>}
       </div>
     </Link>
   )

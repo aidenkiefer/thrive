@@ -10,6 +10,7 @@ const exploreLinks = [
   { label: 'Kids & Youth', href: '/kids-youth' },
   { label: 'Outreach', href: '/outreach' },
   { label: 'About', href: '/about' },
+  { label: 'Thrive Flames', href: '/thrive-flames' },
   { label: 'Give', href: '/give' },
 ]
 

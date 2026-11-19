@@ -12,7 +12,7 @@ Centralized ministry information platform for Thrive Vineyard church. Every even
 
 ## How agents work here (multi-agent, v2)
 
-Three tools (Claude Code, Cursor, Codex) work in parallel. Read `docs/workflow/workflow.md` before your first session.
+Three tools (Claude Code, Cursor, Codex) work in parallel. Start with [agent onboarding](docs/workflow/agent-onboarding.md) and [the workflow](docs/workflow/workflow.md) before your first session.
 
 - **Own worktree, own branch:** `<tool>/<lane>-<slug>`. Never edit in the main checkout or on another tool's branch. Check `git branch --show-current && pwd` before the first edit.
 - **Stay in your lane:** edit only the lane's owned paths (`docs/workflow/roles-and-lanes.md`) or the ticket's Allowed Files. Other files → cross-lane request via `scribe`.
@@ -27,7 +27,7 @@ Three tools (Claude Code, Cursor, Codex) work in parallel. Read `docs/workflow/w
 - **Admin routes require auth.** `src/middleware.ts` protects `/admin/**` via NextAuth. Never bypass it.
 - **Never invent ministry data:** no fabricated dates, staff names, contact info, descriptions, or form URLs. Unknowns go to the owner.
 - **SEO redirects:** any public URL change from the WordPress site needs a 301 in `next.config.ts` (see `docs/04-seo-url-migration-map.md`).
-- **Forms:** embedded ChurchSuite forms (link/embed only, no API calls, no sync). Google Forms embeds are allowed for forms ChurchSuite doesn't cover.
+- **Forms:** ChurchSuite and approved Google Forms are hosted links/embeds. Thrive-owned website forms, including feedback, use server-side email to the configured admin address and optional per-form recipients. See the [current floorplan](floorplan.md).
 - **No secrets in git.** `.env*` stays local (except `.env.local.example`).
 
 ## Map

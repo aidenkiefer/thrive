@@ -383,7 +383,9 @@ Benefits:
 Hybrid model:
 
 ```text
-Static Pages → MDX
+Developer-owned structural pages → MDX
+
+Staff-editable pages and announcements → Structured CMS content with version history
 
 Events → Structured Data
 
@@ -393,6 +395,18 @@ Announcements → Structured Data
 
 ChurchSuite → External Integration
 ```
+
+---
+
+# MVP staff workflow and integrations
+
+- The protected admin portal provides staff accounts, a lightweight structured page editor, and editors for sermon details, events, groups, and announcements. For staff-editable pages and announcements, staff can preview a draft, publish it, and restore the previous published version. Save who published each version and when. Public routes render the published version.
+- Staff use existing announcements for service changes and closures, including expiration when relevant.
+- Every form handled by the website emails one configured admin address (for example `info@thrivevineyard.com`). Each form can optionally list additional recipients. Email is the staff inbox for website form submissions.
+- Provide a built-in feedback form for visitors and signed-in staff to report bugs and suggest improvements. Use the same email routing.
+- Preserve search visibility through canonical URLs, redirects and sitemap. Use YouTube for sermon video, ChurchSuite for approved external signup and giving flows, and Basecamp for church coordination and approvals. GitHub Issues and Projects track development work.
+
+See the [preparation and ticket plan](docs/plans/specs/2026-11-18-mvp-preparation.md) for dependencies and acceptance checks.
 
 ---
 

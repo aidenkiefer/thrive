@@ -1,5 +1,7 @@
 # 06 — Integrations
 
+The [current floorplan](../floorplan.md) adds server-side email for Thrive-owned forms and GitHub Projects for development tracking. Hosted integrations still use their own destinations. See [MVP preparation](plans/specs/2026-11-18-mvp-preparation.md) for service checks and staff identity requirements.
+
 ## Supabase
 
 **Role:** Primary data layer for all dynamic content.

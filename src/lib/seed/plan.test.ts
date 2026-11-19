@@ -87,7 +87,23 @@ describe('buildSeedPlan rejections', () => {
   it('dropped sermon', () => {
     const x = copy()
     x.sermons.pop()
-    expect(() => buildSeedPlan(x)).toThrow('expected 120')
+    expect(() => buildSeedPlan(x)).toThrow('claims 120, export has 119')
+  })
+
+  it.each([
+    ['sermons', 'speakers', 'speakers'], ['sermons', 'series', 'sermon_series'], ['events', 'recurring', 'recurring_events'],
+    ['events', 'one_time', 'one_time_events'], ['occurrences', 'generated', 'event_occurrences'],
+  ])('report count %s.%s that disagrees with the parsed rows', (section, field, table) => {
+    const x = copy()
+    ;(x.report[section] as Row)[field] = 999
+    expect(() => buildSeedPlan(x)).toThrow(`${table}: migration-report.json claims 999`)
+  })
+
+  it('report and rows that agree with each other but not with the approved counts', () => {
+    const x = copy()
+    x.occurrences.pop()
+    ;(x.report.occurrences as Row).generated = 55
+    expect(() => buildSeedPlan(x)).toThrow('event_occurrences: export has 55 rows, expected 56')
   })
 })
 

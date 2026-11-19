@@ -4,6 +4,7 @@
  * only the database has (the seed never deletes them). Values are compared
  * after normalizing instants, so `+00:00` and `-06:00` spellings match.
  */
+import { createHash } from 'node:crypto'
 import { occurrenceKey, SEED_TABLES, type Row, type SeedPlan, type SeedTable } from './plan'
 
 /** Columns selected from the database for each table; foreign keys come back as joined slugs. */
@@ -51,7 +52,8 @@ export interface TableDiff {
   planned: number
   live: number
   insert: string[]
-  update: { key: string; columns: string[] }[]
+  /** `before` holds the database's current values of the differing columns. */
+  update: { key: string; columns: string[]; before: Row }[]
   unchanged: number
   liveOnly: string[]
 }
@@ -68,7 +70,7 @@ export function diffTable(table: SeedTable, planned: Row[], liveRows: Row[]): Ta
     const current = live.get(key)
     if (!current) { result.insert.push(key); continue }
     const columns = Object.keys(row).filter(c => !same(c, row[c], current[c]))
-    if (columns.length) result.update.push({ key, columns })
+    if (columns.length) result.update.push({ key, columns, before: Object.fromEntries(columns.map(c => [c, current[c] ?? null])) })
     else result.unchanged++
   }
   for (const key of live.keys()) if (!plannedKeys.has(key)) result.liveOnly.push(key)
@@ -93,6 +95,22 @@ export function crossTableCollisions(plan: SeedPlan, live: Record<SeedTable, Row
     ...plan.recurring_events.filter(r => liveOneTime.has(r.slug)).map(r => `${r.slug} (live one-time, planned recurring)`),
     ...plan.one_time_events.filter(r => liveRecurring.has(r.slug)).map(r => `${r.slug} (live recurring, planned one-time)`),
   ]
+}
+
+/**
+ * Fingerprint of what the write would change: every key to insert, and every
+ * key to update with its columns and their current database values. The owner
+ * approves a dry run's fingerprint; the writer recomputes it just before
+ * writing and refuses on any difference, so a value someone changed since the
+ * approved dry run (a staff edit included) is never silently overwritten.
+ */
+export function diffFingerprint(diff: SeedDiff): string {
+  const material = SEED_TABLES.map(t => [
+    t,
+    [...diff[t].insert].sort(),
+    [...diff[t].update].sort((a, b) => a.key.localeCompare(b.key)).map(u => [u.key, u.columns, u.columns.map(c => u.before[c])]),
+  ])
+  return createHash('sha256').update(JSON.stringify(material)).digest('hex').slice(0, 16)
 }
 
 /** True when every planned row exists with the planned values (live-only rows are allowed). */

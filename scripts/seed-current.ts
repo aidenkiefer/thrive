@@ -3,19 +3,21 @@
  * rows and never deletes. Guide: docs/ops/seeding-preview.md.
  *
  *   npm run seed -- --dry-run   read-only diff with the publishable key (no service-role key)
- *   npm run seed                write; needs the service-role key and
- *                               SEED_CONFIRM_SUPABASE_HOST=<host of NEXT_PUBLIC_SUPABASE_URL>
+ *   npm run seed                write; needs the service-role key,
+ *                               SEED_CONFIRM_SUPABASE_HOST=<host of NEXT_PUBLIC_SUPABASE_URL> and
+ *                               SEED_EXPECT_FINGERPRINT=<fingerprint the approved dry run printed>
  *
  * Every run ends with a verification against migration-report.json and the
  * Express(o) schedule. The write refuses while a planned event slug is live in
- * the other event table. Exit 0 = applied (or dry run finished), 1 = verification
+ * the other event table, and when the live rows no longer match the approved
+ * dry run (fingerprint), so nothing changed since approval is overwritten. Exit 0 = applied (or dry run finished), 1 = verification
  * mismatch or write error, 2 = refused (configuration).
  */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import fs from 'node:fs'
 import path from 'node:path'
 import { buildSeedPlan, checkExpresso, SEED_TABLES, type Row, type SeedTable } from '../src/lib/seed/plan'
-import { crossTableCollisions, diffPlan, formatDiff, fromLive, isApplied, LIVE_SELECT } from '../src/lib/seed/diff'
+import { crossTableCollisions, diffFingerprint, diffPlan, formatDiff, fromLive, isApplied, LIVE_SELECT } from '../src/lib/seed/diff'
 
 const root = process.cwd()
 const envFile = path.join(root, '.env.local')
@@ -49,6 +51,7 @@ function connect(): SupabaseClient {
   if (process.env.SEED_CONFIRM_SUPABASE_HOST !== host) {
     refuse(`set SEED_CONFIRM_SUPABASE_HOST=${host} to confirm the target database`)
   }
+  if (!process.env.SEED_EXPECT_FINGERPRINT) refuse('set SEED_EXPECT_FINGERPRINT to the fingerprint of the approved dry run')
   console.log(`Writing to ${host}`)
   return createClient(url, key, { auth: { persistSession: false } })
 }
@@ -103,6 +106,8 @@ async function main() {
   console.log(formatDiff(before))
   const collisions = crossTableCollisions(plan, current)
   if (collisions.length) console.log(`Slug in both event tables after seeding: ${collisions.join(', ')}`)
+  const fingerprint = diffFingerprint(before)
+  console.log(`Fingerprint: ${fingerprint}`)
   if (dryRun) {
     for (const t of SEED_TABLES) {
       if (before[t].insert.length) console.log(`${t} to insert: ${before[t].insert.join(', ')}`)
@@ -115,6 +120,9 @@ async function main() {
   }
 
   if (collisions.length) refuse('resolve the event slug collisions above first (owner decision on #101)')
+  if (fingerprint !== process.env.SEED_EXPECT_FINGERPRINT) {
+    refuse(`live rows differ from the approved dry run (fingerprint ${fingerprint}, expected ${process.env.SEED_EXPECT_FINGERPRINT}); nothing written. Re-run the dry run and get it approved`)
+  }
   await write(db, plan)
   const live = await fetchLive(db)
   const after = diffPlan(plan, live)

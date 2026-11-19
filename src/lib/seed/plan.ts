@@ -128,10 +128,26 @@ export function buildSeedPlan(x: SeedExports): SeedPlan {
     })),
   }
 
+  // Every count the report claims must match the parsed rows, and the owner-approved numbers.
+  const occurrencesReport = report.occurrences as Row | undefined
+  const claimed: Record<SeedTable, unknown> = {
+    speakers: sermonsReport?.speakers,
+    sermon_series: sermonsReport?.series,
+    sermons: sermonsReport?.total,
+    recurring_events: events?.recurring,
+    one_time_events: events?.one_time,
+    event_occurrences: occurrencesReport?.generated,
+  }
   for (const table of SEED_TABLES) {
+    if (claimed[table] !== plan[table].length) {
+      throw new Error(`${table}: migration-report.json claims ${String(claimed[table])}, export has ${plan[table].length}`)
+    }
     if (plan[table].length !== EXPECTED_COUNTS[table]) {
       throw new Error(`${table}: export has ${plan[table].length} rows, expected ${EXPECTED_COUNTS[table]}`)
     }
+  }
+  if (Number(events?.recurring) + Number(events?.one_time) !== events?.source) {
+    throw new Error('migration-report.json: recurring + one-time events do not add up to the source count')
   }
   checkExpresso(plan.recurring_events, plan.event_occurrences)
   return plan

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { crossTableCollisions, diffPlan, diffTable, formatDiff, fromLive, isApplied, rowKey } from './diff'
+import { crossTableCollisions, diffFingerprint, diffPlan, diffTable, formatDiff, fromLive, isApplied, rowKey } from './diff'
 import { SEED_TABLES, type Row, type SeedPlan, type SeedTable } from './plan'
 
 const empty = () => Object.fromEntries(SEED_TABLES.map(t => [t, [] as Row[]])) as Record<SeedTable, Row[]>
@@ -18,7 +18,7 @@ describe('diffTable', () => {
     ]
     const d = diffTable('speakers', planned, live)
     expect(d.insert).toEqual(['a'])
-    expect(d.update).toEqual([{ key: 'b', columns: ['name', 'extra'] }])
+    expect(d.update).toEqual([{ key: 'b', columns: ['name', 'extra'], before: { name: 'B', extra: 2 } }])
     expect(d.unchanged).toBe(1)
     expect(d.liveOnly).toEqual(['z'])
   })
@@ -103,5 +103,25 @@ describe('crossTableCollisions', () => {
   it('is empty when slugs stay in their own table', () => {
     const plan = { ...empty, recurring_events: [{ slug: 'youth' }] }
     expect(crossTableCollisions(plan, { ...empty, recurring_events: [{ slug: 'youth' }] })).toEqual([])
+  })
+})
+
+describe('diffFingerprint', () => {
+  const plan = [{ slug: 'a', title: 'New' }, { slug: 'b', title: 'B' }]
+  const fp = (live: Row[]) => diffFingerprint(diffPlan(
+    { speakers: [], sermon_series: plan, sermons: [], recurring_events: [], one_time_events: [], event_occurrences: [] },
+    { speakers: [], sermon_series: live, sermons: [], recurring_events: [], one_time_events: [], event_occurrences: [] },
+  ))
+  it('is stable for the same live state and ignores row order', () => {
+    expect(fp([{ slug: 'a', title: 'Old' }])).toBe(fp([{ slug: 'a', title: 'Old' }]))
+    expect(fp([{ slug: 'a', title: 'Old' }, { slug: 'b', title: 'x' }])).toBe(fp([{ slug: 'b', title: 'x' }, { slug: 'a', title: 'Old' }]))
+  })
+  it('changes when a value the seed would overwrite changed since the dry run (a staff edit)', () => {
+    expect(fp([{ slug: 'a', title: 'Old' }])).not.toBe(fp([{ slug: 'a', title: 'Edited by staff' }]))
+  })
+  it('changes when a row that matched now differs, or a row to insert appeared', () => {
+    const base = fp([{ slug: 'a', title: 'Old' }, { slug: 'b', title: 'B' }])
+    expect(fp([{ slug: 'a', title: 'Old' }, { slug: 'b', title: 'Edited' }])).not.toBe(base)
+    expect(fp([{ slug: 'a', title: 'Old' }])).not.toBe(base)
   })
 })

@@ -14,24 +14,26 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable key> \
 npm run seed -- --dry-run
 ```
 
-It prints, per table, the planned and live row counts and how many rows would be inserted, updated or left unchanged, plus the rows only the database has. It then lists every slug to insert, the columns that would change on each updated row, any slug that would end up in both event tables, and whether Express(o) is live as Sundays 8:30 AM. The publishable key can only read published rows (every content row today). It cannot see unpublished rows, and nothing is written.
+It prints, per table, the planned and live row counts and how many rows would be inserted, updated or left unchanged, plus the rows only the database has. It then lists every slug to insert, the columns that would change on each updated row, any slug that would end up in both event tables, whether Express(o) is live as Sundays 8:30 AM, and a **fingerprint**: a short hash of every row it would insert and every value it would overwrite. The publishable key can only read published rows (every content row today). It cannot see unpublished rows, and nothing is written.
 
 ## 2. Write (owner, or the Data lane after the owner's go)
 
-Preconditions ([rule 3](supabase-live-project.md#rules)): the owner's "go" on #101 naming this script at a commit, a backup or recovery point confirmed, one executor, and a ledger row afterwards. The `published_at` guard (`20261119010000`) must **not** be applied yet. After it is, a re-run aborts (`P0001`) at the first row staff changed.
+Preconditions ([rule 3](supabase-live-project.md#rules)): the owner's "go" on #101 naming this script at a commit and the dry-run fingerprint, a backup or recovery point confirmed, one executor, and a ledger row afterwards. The `published_at` guard (`20261119010000`) must **not** be applied yet. After it is, a re-run aborts (`P0001`) at the first row staff changed.
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=<project URL> \
 SUPABASE_SERVICE_ROLE_KEY=<service role key> \
 SEED_CONFIRM_SUPABASE_HOST=<host of the project URL, e.g. abcd.supabase.co> \
+SEED_EXPECT_FINGERPRINT=<fingerprint from the approved dry run> \
 npm run seed
 ```
 
 The script refuses (exit 2, nothing written) when:
 
-- the service-role key is missing;
+- the service-role key, the host confirmation or the expected fingerprint is missing (checked before connecting);
 - `SEED_CONFIRM_SUPABASE_HOST` does not equal the host of `NEXT_PUBLIC_SUPABASE_URL` (so a stray `.env.local` cannot point the write at the wrong project);
-- a planned event slug is live and published in the other event table (the public event page reads one-time events first, so the stale row would hide the new one).
+- a planned event slug is live and published in the other event table (the public event page reads one-time events first, so the stale row would hide the new one);
+- the fingerprint it computes from the live rows just before writing differs from `SEED_EXPECT_FINGERPRINT`. Any change since the approved dry run, such as a staff edit to a title, schedule or URL, changes it, so nothing is overwritten without a fresh, approved dry run. If a planned row is unpublished in the database, the publishable-key dry run cannot see it and the fingerprints differ; the write then refuses (safe), and the row needs a look before going on.
 
 It also stops before connecting if the exports are not the reviewed November set or fail their checks: counts 12 / 22 / 120 / 25 / 55 / 56, unique slugs, known speakers, series and recurring events, and Express(o) on Sundays at 08:30 America/Chicago.
 
@@ -40,6 +42,8 @@ It also stops before connecting if the exports are not the reviewed November set
 After writing, the script re-reads every planned row with the service-role client and exits **1** unless all of them exist with the planned values, and Express(o) is published as "Sundays" at "8:30 AM" with every occurrence on a Sunday at 08:30 Chicago time. Rows only the database has are reported, not counted as failures. Paste the final table and the "Verification passed" line into the ledger row.
 
 To re-check later without writing, run the dry run: "already applied, nothing to write" means every planned row matches.
+
+**Not all-or-nothing.** Each upsert commits on its own. If a write fails part way (exit 1), the rows before the failure are already written. Re-running the dry run shows exactly what is left, and its new fingerprint needs a fresh approval. The backup taken before the write is the rollback.
 
 ## Exit codes
 

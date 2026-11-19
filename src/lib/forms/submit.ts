@@ -27,7 +27,7 @@ export async function submitWebsiteForm(
   if (!checked.ok) return { status: 'invalid', fieldErrors: checked.fieldErrors }
 
   const env = deps.env ?? process.env
-  const recipients = resolveRecipients(form.recipientEnv, env)
+  const recipients = resolveRecipients(env, form.extraRecipientsEnv)
   const from = senderFromEnv(env)
   const transport = deps.transport === undefined ? transportFromEnv(env) : deps.transport
   if (!recipients || !from || !transport) return { status: 'unavailable' }

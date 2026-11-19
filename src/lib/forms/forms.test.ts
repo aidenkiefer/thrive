@@ -4,7 +4,7 @@ import { resolveRecipients } from './recipients'
 import { submitWebsiteForm } from './submit'
 
 // Example addresses only; nothing here is a real destination.
-const env = { FORMS_FEEDBACK_RECIPIENT: 'inbox@test.invalid', FORMS_MAIL_FROM: 'Site <site@test.invalid>' }
+const env = { FORMS_DEFAULT_RECIPIENT: 'inbox@test.invalid', FORMS_MAIL_FROM: 'Site <site@test.invalid>' }
 const ok = { category: 'bug', message: 'The events page will not load.' }
 
 describe('submitWebsiteForm(feedback)', () => {
@@ -33,9 +33,21 @@ describe('submitWebsiteForm(feedback)', () => {
   })
   it('reports unavailable on transport failure, missing recipient, sender, or transport', async () => {
     expect(await submitWebsiteForm('feedback', ok, { env, transport: new FakeMailTransport(new Error('smtp down')) })).toEqual({ status: 'unavailable' })
-    expect(await submitWebsiteForm('feedback', ok, { env: { ...env, FORMS_FEEDBACK_RECIPIENT: '' }, transport: new FakeMailTransport() })).toEqual({ status: 'unavailable' })
-    expect(await submitWebsiteForm('feedback', ok, { env: { FORMS_FEEDBACK_RECIPIENT: env.FORMS_FEEDBACK_RECIPIENT }, transport: new FakeMailTransport() })).toEqual({ status: 'unavailable' })
+    expect(await submitWebsiteForm('feedback', ok, { env: { ...env, FORMS_DEFAULT_RECIPIENT: '' }, transport: new FakeMailTransport() })).toEqual({ status: 'unavailable' })
+    expect(await submitWebsiteForm('feedback', ok, { env: { FORMS_DEFAULT_RECIPIENT: env.FORMS_DEFAULT_RECIPIENT }, transport: new FakeMailTransport() })).toEqual({ status: 'unavailable' })
     expect(await submitWebsiteForm('feedback', ok, { env, transport: null })).toEqual({ status: 'unavailable' })
+  })
+  it('delivers feedback to the global default plus deduplicated extras', async () => {
+    const t = new FakeMailTransport()
+    const r = await submitWebsiteForm('feedback', ok, { env: { ...env, FORMS_FEEDBACK_EXTRA_RECIPIENTS: 'INBOX@test.invalid, two@test.invalid' }, transport: t })
+    expect(r).toEqual({ status: 'sent' })
+    expect(t.outbox[0].to).toEqual(['inbox@test.invalid', 'two@test.invalid'])
+  })
+  it('fails closed on malformed feedback extras or default, sending nothing', async () => {
+    const t = new FakeMailTransport()
+    expect(await submitWebsiteForm('feedback', ok, { env: { ...env, FORMS_FEEDBACK_EXTRA_RECIPIENTS: 'bad' }, transport: t })).toEqual({ status: 'unavailable' })
+    expect(await submitWebsiteForm('feedback', ok, { env: { ...env, FORMS_DEFAULT_RECIPIENT: 'bad' }, transport: t })).toEqual({ status: 'unavailable' })
+    expect(t.outbox).toHaveLength(0)
   })
   it('does not fall back to a hardcoded inbox', async () => {
     expect(await submitWebsiteForm('feedback', ok, { env: { FORMS_MAIL_FROM: env.FORMS_MAIL_FROM }, transport: new FakeMailTransport() })).toEqual({ status: 'unavailable' })
@@ -43,14 +55,22 @@ describe('submitWebsiteForm(feedback)', () => {
 })
 
 describe('resolveRecipients', () => {
-  it('deduplicates case-insensitively, default first', () => {
-    expect(resolveRecipients('F', { F_RECIPIENT: 'A@x.invalid', F_EXTRA_RECIPIENTS: 'a@x.invalid, b@x.invalid,B@x.invalid' }))
+  it('deduplicates default and extras case-insensitively, default first', () => {
+    expect(resolveRecipients({ FORMS_DEFAULT_RECIPIENT: 'A@x.invalid', X: 'a@x.invalid, b@x.invalid,B@x.invalid' }, 'X'))
       .toEqual(['A@x.invalid', 'b@x.invalid'])
   })
-  it('is null when default or any extra is malformed', () => {
-    expect(resolveRecipients('F', {})).toBeNull()
-    expect(resolveRecipients('F', { F_RECIPIENT: 'nope' })).toBeNull()
-    expect(resolveRecipients('F', { F_RECIPIENT: 'a@x.invalid', F_EXTRA_RECIPIENTS: 'bad' })).toBeNull()
+  it('uses only the default when the form has no extras configured', () => {
+    expect(resolveRecipients({ FORMS_DEFAULT_RECIPIENT: 'a@x.invalid' }, 'X')).toEqual(['a@x.invalid'])
+    expect(resolveRecipients({ FORMS_DEFAULT_RECIPIENT: 'a@x.invalid', X: 'b@x.invalid' })).toEqual(['a@x.invalid'])
+  })
+  it('is null when default is missing or malformed, even if extras are valid', () => {
+    expect(resolveRecipients({})).toBeNull()
+    expect(resolveRecipients({ X: 'b@x.invalid' }, 'X')).toBeNull()
+    expect(resolveRecipients({ FORMS_DEFAULT_RECIPIENT: 'nope' })).toBeNull()
+  })
+  it('is null when any extra is malformed (no partial delivery)', () => {
+    expect(resolveRecipients({ FORMS_DEFAULT_RECIPIENT: 'a@x.invalid', X: 'bad' }, 'X')).toBeNull()
+    expect(resolveRecipients({ FORMS_DEFAULT_RECIPIENT: 'a@x.invalid', X: 'b@x.invalid, bad' }, 'X')).toBeNull()
   })
 })
 

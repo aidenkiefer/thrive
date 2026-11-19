@@ -10,8 +10,8 @@ export interface InvalidForm { ok: false; fieldErrors: Record<string, string> }
 
 export interface FormDefinition {
   id: string
-  /** Env var prefix for recipient resolution: <PREFIX>_RECIPIENT, <PREFIX>_EXTRA_RECIPIENTS */
-  recipientEnv: string
+  /** Optional env key holding extra recipients (comma list) added to the global default inbox */
+  extraRecipientsEnv?: string
   validate(fields: FormFields): ValidatedForm | InvalidForm
   /** Build subject and body from validated values. Server-side text only. */
   compose(values: Record<string, string>): { subject: string; text: string }
@@ -28,7 +28,7 @@ function text(fields: FormFields, key: string): string {
 
 const feedback: FormDefinition = {
   id: 'feedback',
-  recipientEnv: 'FORMS_FEEDBACK',
+  extraRecipientsEnv: 'FORMS_FEEDBACK_EXTRA_RECIPIENTS',
   validate(fields) {
     const errors: Record<string, string> = {}
     const category = text(fields, 'category')

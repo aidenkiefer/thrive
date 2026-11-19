@@ -213,7 +213,8 @@ describe('admin_staff_accounts migration and schema', () => {
     expect(s).toMatch(/revoke all on table admin_staff_accounts from anon/)
     expect(s).toMatch(/revoke all on table admin_staff_accounts from authenticated/)
     expect(s).toMatch(/grant select, insert, update on table admin_staff_accounts to service_role/)
-    expect(s).not.toMatch(/grant [^;]*(anon|authenticated)/)
+    // schema.sql also grants public reads on unrelated content tables.
+    expect(s).not.toMatch(/grant\s+[^;]*\bon\s+(?:table\s+)?admin_staff_accounts\s+to\s+(?:public|anon|authenticated)\b/i)
     expect(s).toMatch(/new\.auth_version := greatest\(new\.auth_version, old\.auth_version\) \+ 1/)
     expect(s).toMatch(/tg_op = 'DELETE'[\s\S]*raise exception/)
     expect(s).toMatch(/actor_id is immutable/)

@@ -1,14 +1,14 @@
 /**
- * Church photography already published on the live WordPress site.
+ * Church photography.
  *
- * Source: docs/audit/2026-11/pages/*.md image tables (captured 2026-11-07).
- * Alt text describes what each photo shows (verified by viewing the files).
- * The four kids* photos are stock images the live Kids page already uses; portrait-to-person
- * mapping for staff photos follows the audit's image order and file names.
+ * Local files in /images/church are the owner-supplied LaSalle Studios set and
+ * baptism photos (selected 2026-11-19, published with the kids-ministry shots).
+ * Alt text describes what is in the frame. Staff portraits and the four kids*
+ * age-group photos are still the WordPress files from the 2026-11-07 audit,
+ * because this set has no identified replacement for those frames.
  *
- * TEMPORARY: these load from thrivevineyard.com via the `remotePatterns` entry in
- * next.config.ts. Re-host in Supabase Storage (or /public) before the WordPress
- * site is retired, then remove that pattern.
+ * TEMPORARY: the WordPress URLs load via `remotePatterns` in next.config.ts.
+ * Re-host those remaining files before the WordPress site is retired.
  */
 const BASE = 'https://thrivevineyard.com/wp-content/uploads'
 
@@ -21,16 +21,28 @@ export interface Photo {
 
 export const PHOTOS = {
   worship: {
-    src: `${BASE}/2024/04/Nathan-Worship.jpg`,
-    alt: 'A worship leader plays guitar on stage while congregation members raise their hands.',
-    width: 1920,
-    height: 1280,
+    src: '/images/church/lasalle-18.webp',
+    alt: 'The congregation faces the platform during a Sunday gathering, with a wooden cross on the wall.',
+    width: 1600,
+    height: 1067,
   },
   prayer: {
-    src: `${BASE}/2024/04/Carolyn.jpg`,
-    alt: 'Two women pray with their eyes closed during a Sunday service.',
-    width: 1920,
-    height: 1280,
+    src: '/images/church/lasalle-38.webp',
+    alt: 'A group of people pray together.',
+    width: 1600,
+    height: 1067,
+  },
+  kidsMinistry: {
+    src: '/images/church/lasalle-23.webp',
+    alt: 'Children gathered outside beside a sign that reads Kids Ministry, Preschool and Elementary Age.',
+    width: 1600,
+    height: 1067,
+  },
+  kidsMinistryGroup: {
+    src: '/images/church/lasalle-24.webp',
+    alt: 'A kids ministry group gathered beside the kids ministry sign.',
+    width: 1600,
+    height: 1067,
   },
   pastors: {
     src: `${BASE}/2024/04/Molly-and-Kevin-Pulpit-1-scaled-e1714259072637.jpg`,
@@ -131,3 +143,41 @@ export const PHOTOS = {
 } as const satisfies Record<string, Photo>
 
 export type PhotoKey = keyof typeof PHOTOS
+
+/** Every selected church photo, in selection order, for the about-page gallery. */
+export const CHURCH_PHOTOS: readonly Photo[] = [
+  { src: '/images/church/img-2355.webp', alt: 'A close view of a baptism.', width: 1600, height: 1200 },
+  { src: '/images/church/img-2356.webp', alt: 'A baptism outside the church building.', width: 1200, height: 1600 },
+  { src: '/images/church/img-2357.webp', alt: 'A gathering around a baptism outside the church.', width: 1600, height: 1200 },
+  { src: '/images/church/lasalle-01.webp', alt: 'A musician on stage.', width: 1067, height: 1600 },
+  { src: '/images/church/lasalle-02.webp', alt: 'A singer on stage.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-05.webp', alt: 'A congregant during worship.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-06.webp', alt: 'A bass player.', width: 1067, height: 1600 },
+  { src: '/images/church/lasalle-07.webp', alt: 'A singer with one hand raised.', width: 1067, height: 1600 },
+  { src: '/images/church/lasalle-08.webp', alt: 'Raised hands during worship.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-09.webp', alt: 'A speaker holding a microphone.', width: 1067, height: 1600 },
+  { src: '/images/church/lasalle-10.webp', alt: 'A close view of a guitar.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-11.webp', alt: 'Two people talking.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-12.webp', alt: 'A speaker at the lectern.', width: 1066, height: 1600 },
+  { src: '/images/church/lasalle-14.webp', alt: 'A speaker and the congregation.', width: 1067, height: 1600 },
+  { src: '/images/church/lasalle-15.webp', alt: 'A speaker beneath the cross.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-16.webp', alt: 'Hands holding an open Bible.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-17.webp', alt: 'Someone reading a Bible.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-18.webp', alt: 'The congregation faces the platform during a Sunday gathering, with a wooden cross on the wall.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-19.webp', alt: 'A speaker gesturing beneath the cross.', width: 1067, height: 1600 },
+  { src: '/images/church/lasalle-20.webp', alt: 'A speaker beneath the cross.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-23.webp', alt: 'Children gathered outside beside a sign that reads Kids Ministry, Preschool and Elementary Age.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-24.webp', alt: 'A kids ministry group gathered beside the kids ministry sign.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-26.webp', alt: 'An open Bible and handwritten notes.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-28.webp', alt: 'A speaker beneath the cross.', width: 1067, height: 1600 },
+  { src: '/images/church/lasalle-29.webp', alt: 'The Thrive church sign.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-30.webp', alt: 'A speaker gesturing.', width: 1067, height: 1600 },
+  { src: '/images/church/lasalle-33.webp', alt: 'A speaker gesturing from the platform.', width: 1067, height: 1600 },
+  { src: '/images/church/lasalle-34.webp', alt: 'A worshipper with open hands.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-36.webp', alt: 'A raised hand during worship.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-37.webp', alt: 'A speaker with a microphone.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-38.webp', alt: 'A group of people pray together.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-39.webp', alt: 'People praying together.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-40.webp', alt: 'A closer view of a group praying.', width: 1600, height: 1067 },
+  { src: '/images/church/lasalle-41.webp', alt: 'Three people talking.', width: 1600, height: 1067 },
+]

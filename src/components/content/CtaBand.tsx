@@ -12,7 +12,11 @@ export function CtaBand({ title, children, actions }: CtaBandProps) {
       <Container>
         <div className="reveal mx-auto max-w-2xl text-center">
           <h2 className="font-display text-3xl font-semibold leading-tight md:text-4xl">{title}</h2>
-          {children ? <p className="mt-4 text-lg leading-relaxed text-white/80">{children}</p> : null}
+          {children ? (
+            // MDX wraps the lead in its own <p>. A <p> here nests them, and the
+            // browser rewrites that before hydration (React error 418).
+            <div className="mt-4 text-lg leading-relaxed text-white/80 [&_p]:m-0">{children}</div>
+          ) : null}
           <div className="mt-8 flex flex-wrap justify-center gap-3">{actions}</div>
         </div>
       </Container>

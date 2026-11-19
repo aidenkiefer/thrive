@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { ChurchPhotoSection } from '@/components/content/ChurchPhotoSection'
 import { compilePageMdx } from '@/components/content/compile-page'
 import { PageHero } from '@/components/content/PageHero'
 import { getMdxContent } from '@/lib/mdx'
@@ -26,6 +27,7 @@ export default async function AboutPage() {
         photo="worship"
       />
       {content}
+      <ChurchPhotoSection />
     </>
   )
 }

@@ -3,7 +3,7 @@
 Project 3 field **Batch** orders the open issues into sessions. Within a batch, lanes work in parallel on disjoint files; a batch starts when its gate (below) is met, not on a date (no dates are set). Batches 1-2 are the earlier kickoff and RC2/draft-handoff sessions. Sources: `docs/plans/roadmap-milestones.md`, `docs/plans/backlog/*.md`.
 
 ## Batch 3: unblocked now
-Gate: none. Start immediately.
+Gate: none. Start immediately. **Session 2 plan (2026-11-19):** [assignments/2026-11-19-session-2.md](../agents/assignments/2026-11-19-session-2.md) adds #101 (reconcile and seed the live database), #102 (admin role), #103 (email DNS runbook); #39 moved to Claude; Codex starts with #103.
 
 | Lane (tool) | Order | Issues | Notes |
 |---|---|---|---|

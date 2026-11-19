@@ -37,6 +37,8 @@ Landing procedure and verified retarget commands for these (squash-merge breaks 
 
 ### Owner decisions on record
 
+Full dated log: [owner-decisions.md](owner-decisions.md). 2026-11-19 additions: production Supabase used before launch (no Preview project; live data is an older import, reconcile and seed in #101); staff login sender `info@thrivevineyard.com` (DNS caveat in #103); staff-account control is admin-role only, owner the only admin (#102); Express(o) Sundays 8:30 AM. Current work plan: [session 2](../agents/assignments/2026-11-19-session-2.md).
+
 Shared abuse limiter = Postgres. Announcements: newest featured wins, no priority or scheduling (staff guide `docs/staff/announcements.md`). GTM container `GTM-PRJX6P9H`; no consent notice for now. Native email forms replace Google Forms (`AGENTS.md` forms constraint, approved 2026-11-19). Automated publishing uses reserved system actor rows in `admin_staff_accounts` (#94, decided 2026-11-19). Redirects `/expresso` to `/plan-a-visit#services` (301) and `/prayer`, `/volunteering` to `/get-connected` (302) are decided but **not yet implemented** (#63).
 
 ### Still pending before launch

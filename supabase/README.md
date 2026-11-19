@@ -94,3 +94,44 @@ Rules that follow:
 - **Adding a column to `speakers` or `staff`?** Add it to the grant in both `schema.sql` and a new migration, or public pages can't read it.
 
 Verified on a throwaway local `postgres:16` with Supabase-style table grants: June schema → all three migrations (privacy ×2) and a fresh `schema.sql` both deny `anon` on `select *` and the three contact columns, allow the listed columns, and end with identical column grants (30 rows).
+
+## Shared rate limiter rehearsal (D1L-C, 2026-11-18, PGlite, not a live DB)
+
+`migrations/20261118010000_shared_rate_limit.sql` (table `rate_limit_buckets`, functions `take_rate_limit` and `prune_rate_limit_buckets`) was run on PGlite 0.5.16, which is PostgreSQL 18.6 compiled to WASM. It ran in memory, with no docker and no network. The harness creates Supabase-like roles first: `anon` and `authenticated`, plus `service_role` with `BYPASSRLS`. It also sets Supabase-style default privileges that grant everything new in `public` to all three roles, so the migrations' revokes are actually tested. No `auth` schema is needed.
+
+| Scenario | Result |
+|---|---|
+| Fresh `schema.sql` | Run 1 succeeds. Run 2 stops with `policy "public_read_speakers" ... already exists`, as documented in path A |
+| Fresh `schema.sql` → all 4 migrations, in order, twice | All succeed; catalog unchanged (no-op) |
+| June schema (`cd012bd`) → each migration ×2 in order → whole chain again | All succeed |
+| June schema without its patch block → same | All succeed |
+| Catalog of both migrated June DBs vs fresh `schema.sql` (columns, constraints, indexes, policies, RLS flags, table ACLs, functions incl. ACLs, triggers) | Identical: 196 columns, 86 constraints, 35 indexes, 12 policies, 14 tables, 3 functions, 2 triggers |
+| Limiter checks, run on each of the 3 databases | 345/345 pass |
+
+The limiter checks cover:
+
+- **Access:** RLS is on and there are no policies. `anon` and `authenticated` are denied select, insert, update, delete, `take_rate_limit`, and `prune_rate_limit_buckets` (42501). `PUBLIC` holds no grant. `service_role` can do all of them. Both functions are `security invoker` with `search_path=""`.
+- **CHECK constraints:** `subject_hash` must be exactly 64 lowercase hex characters. 63 or 65 characters, uppercase, non-hex, a raw email, an empty string, or a trailing newline are all rejected (23514). The purpose, window, hits, and expiry checks also reject bad values.
+- **Invalid arguments:** null, malformed, or out-of-range purpose, hash, limit, or window, and prune bounds of 0, 10001, or null, raise 22023 and write nothing.
+- **Counting** (limit 3, 60 s window): hits 1–3 are allowed with retry 0. Hit 4 and later are denied, with `retry_after` equal to the seconds left in the window. The counter stays capped at limit + 1. A limit of 1 allows one hit, then denies.
+- **Isolation:** a different purpose, subject, or window length gets its own bucket.
+- **Window expiry:** tested both by moving a row back an hour and with a real 1-second window. The next hit is allowed and the counter resets to 1.
+- **Cleanup:** each `take_rate_limit` call deletes at most 25 expired rows and keeps live rows and the caller's row. `prune_rate_limit_buckets(n)` honors its bound, returns the count, and removes only expired rows.
+
+Two control checks prove the harness can fail. Removing the `anon` revoke fails 30 checks. Removing the `least(...)` cap fails the cap check. The run also showed that `service_role` depends on `BYPASSRLS`: a role with the same grants but without it gets "new row violates row-level security policy". The privilege checks above mean `anon` is stopped by the missing grants, not only by RLS.
+
+**What this does not prove:**
+
+- **Concurrency.** PGlite has one connection, so concurrent callers were not tested. The claim that concurrent hits on one key cannot both pass is **reasoning, not a test**. `INSERT ... ON CONFLICT DO UPDATE` takes a row lock on the conflicting row. A second caller waits, then re-reads the committed row (READ COMMITTED) and increments it. Two first inserts race on the unique primary key: one inserts, and the other takes the `DO UPDATE` path. So each caller sees a distinct count. The optional "50 parallel calls, limit 3, exactly 3 allowed" check on Preview is still the real test.
+- **Hosted Supabase roles.** The roles and default privileges were stubbed by hand. Real Supabase role details (`supabase_admin` as owner, PostgREST exposure, whether `service_role` really bypasses RLS) are unproven. Re-run the privilege query in the D1L session log on Preview.
+- **Postgres version.** Hosted Supabase runs an older major version than PGlite's 18.6. The SQL uses only long-standing features.
+
+Re-run it: PGlite is **not** a repo dependency. Put a throwaway package outside the repo, for example `/tmp/pglite-rehearsal` (this session used the gitignored `node_modules/.cache/pglite-rehearsal/`):
+
+```sh
+cd /tmp/pglite-rehearsal && npm init -y && npm install @electric-sql/pglite
+git -C <repo> show cd012bd:supabase/schema.sql > june-schema.sql
+node rehearse.mjs <repo>   # exit 0 = all checks pass
+```
+
+`rehearse.mjs` is attached to PR #23 and summarized in `docs/agents/sessions/2026-11-18-claude-data-shared-limiter.md`.

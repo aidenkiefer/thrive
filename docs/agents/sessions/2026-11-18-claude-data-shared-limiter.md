@@ -29,6 +29,7 @@ D1L-A, D1L-B and D1L-C are done on draft PR #23 (stacked on `claude/data-mvp-fou
 - `22:13` **note** D1L-C NOT proven: (1) true multi-connection concurrency. PGlite has a single connection. Atomicity is reasoning, not a test: ON CONFLICT DO UPDATE locks the conflicting row, a waiting caller re-reads the committed row under READ COMMITTED, and a racing first insert falls into DO UPDATE on the PK. (2) Hosted Supabase role details: the roles and default privileges were stubbed, and supabase_admin ownership and PostgREST exposure were not tested. (3) PG major version: hosted Supabase runs an older major than 18.6. The Preview privilege query and the 50-parallel-call check below are still required.
 - `22:14` **change** supabase/README.md gains a "Shared rate limiter rehearsal (D1L-C)" section with the results, the limits, and re-run commands (commit 782cac0).
 - `22:15` **checkpoint** D1L-C · Opus 5.5 (T1) · Migration chain and limiter rehearsed on PGlite: 345/345 pass, no SQL change. Gate PASS.
+- `22:20` **note**: session end. D1L-C is pushed (782cac0 README, 92ff511 log). `gh pr edit` still fails on the Projects (classic) field, and the REST fallback needs owner approval. So the updated PR description is posted as comment issuecomment-6999103522 (owner/QA: paste it into the description), and `rehearse.mjs` as issuecomment-6999104952. `tsconfig.tsbuildinfo` (a gate artifact, untracked) is left uncommitted.
 
 ## Owner: Preview verification and rollback (D1L)
 

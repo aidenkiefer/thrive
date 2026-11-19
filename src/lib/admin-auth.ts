@@ -1,6 +1,7 @@
 import { getServerSession, type NextAuthOptions } from 'next-auth'
 import { redirect } from 'next/navigation'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import { can, type Permission, type StaffRole } from './admin-permissions'
 import {
   SESSION_MAX_AGE_SECONDS, clientKeyFrom, createOtpAuth, createStaffStore, parseSessionIdentity,
   resolveActor, verifyStaffCode, type SessionIdentity, type StaffActor,
@@ -86,7 +87,27 @@ export async function requireStaffActor(): Promise<StaffActor> {
  * as requireStaffActor; also returns the durable actorId for attribution.
  * Sessions from the old shared login carry no identity and must sign in again.
  */
-export async function requireAdmin(): Promise<{ email: string; actorId: string }> {
+export async function requireAdmin(): Promise<{ email: string; actorId: string; role: StaffRole }> {
   const actor = await requireStaffActor()
-  return { email: actor.email, actorId: actor.actorId }
+  return { email: actor.email, actorId: actor.actorId, role: actor.role }
+}
+
+/** Thrown by requirePermission for an active actor whose role lacks the permission. */
+export class PermissionDeniedError extends Error {
+  constructor(readonly permission: Permission) {
+    super(`permission denied: ${permission}`)
+    this.name = 'PermissionDeniedError'
+  }
+}
+
+/**
+ * Guard for actions that need more than content editing, starting with staff
+ * account control ('staff_accounts.manage', admin-only). Redirects to login
+ * without an active actor; throws PermissionDeniedError when the role lacks the
+ * permission. The role is re-read from the membership row on every call.
+ */
+export async function requirePermission(permission: Permission): Promise<StaffActor> {
+  const actor = await requireStaffActor()
+  if (!can(actor.role, permission)) throw new PermissionDeniedError(permission)
+  return actor
 }

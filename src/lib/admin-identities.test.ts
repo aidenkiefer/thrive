@@ -13,7 +13,7 @@ const AUTH = '22222222-2222-4222-8222-222222222222'
 const OTHER_AUTH = '33333333-3333-4333-8333-333333333333'
 
 function row(over: Partial<StaffAccountRow> = {}): StaffAccountRow {
-  return { actor_id: ACTOR, email: 'pat@example.org', auth_user_id: AUTH, status: 'active', auth_version: 1, ...over }
+  return { actor_id: ACTOR, email: 'pat@example.org', auth_user_id: AUTH, status: 'active', auth_version: 1, role: 'staff', ...over }
 }
 
 function memoryStore(rows: StaffAccountRow[]): StaffStore {
@@ -48,7 +48,7 @@ const claims = { actorId: ACTOR, authUserId: AUTH, authVersion: 1 }
 
 describe('resolveActor (every protected request)', () => {
   it('accepts an active row with matching auth user and version, taking email from the row', async () => {
-    expect(await resolveActor(claims, memoryStore([row()]))).toEqual({ ...claims, email: 'pat@example.org' })
+    expect(await resolveActor(claims, memoryStore([row()]))).toEqual({ ...claims, email: 'pat@example.org', role: 'staff' })
   })
   it('rejects unknown actors', async () => {
     expect(await resolveActor(claims, memoryStore([]))).toBeNull()
@@ -71,6 +71,12 @@ describe('resolveActor (every protected request)', () => {
       expect(await resolveActor(bad, store)).toBeNull()
     }
     expect(await resolveActor(claims, null)).toBeNull()
+  })
+  it('carries the role from the row and rejects an unknown role', async () => {
+    expect((await resolveActor(claims, memoryStore([row({ role: 'admin' })])))?.role).toBe('admin')
+    expect((await resolveActor(claims, memoryStore([row()])))?.role).toBe('staff')
+    expect(await resolveActor(claims, memoryStore([row({ role: 'owner' })]))).toBeNull()
+    expect(await resolveActor(claims, memoryStore([row({ role: undefined as unknown as string })]))).toBeNull()
   })
   it('fails closed when the store throws', async () => {
     const store: StaffStore = { findByEmail: async () => { throw new Error('db') }, findByActorId: async () => { throw new Error('db') } }
@@ -330,7 +336,7 @@ describe('verifyStaffCode', () => {
 
   it('returns the actor when Supabase confirms the bound auth user', async () => {
     const otp = fakeOtp()
-    expect(await verifyStaffCode('Pat@example.org', '123 456', deps([row()], otp))).toEqual({ ...claims, email: 'pat@example.org' })
+    expect(await verifyStaffCode('Pat@example.org', '123 456', deps([row()], otp))).toEqual({ ...claims, email: 'pat@example.org', role: 'staff' })
     expect(otp.verifyCode).toHaveBeenCalledWith('pat@example.org', '123456')
   })
   it('rejects wrong, expired, or replayed codes (Supabase says no)', async () => {

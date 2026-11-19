@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { parseStaffRole, type StaffRole } from './admin-permissions'
 import { createSubjectLimiter, normalizeIpSubject, type LimitRule, type SubjectLimiter } from './rate-limit'
 
 export { clientKeyFrom } from './rate-limit'
@@ -13,7 +14,9 @@ export { clientKeyFrom } from './rate-limit'
  * requires status 'active', the same auth user, and the same auth version, so
  * disabling or rebinding a person revokes live sessions. Every failure path
  * resolves to "no actor" (fail closed). Email is a login detail, never an
- * authorship key. Nothing here logs emails, codes, or tokens.
+ * authorship key. The role also comes from the row on every request (never
+ * from the JWT), and a row with an unknown role is treated like a disabled one.
+ * Nothing here logs emails, codes, or tokens.
  */
 
 /** Website session length (seconds), counted from sign-in; use does not extend it. */
@@ -35,6 +38,8 @@ export interface SessionIdentity {
 export interface StaffActor extends SessionIdentity {
   /** From the membership row, not the session. Login/contact detail only. */
   email: string
+  /** From the membership row on every request; interpret only via admin-permissions. */
+  role: StaffRole
 }
 
 export interface StaffAccountRow {
@@ -43,6 +48,7 @@ export interface StaffAccountRow {
   auth_user_id: string
   status: string
   auth_version: number
+  role: string
 }
 
 /** Read-only view of the service-only table. Injected so tests need no database. */
@@ -82,7 +88,7 @@ export function parseSessionIdentity(raw: unknown): SessionIdentity | null {
 }
 
 function isActive(row: StaffAccountRow | null): row is StaffAccountRow {
-  return !!row && row.status === 'active'
+  return !!row && row.status === 'active' && parseStaffRole(row.role) !== null
 }
 
 function toActor(row: StaffAccountRow): StaffActor {
@@ -91,6 +97,7 @@ function toActor(row: StaffAccountRow): StaffActor {
     authUserId: row.auth_user_id.toLowerCase(),
     authVersion: row.auth_version,
     email: row.email,
+    role: parseStaffRole(row.role) as StaffRole,
   }
 }
 
@@ -292,7 +299,7 @@ export function createStaffStore(env: IdentityEnv = process.env): StaffStore | n
   const db: SupabaseClient = createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   })
-  const columns = 'actor_id, email, auth_user_id, status, auth_version'
+  const columns = 'actor_id, email, auth_user_id, status, auth_version, role'
   const one = async (column: string, value: string): Promise<StaffAccountRow | null> => {
     const { data, error } = await db.from('admin_staff_accounts').select(columns).eq(column, value).maybeSingle()
     if (error) throw new Error('staff lookup failed')

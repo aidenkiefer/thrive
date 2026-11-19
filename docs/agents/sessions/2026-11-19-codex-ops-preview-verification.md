@@ -4,7 +4,7 @@
 
 ## Status
 
-#41 runbook drafted and reviewed by the lane builder. Documentation review and gate pending. Local and hosted verification steps remain NOT RUN.
+#41 runbook is ready for independent Cursor review. Candidate SHA pending. Local PostgreSQL and hosted verification steps remain NOT RUN.
 
 ## Entries
 
@@ -14,3 +14,6 @@
 - `14:15` **note** #41: Planned sandbox feedback and a controlled UI 503 check for retained input. No local or hosted tests were executed.
 - `14:15` **decision** #41: Every live write requires owner approval for the specific artifact, a backup, a Data executor, and a ledger entry. No live writes were executed.
 - `14:15` **change** #41: Drafted the 199-line verification runbook in ops documentation. The lane builder reviewed the draft. (T2/model unknown)
+- `14:23` **change** #41: Checkpointed `docs/ops/preview-verification-runbook.md` and the session log after T2 review. A delegated source audit was read-only. (T2/model unknown) [38c234a]
+- `14:23` **note** #41: Syntax-checked the embedded Python and two JavaScript snippets without executing them. The local PostgreSQL and hosted checks remain NOT RUN.
+- `14:23` **note** #41: Full gate passed on Node 20.20.2, including all 91 tests across 10 files, typecheck, and a 30-page production build. Lint reported zero errors and four existing warnings.

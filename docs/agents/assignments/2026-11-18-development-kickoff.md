@@ -32,3 +32,15 @@ Open staffing and form-provider choices, approved church copy, and missing Previ
 ## Start a lane
 
 Use `scripts/agents/worktree.sh new <tool> <lane-slug> --no-install` from the Thrive checkout to start a new lane. The E4 implementation resumes on its already-published branch. Open the new worktree in the relevant tool, invoke `lane-builder`, and pass this assignment from the shared planning worktree if it has not yet landed on the base branch.
+
+## Kickoff checkpoint — 2026-11-18
+
+| Lane | Branch / PR | Current result | Next gate |
+|---|---|---|---|
+| Data D1/D2 | `claude/data-mvp-foundations` · [#15](https://github.com/aidenkiefer/thrive/pull/15) (draft) | Staff actor and native form contracts; QA's global-default-recipient correction pushed | Admin OIDC sign-in entry point before staff enrollment; real mail transport and configured sender/inbox before submissions can deliver |
+| Experience E1 | `cursor/experience-mvp-feedback` · [#17](https://github.com/aidenkiefer/thrive/pull/17) (draft) | Public feedback UI with F1 result handling; Cursor authored the UI and Codex completed the gate/PR after Cursor's shell restrictions | Integrate #15, then wire footer/admin links and reserve the route in the campaign slug handler |
+| Ops O1/O2 | `codex/ops-mvp-fixtures` · [#16](https://github.com/aidenkiefer/thrive/pull/16) (draft) | Hosted-form fixture/allowlist tests, expanded route/form matrix, Vitest discovery for colocated tests | Experience E4 must render the populated, absent, and rejected fixtures; confirm destination and form owner inputs |
+
+The three branches merged cleanly into the **local-only** `codex/integration-check-2026-11-18` worktree. Its full `scripts/agents/gate.sh` passed: typecheck, 68 tests across five files (including D1/D2's colocated tests), lint with 12 existing warnings, and production build. This is a compatibility check, not a production merge or live form verification. `.env` values are still absent.
+
+Carry-over remains: [#8](https://github.com/aidenkiefer/thrive/pull/8) has a Youth Alpha redirect whose Preview destination returned 404; [#5](https://github.com/aidenkiefer/thrive/pull/5) supplies the November URL/form inventory; [#9](https://github.com/aidenkiefer/thrive/pull/9) and [#12](https://github.com/aidenkiefer/thrive/pull/12) need QA reconciliation. Do not enable the Youth Alpha redirect before a published 200 destination exists. Resume E4 after the #8 ministry-page overlap is reconciled, then add render-level fixture checks. The PM keeps [GitHub Project 3](https://github.com/users/aidenkiefer/projects/3) aligned with these dependencies. Senior QA and the owner handle the production merge go under the existing workflow.

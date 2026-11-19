@@ -2,7 +2,9 @@
 
 Until launch, every database-connected Preview uses the production Supabase project. The owner manages Vercel settings. These are proposed scopes. Each unchecked box needs owner verification in the dashboard.
 
-**QA only** means a Preview override restricted to `cursor/qa-preview-candidate`. **Either** means supply one public key name. **Off** means leave that scope empty by default. Local development can use owner-approved isolated fixtures. **Workflow** denotes owner-managed CI inputs referenced through GitHub Actions secrets. Their values have not been inspected. Feature labels apply when the corresponding feature is deployed. Legacy login is scheduled for replacement by #15. Mail rows cover the pending #15/#18 stack and the limiter row covers pending #23.
+**QA only** means a Preview override restricted to `cursor/qa-preview-candidate`. **Either** means supply one public key name. **Off** means leave that scope empty by default. Local development can use owner-approved isolated fixtures. **Workflow** denotes owner-managed CI inputs referenced through GitHub Actions secrets. Their values have not been inspected. Feature labels apply when the corresponding feature is deployed. The pending #15 change removes both legacy credentials. Mail rows cover the pending #15/#18 stack and the limiter row covers pending #23.
+
+**Yes** means required for the current deployment. **All** covers every Preview branch. **Auto** denotes provider-supplied classification. **Set** denotes a workflow-defined setting. **Admin**, **Auth**, **Mail** and **Limiter** mean required for the named feature. **Legacy** applies only before #15 lands. **Optional** enables additional recipients when needed.
 
 | Variable | Purpose | Exposure | Production | Preview | Development | CI | If missing | Owner checked |
 |---|---|---|---|---|---|---|---|---|
@@ -11,7 +13,7 @@ Until launch, every database-connected Preview uses the production Supabase proj
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public client credential, alternate name | Public | Either | Either | Off | Workflow | Without either key the public client is unavailable. | ☐ |
 | `SUPABASE_SERVICE_ROLE_KEY` | Privileged admin and seed access | Server | Admin | QA only | Off | Off | Admin database operations unavailable. | ☐ |
 | `NEXTAUTH_SECRET` | Session signing and admin route protection | Server | Yes | QA only | Off | Workflow | Admin authentication fails closed. | ☐ |
-| `NEXTAUTH_URL` | Canonical origin for NextAuth callbacks | Server | Auth | QA only | Off | Workflow | Callback origin depends on framework detection. | ☐ |
+| `NEXTAUTH_URL` | Canonical origin for NextAuth callbacks | Server | Auth | QA only | Off | Workflow | Set the approved branch-domain origin for QA. If unset, NextAuth relies on framework detection. | ☐ |
 | `ADMIN_EMAIL` | Legacy shared login identity | Server | Legacy | QA only | Off | Off | Legacy credentials login unavailable. | ☐ |
 | `ADMIN_PASSWORD_SCRYPT` | Legacy shared login password verifier | Server | Legacy | QA only | Off | Off | Legacy credentials login unavailable. | ☐ |
 | `VERCEL_ENV` | Provider deployment classification | System | Auto | Auto | Auto¹ | Off | Application follows its non-production paths. | ☐ |
@@ -35,12 +37,16 @@ Until launch, every database-connected Preview uses the production Supabase proj
 | Sitemap database fetch failure | Throws | Static fallback | Static fallback |
 | Safe-data error reporting | Console error | Console warning | Console warning |
 
-These checks use `VERCEL_ENV`. A production-mode Next.js build alone cannot identify the deployment environment. Current `robots.ts` permits public routes in all environments, excludes admin and API routes, and references the production sitemap. A future environment-aware crawler policy could disallow Preview crawling. Vercel normally adds a noindex response header on unique Preview deployment URLs. Custom branch domains can behave differently. Verify both surfaces actually used by QA. [Vercel system variables](https://vercel.com/docs/environment-variables/system-environment-variables) · [Deployment environments](https://vercel.com/docs/deployments/environments)
+These checks use `VERCEL_ENV`. A production-mode Next.js build alone cannot identify the deployment environment. Current `robots.ts` permits public routes in all environments, excludes admin and API routes, and references the production sitemap. Proposed change: emit the HTTP response header `X-Robots-Tag: noindex` for all Preview routes, including custom branch domains. Vercel normally adds a noindex response header on unique Preview deployment URLs. Custom branch domains can behave differently. Verify both surfaces actually used by QA. [Vercel system variables](https://vercel.com/docs/environment-variables/system-environment-variables) · [Deployment environments](https://vercel.com/docs/deployments/environments)
+
+In pending #18, the fake mail transport depends on `NODE_ENV`. Vercel Preview uses a production-mode build, so the fake transport is unavailable there. Use Resend with owner-approved sandbox recipients.
 
 ## Owner dashboard checks
 
 - [ ] Confirm Production branch `main`, the owner-approved production domain, and build command `npm run build` in the project dashboard.
 - [ ] Check each row by name and scope. Remove inherited all-Preview privileged credentials. A branch override alone leaves the generic value available to other branches. Enable system environment variables. Redeploy after edits because existing deployments retain their prior settings.
+- [ ] Confirm the Vercel Development scope is empty. Keep local fixtures separate from dashboard configuration.
+- [ ] Give QA Preview its own `RATE_LIMIT_HASH_SECRET` and `NEXTAUTH_SECRET`, each distinct from its Production counterpart. Coordinate rotation at launch with the owner, including session invalidation and limiter continuity.
 - [ ] Enable Vercel Authentication for Preview, authorize the QA team, and verify Production remains publicly accessible. Keep credentials and access bypass tokens private. [Vercel Authentication](https://vercel.com/docs/deployment-protection/methods-to-protect-deployments/vercel-authentication)
 - [ ] When staff email login lands, owner configures Supabase Auth SMTP in Supabase using the host, port, username, password and sender fields. The app reads no SMTP environment variables. Follow the forthcoming [email setup runbook in #103](https://github.com/aidenkiefer/thrive/issues/103).
 - [ ] Complete the [Preview smoke checklist](preview-smoke-checklist.md) against a new candidate deployment.

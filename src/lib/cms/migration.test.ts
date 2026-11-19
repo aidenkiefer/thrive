@@ -7,8 +7,12 @@ const SCHEMA_HEADER = '-- R2: publication_events (mirror of migrations/202611190
 const migration = readFileSync(MIGRATION_PATH, 'utf8')
 const schemaFull = readFileSync('supabase/schema.sql', 'utf8')
 const schemaStart = schemaFull.indexOf(SCHEMA_HEADER)
-// Only the R2 portion, so unrelated earlier content cannot satisfy or break assertions.
-const schemaR2 = schemaStart === -1 ? '' : schemaFull.slice(schemaStart)
+const RULE = '-- ' + '='.repeat(77)
+// Only the R2 section (header up to the next section rule), so unrelated earlier
+// or later content cannot satisfy or break assertions.
+const r2BodyStart = schemaStart === -1 ? -1 : schemaFull.indexOf(RULE, schemaStart) + RULE.length
+const r2End = r2BodyStart === -1 ? -1 : schemaFull.indexOf('\n' + RULE, r2BodyStart)
+const schemaR2 = schemaStart === -1 ? '' : schemaFull.slice(schemaStart, r2End === -1 ? undefined : r2End)
 
 const targets: Array<[string, string]> = [
   ['migration', migration],
@@ -20,7 +24,7 @@ const GUARD = 'public\\.publication_events_guard\\(\\)'
 const T = 'public\\.publication_events'
 
 describe('publication_events migration and schema (R2)', () => {
-  it('schema.sql contains the R2 section at the end of the file', () => {
+  it('schema.sql contains the R2 section exactly once', () => {
     expect(schemaStart).toBeGreaterThan(-1)
     expect(schemaFull.indexOf(SCHEMA_HEADER, schemaStart + 1)).toBe(-1)
   })

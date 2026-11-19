@@ -49,3 +49,27 @@ Draft: `docs/agents/assignments/2026-11-07-mvp-release-candidate-2.md`. Finish #
 ## Model usage
 
 Independent agents reviewed source provenance, schema/import and auth/validation separately; quality implementation used its own isolated agent. No runtime or external-service configuration result is inferred from these reviews.
+
+## Resumed QA — awaiting owner go for #8 (2026-11-07)
+
+This section supersedes the earlier #8 evidence status. No further merge occurred; main remains `ba3fe81`.
+
+**Spec summary:** preserve #8 → #5 merge order, audit-backed copy, authenticated admin boundaries, forms-only ChurchSuite use and canonical ministry records. Keep E6 pending until C2 and owner-confirmed values exist. Final-main gate and final consolidation follow approved merges. #9 requires its own owner go. Its superseded RC2 draft is staged for deletion; the authoritative PM assignment is `docs/agents/assignments/2026-11-07-release-candidate-2.md` (not present on origin/main at this checkpoint).
+
+**#8 reviewed head:** `63688ab6d5953f965dcd0fc49cde6406530918c0`, based on current origin/main. Scope matches experience ownership; global error/not-found paths are justified by E4. No admin/auth, client Supabase, secrets, invented ministry facts or ChurchSuite API additions found. About/Kids prose matches C1; Give prose, list entries and decoded mailto destinations match C1. Redirects remain non-shadowing: permanent Youth Alpha, temporary taxonomy routes.
+
+**Gate:** clean Linux Node 20.20.0 npm ci followed by the full gate passed in isolated `/tmp/thrive-qa-pr8`: typecheck, 33 tests, lint (0 errors / 12 warnings), production build. Install reported 6 moderate findings. Exact-head GitHub gate and Vercel succeeded; Supabase Preview skipped. QA-docs branch also passed clean install/full gate. Initial Windows npm invocation failed with ENOTEMPTY before the gate; selecting Linux Node resolved it. A report-writing command was interrupted after shell expansion errors; no push or merge resulted.
+
+**Browser evidence:** signed-in Chrome, exact-head deployment https://thrive-vineyard-lw7fjci3f-aiden-kiefers-projects.vercel.app, viewport 375 × 812. All eight drawer links measured 44px. Enter opens/focuses the first link; Escape closes/restores menu focus and body scrolling. Skip-link activation focused main#main-content on all seven routes. Home skip-link visibility verified at top 16px. Screenshots reviewed; document width 360px within the 375px viewport.
+
+| Route | Mobile layout / keyboard result | Content limitation |
+|---|---|---|
+| `/` | PASS: layout, menu, Escape/focus, skip link | Existing Express(o) pause copy/announcement remain for next batch/owner. |
+| `/events` | PASS: layout, menu, Escape/focus, skip link | Intentional no-upcoming-events state; no data created. |
+| `/sermons` | PASS: layout, menu, Escape/focus, skip link | Existing imported title HTML entities outside scope. |
+| `/about` | PASS: layout, menu, Escape/focus, skip link | Church content approval still required. |
+| `/give` | PASS: layout, menu, Escape/focus, skip link | Captured donation destination does not establish owner approval. |
+| `/kids-youth` | PASS: layout, menu, Escape/focus, skip link | Replacement form intentionally pending. |
+| `/ministries/youth-alpha` | PASS for branded 404 shell layout/menu/skip link; ministry content NOT VERIFIED | Canonical record absent in Preview. No schedule/form/pending-panel runtime PASS claimed; owner record + C2 required. |
+
+**Verdict:** #8 code ready for owner merge go with these explicit E6/record and launch-content limitations. #5 held for post-#8 rebase/full gate; final-main gate and final results pending. No live DB writes, seed, configuration changes or launch approval performed.

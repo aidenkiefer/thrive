@@ -16,7 +16,9 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 - Merged #4 (C1 copy contract), #6 (admin/auth/schema/import hardening), and #7 (lint, 33 regression tests, dependency updates); each passed independent review and a clean integrated production gate before merge.
 - `main` is `ba3fe81`; install findings are now 6 moderate, 0 high, 0 critical. Lint has 12 warnings and no errors; final-main gate was not repeated after the wrap-up instruction.
 - #8 remains open: fix mobile link targets, qualify E6 completion, record browser evidence, rebase and run the full gate. #5 remains open for final integration after #8; its corrected audit passed independent review.
-- Schema/seed/live configuration remain unperformed or unverified. QA details and resume order: `docs/agents/qa/2026-11-07-mvp-launch-readiness-1.md`. Next three lanes are drafted in `docs/agents/assignments/2026-11-07-mvp-release-candidate-2.md`; not launched.
+- Schema/seed/live configuration remain unperformed or unverified. QA details and resume order: `docs/agents/qa/2026-11-07-mvp-launch-readiness-1.md`. The superseded RC2 draft is being removed from #9; the authoritative PM assignment is `docs/agents/assignments/2026-11-07-release-candidate-2.md`. No next-batch builders launched by QA.
+**Resumed QA:** #8 head `63688ab` passed clean install, typecheck, 33 tests, lint (12 warnings / 0 errors), production build, CI and Vercel. At 375px, signed-in Chrome verified layouts, 44px drawer targets, keyboard focus/Escape and skip links on seven routes. Youth Alpha rendered the branded 404 because its canonical record is absent; ministry content remains unverified. Awaiting owner go for #8; #5 rebase/gate, final-main gate and final consolidation remain pending.
+
 The tables below preserve the pre-session baseline; the coordination checkpoint above supersedes their completed-work and pending-ticket claims until final consolidation after #8/#5.
 
 ### What's done

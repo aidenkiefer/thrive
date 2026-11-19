@@ -1,10 +1,10 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
-import { publishIntent, setPublished } from '@/lib/cms'
+import { publicationRolledBack, publishIntent, setPublished } from '@/lib/cms'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import {
-  announcementPublishProblems, assertPublishable, httpsUrl, parseInstant, requireText, siteOrHttpsUrl,
+  AdminInputError, announcementPublishProblems, assertPublishable, httpsUrl, parseInstant, requireText, siteOrHttpsUrl,
 } from '@/lib/admin-validation'
 import { AdminForm } from '../_components/admin-form'
 import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
@@ -33,18 +33,29 @@ async function saveAnnouncement(formData: FormData) {
     }
     if (publish) assertPublishable('announcement', announcementPublishProblems(row, new Date()))
     if (id) {
+      // Unpublish before the content write and publish after it, so a failure
+      // part way never leaves the item more public than staff asked for.
+      if (!publish) await setPublished(db, { entityType: 'announcement', entityId: id, publish, actorId })
       const { error } = await db.from('announcements').update(row).eq('id', id)
       if (error) throw new Error(error.message)
-      await setPublished(db, { entityType: 'announcement', entityId: id, publish, actorId })
+      if (publish) await setPublished(db, { entityType: 'announcement', entityId: id, publish, actorId })
     } else {
       const { data, error } = await db.from('announcements').insert(row).select('id').single()
       if (error) throw new Error(error.message)
-      try {
-        await setPublished(db, { entityType: 'announcement', entityId: data.id, publish, actorId })
-      } catch (publishError) {
-        // All or nothing for a new item: drop the unpublished draft so a retry can't duplicate it.
-        await db.from('announcements').delete().eq('id', data.id)
-        throw publishError
+      if (publish) {
+        try {
+          await setPublished(db, { entityType: 'announcement', entityId: data.id, publish, actorId })
+        } catch (publishError) {
+          if (!publicationRolledBack(publishError)) {
+            throw new AdminInputError('The announcement was saved, but publishing could not be confirmed. Check the list below before trying again.')
+          }
+          // The publish rolled back: drop the new draft so a retry can't duplicate it.
+          const { error: cleanupError } = await db.from('announcements').delete().eq('id', data.id)
+          if (cleanupError) {
+            throw new AdminInputError('The announcement was saved as a draft but could not be published. Open it from the list below instead of creating it again.')
+          }
+          throw publishError
+        }
       }
     }
     revalidatePath('/admin/announcements')

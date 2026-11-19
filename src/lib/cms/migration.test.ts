@@ -105,6 +105,10 @@ describe('publication_events migration and schema (R2)', () => {
     expect(s).toContain(`'unpublish', p_actor_id`)
   })
 
+  it.each(targets)('%s blocks TRUNCATE with a statement trigger', (_n, s) => {
+    expect(s).toMatch(/before truncate on public\.publication_events\s+for each statement execute function public\.publication_events_guard\(\)/)
+  })
+
   it('migration runs in one transaction', () => {
     expect(migration).toMatch(/^begin;$/m)
     expect(migration.trimEnd().endsWith('commit;')).toBe(true)
@@ -114,7 +118,10 @@ describe('publication_events migration and schema (R2)', () => {
     const norm = (s: string) => s.replace(/\s+/g, ' ').trim()
     const migBody = migration.slice(migration.indexOf('\nbegin;\n') + '\nbegin;\n'.length, migration.lastIndexOf('commit;'))
     const rule = '-- ' + '='.repeat(77)
-    const afterHeader = schemaR2.slice(schemaR2.indexOf(rule) + rule.length)
+    const rest = schemaR2.slice(schemaR2.indexOf(rule) + rule.length)
+    // Stop at the next section header so later appended mirrors don't break this test.
+    const next = rest.indexOf('\n' + rule)
+    const afterHeader = next === -1 ? rest : rest.slice(0, next)
     expect(norm(afterHeader)).toBe(norm(migBody))
   })
 })

@@ -613,6 +613,9 @@ create trigger publication_events_guard_update before update on public.publicati
 drop trigger if exists publication_events_guard_delete on public.publication_events;
 create trigger publication_events_guard_delete before delete on public.publication_events
   for each row execute function public.publication_events_guard();
+drop trigger if exists publication_events_guard_truncate on public.publication_events;
+create trigger publication_events_guard_truncate before truncate on public.publication_events
+  for each statement execute function public.publication_events_guard();
 
 create or replace function public.cms_set_published(
   p_entity_type text,

@@ -13,7 +13,7 @@
 -- the event in the same transaction. The entity type maps to its table through
 -- a fixed whitelist; nothing caller-supplied reaches the SQL as an identifier.
 --
--- publication_events is append-only (trigger blocks UPDATE and DELETE), RLS is
+-- publication_events is append-only (triggers block UPDATE, DELETE and TRUNCATE), RLS is
 -- on with NO policies, anon/authenticated are revoked, and only service_role can
 -- select/insert. Idempotent: safe to run twice. Agents do not apply it.
 -- =============================================================================
@@ -52,6 +52,9 @@ create trigger publication_events_guard_update before update on public.publicati
 drop trigger if exists publication_events_guard_delete on public.publication_events;
 create trigger publication_events_guard_delete before delete on public.publication_events
   for each row execute function public.publication_events_guard();
+drop trigger if exists publication_events_guard_truncate on public.publication_events;
+create trigger publication_events_guard_truncate before truncate on public.publication_events
+  for each statement execute function public.publication_events_guard();
 
 create or replace function public.cms_set_published(
   p_entity_type text,

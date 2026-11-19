@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { isAdminInputError } from '../admin-validation'
-import { publishIntent, setPublished, type PublicationDb } from './publication'
+import { publicationRolledBack, publishIntent, setPublished, type PublicationDb } from './publication'
 
 const ACTOR = '11111111-1111-4111-8111-111111111111'
 const ID = '22222222-2222-4222-8222-222222222222'
@@ -47,6 +47,15 @@ describe('setPublished', () => {
     const { db } = fakeDb({ data: null, error: { code: '57014', message: 'timeout' } })
     const err = await setPublished(db, { entityType: 'announcement', entityId: 'e', publish: true, actorId: 'a' }).catch(e => e)
     expect(isAdminInputError(err)).toBe(false)
+  })
+
+  it('marks database rejections as rolled back, but not code-less network failures', async () => {
+    const input = { entityType: 'announcement' as const, entityId: 'e', publish: true, actorId: 'a' }
+    const rejected = await setPublished(fakeDb({ data: null, error: { code: '57014', message: 'timeout' } }).db, input).catch(e => e)
+    expect(publicationRolledBack(rejected)).toBe(true)
+    const network = await setPublished(fakeDb({ data: null, error: { code: '', message: 'fetch failed' } }).db, input).catch(e => e)
+    expect(publicationRolledBack(network)).toBe(false)
+    expect(publicationRolledBack(new Error('x'))).toBe(false)
   })
 
   it('maps P0002 and 22023 to friendly messages', async () => {

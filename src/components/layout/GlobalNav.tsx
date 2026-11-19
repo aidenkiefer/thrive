@@ -4,18 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
-const navLinks = [
-  { label: 'Watch & Listen', href: '/sermons' },
-  { label: 'Events', href: '/events' },
-  { label: 'Groups', href: '/groups' },
-  { label: 'Kids & Youth', href: '/kids-youth' },
-  { label: 'Outreach', href: '/outreach' },
-  { label: 'About', href: '/about' },
-  { label: 'Get Connected', href: '/get-connected' },
-]
-
-const visitLink = { label: 'Plan a Visit', href: '/plan-a-visit' }
-const giveLink = { label: 'Give', href: '/give' }
+import { giveLink, navLinks, visitLink } from './nav-links'
 
 export function GlobalNav() {
   const [mobileOpen, setMobileOpen] = useState(false)

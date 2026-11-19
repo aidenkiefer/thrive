@@ -38,3 +38,6 @@ docs/agents/sessions/*.pr.md
 # Python parser cache and Windows download metadata
 __pycache__/
 *:Zone.Identifier
+
+# TypeScript incremental cache
+tsconfig.tsbuildinfo

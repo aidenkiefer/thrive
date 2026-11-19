@@ -21,7 +21,7 @@ Redirects are configured in `next.config.ts` → `redirects()`.
 | `/youth-alpha/` | `/ministries/youth-alpha` | pending | Medium | Hold redirect until a published ministry record returns 200 and owner confirms current dates/form |
 | `/about/` | `/about` | same-path | — | Same path |
 | `/give/` | `/give` | same-path | — | Same path |
-| `/get-connected/` | TBD | pending-audit | Medium | A2 recommendation and owner decision required |
+| `/get-connected/` | `/get-connected` | same-path | — | Same path as the legacy WordPress page, so no redirect is needed (see `docs/audit/2026-11/pages/get-connected.md`) |
 | `/prayer/` | TBD | pending-audit | Medium | A2 recommendation and owner decision required |
 | `/expresso/` | TBD | pending-audit | Medium | A2 recommendation and owner decision required |
 | `/volunteering/` | TBD | pending-audit | Low | A2 recommendation and owner decision required |

@@ -3,21 +3,35 @@ import { createClient } from '@/lib/supabase/server'
 
 const base = 'https://thrivevineyard.com'
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const routes = [
-    '',
-    '/plan-a-visit',
-    '/sermons',
-    '/sermons/series',
-    '/events',
-    '/about',
-    '/about/team',
-    '/give',
-    '/kids-youth',
-    '/groups',
-    '/outreach',
-  ]
-  const entries: MetadataRoute.Sitemap = routes.map(route => ({ url: `${base}${route}` }))
+export const STATIC_ROUTES = [
+  '',
+  '/plan-a-visit',
+  '/sermons',
+  '/sermons/series',
+  '/events',
+  '/about',
+  '/about/team',
+  '/give',
+  '/kids-youth',
+  '/groups',
+  '/outreach',
+  // Same path as the legacy WordPress page (docs/04-seo-url-migration-map.md), so it needs no redirect.
+  '/get-connected',
+] as const
+
+export function buildStaticEntries(siteBase: string = base): MetadataRoute.Sitemap {
+  return STATIC_ROUTES.map(route => ({ url: `${siteBase}${route}` }))
+}
+
+// Why: in production a failed database read must surface as an error so crawlers retry later
+// instead of caching a silently truncated sitemap. Previews and local builds often have no
+// Supabase config, and a 500 there only hides the (still valid) static routes.
+export function shouldFallbackToStatic(vercelEnv: string | undefined): boolean {
+  return vercelEnv !== 'production'
+}
+
+async function buildDatabaseEntries(): Promise<MetadataRoute.Sitemap> {
+  const entries: MetadataRoute.Sitemap = []
   const db = await createClient()
   const results = await Promise.all([
     db.from('sermons').select('slug').not('published_at', 'is', null),
@@ -45,4 +59,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const row of landingRows ?? []) entries.push({ url: `${base}/${row.slug}` })
   for (const row of ministryRows ?? []) entries.push({ url: `${base}/ministries/${row.slug}` })
   return entries
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const entries = buildStaticEntries()
+  try {
+    return [...entries, ...(await buildDatabaseEntries())]
+  } catch (error) {
+    if (!shouldFallbackToStatic(process.env.VERCEL_ENV)) throw error
+    // Message only: never log row data or connection details.
+    const message = error instanceof Error ? error.message : 'unknown error'
+    console.warn(`Sitemap: database entries skipped, serving static routes only (${message})`)
+    return entries
+  }
 }

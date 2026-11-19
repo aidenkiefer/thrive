@@ -1,43 +1,63 @@
-import { getEventBySlug } from '@/lib/queries'
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
-import { EventDetail } from '@/components/events/EventDetail'
-import { Section, Container, Heading } from '@/components/ui'
-import Link from 'next/link'
 import type { Metadata } from 'next'
+import { getEventBySlug } from '@/lib/queries'
+import { EventDetail } from '@/components/events/EventDetail'
+import { BackLink } from '@/components/ui'
+import { Band, PageHero, safely } from '@/components/content'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { SITE_URL } from '@/components/seo/church'
+import { buildEventJsonLd } from '@/components/seo/event'
 
 export const revalidate = 60
 
 interface Props { params: Promise<{ slug: string }> }
 
+const emptyEvent = { event: null, type: null, nextOccurrence: null } as Awaited<ReturnType<typeof getEventBySlug>>
+const loadEvent = cache((slug: string) => safely(`events:${slug}`, () => getEventBySlug(slug), emptyEvent))
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const { event } = await getEventBySlug(slug)
+  const { event } = await loadEvent(slug)
   if (!event) return {}
   return {
     title: ('seo_title' in event ? event.seo_title : null) ?? event.name,
     description: ('seo_description' in event ? event.seo_description : null) ?? undefined,
+    alternates: { canonical: `/events/${slug}` },
   }
 }
 
 export default async function EventDetailPage({ params }: Props) {
   const { slug } = await params
-  const { event, type, nextOccurrence } = await getEventBySlug(slug)
+  const { event, type, nextOccurrence } = await loadEvent(slug)
   if (!event) notFound()
 
   const isOneTime = type === 'one_time'
   const isRecurring = type === 'recurring'
 
+  // Recurring events have no start of their own; the next non-cancelled occurrence
+  // (already fetched) stands in, and the builder returns null when there is none.
+  const jsonLd = buildEventJsonLd(
+    {
+      name: event.name,
+      startDatetime: isOneTime && 'start_datetime' in event ? event.start_datetime : nextOccurrence?.start_datetime,
+      endDatetime: isOneTime && 'end_datetime' in event ? event.end_datetime : nextOccurrence?.end_datetime,
+      shortSummary: event.short_summary,
+      description: event.description,
+      featuredImageUrl: event.featured_image_url,
+      venue: event.venue,
+      // An occurrence's own location overrides the series location (supabase/schema.sql).
+      location: isRecurring ? (nextOccurrence?.location ?? event.location) : event.location,
+    },
+    `${SITE_URL}/events/${slug}`,
+  )
+
   return (
-    <Section background="white">
-      <Container>
-        <div className="mb-4">
-          <Link href="/events" className="text-sm text-brand-600 hover:text-brand-800 transition-colors">
-            ← Back to events
-          </Link>
-        </div>
-
-        <Heading level="h1" className="mb-6">{event.name}</Heading>
-
+    <>
+      {jsonLd && <JsonLd data={jsonLd} />}
+      <PageHero eyebrow={event.category || 'Event'} title={event.name} />
+      <Band tone="white" prose={false}>
+        <BackLink href="/events" className="mb-8 min-h-11">All events</BackLink>
         <EventDetail
           name={event.name}
           description={event.description}
@@ -53,7 +73,7 @@ export default async function EventDetailPage({ params }: Props) {
           typicalTime={isRecurring && 'typical_time' in event ? event.typical_time : null}
           nextOccurrenceStart={nextOccurrence?.start_datetime ?? null}
         />
-      </Container>
-    </Section>
+      </Band>
+    </>
   )
 }

@@ -4,8 +4,9 @@ export const SERVICE_TIMES = [
     time: '8:30 AM',
     location: 'Thrive Cafe (downstairs)',
     description: '~40–45 min. Coffee, muffins, message, communion, prayer. No worship band.',
-    isPaused: true,
-    pauseNote: 'Currently paused for building renovations.',
+    // Owner-confirmed 2026-11-07: weekly, Sundays 8:30 AM America/Chicago, in the cafe.
+    isPaused: false,
+    pauseNote: null,
   },
   {
     name: 'Family Worship',

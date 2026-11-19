@@ -328,3 +328,19 @@ alter table recurring_events add column if not exists venue text;
 alter table one_time_events add column if not exists venue text;
 alter table recurring_events add column if not exists external_url text;
 alter table one_time_events add column if not exists external_url text;
+
+-- =============================================================================
+-- COLUMN PRIVACY (owner decision, 2026-11-07)
+-- Contact columns on "all rows" tables are not public: anon/authenticated may
+-- read every column except speakers.email, staff.email, staff.phone. When you
+-- add a column to speakers or staff, add it to the matching grant below.
+-- Same statements as migrations/20261107020000_contact_column_privacy.sql.
+-- =============================================================================
+
+revoke select on table speakers from anon, authenticated;
+grant select (id, slug, name, title, bio, photo_url, created_at)
+  on table speakers to anon, authenticated;
+
+revoke select on table staff from anon, authenticated;
+grant select (id, slug, name, title, bio, photo_url, display_order, created_at)
+  on table staff to anon, authenticated;

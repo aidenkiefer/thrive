@@ -1,4 +1,7 @@
-import { Button } from '@/components/ui'
+import { isApprovedFormUrl } from '@/lib/form-urls'
+import { CalendarIcon, PinIcon } from '@/components/content/icons'
+import { CardImage } from './CardImage'
+import { LinkButton } from './LinkButton'
 
 interface EventDetailProps {
   name: string
@@ -28,9 +31,9 @@ function formatTime(dateStr: string) {
 }
 
 export function EventDetail({
-  name, description, category, imageUrl, location, venue,
-  churchsuiteFormUrl, externalUrl, startDatetime, endDatetime,
-  recurrenceDescription, typicalTime, nextOccurrenceStart,
+  imageUrl, location, venue,
+  churchsuiteFormUrl, externalUrl, startDatetime,
+  recurrenceDescription, typicalTime, nextOccurrenceStart, description,
 }: EventDetailProps) {
   const displayDate = startDatetime
     ? `${formatFullDate(startDatetime)} at ${formatTime(startDatetime)}`
@@ -39,55 +42,60 @@ export function EventDetail({
       : recurrenceDescription
         ? recurrenceDescription
         : null
+  const place = [venue, location].filter(Boolean).join(' · ')
+  const recurs = recurrenceDescription && !startDatetime
+    ? `Recurs: ${recurrenceDescription}${typicalTime ? ` at ${typicalTime}` : ''}`
+    : null
+  // Only ChurchSuite / Google Forms links are treated as signup forms.
+  const formUrl = isApprovedFormUrl(churchsuiteFormUrl) ? churchsuiteFormUrl : null
+  const moreUrl = externalUrl && externalUrl !== churchsuiteFormUrl ? externalUrl : null
+  const hasFacts = Boolean(displayDate || place || recurs)
 
   return (
-    <article>
-      {imageUrl && (
-        <div className="aspect-video max-w-3xl rounded-lg overflow-hidden mb-6">
-          <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
-        </div>
-      )}
+    <article className="grid gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(16rem,1fr)] lg:items-start">
+      <div className="min-w-0">
+        {imageUrl && (
+          <div className="relative mb-8 aspect-[3/2] max-w-3xl overflow-hidden rounded-2xl bg-brand-100 ring-1 ring-black/5">
+            <CardImage src={imageUrl} sizes="(min-width: 1024px) 60vw, 100vw" />
+          </div>
+        )}
+        {description ? (
+          <div className="max-w-prose">
+            <h2 className="font-display text-2xl font-semibold text-neutral-950">About this event</h2>
+            <p className="mt-3 whitespace-pre-line leading-relaxed text-neutral-700">{description}</p>
+          </div>
+        ) : (
+          <p className="max-w-prose leading-relaxed text-neutral-600">More details about this event are coming soon.</p>
+        )}
+      </div>
 
-      {category && (
-        <span className="inline-block text-xs font-medium text-brand-600 uppercase tracking-wide mb-2">
-          {category}
-        </span>
-      )}
-
-      {displayDate && (
-        <p className="text-brand-800 font-medium mb-2">{displayDate}</p>
-      )}
-
-      {(location || venue) && (
-        <p className="text-sm text-neutral-600 mb-4">
-          {[venue, location].filter(Boolean).join(' · ')}
-        </p>
-      )}
-
-      {recurrenceDescription && !startDatetime && (
-        <p className="text-sm text-neutral-600 mb-4">
-          Recurs: {recurrenceDescription}
-          {typicalTime && ` at ${typicalTime}`}
-        </p>
-      )}
-
-      {description && (
-        <div className="max-w-prose mt-6">
-          <p className="text-neutral-700 leading-relaxed whitespace-pre-line">{description}</p>
-        </div>
-      )}
-
-      {churchsuiteFormUrl && (
-        <div className="mt-8">
-          <Button href={churchsuiteFormUrl} variant="primary">
-            Sign Up / Register
-          </Button>
-        </div>
-      )}
-      {externalUrl && externalUrl !== churchsuiteFormUrl && (
-        <div className="mt-8">
-          <Button href={externalUrl} variant="primary">Event details / Sign up</Button>
-        </div>
+      {(hasFacts || formUrl || moreUrl) && (
+        <aside className="rounded-2xl bg-neutral-100 p-6 ring-1 ring-black/5 lg:sticky lg:top-24">
+          <h2 className="font-display text-xl font-semibold text-neutral-950">Event details</h2>
+          <dl className="mt-4 space-y-4 text-sm">
+            {displayDate && (
+              <div className="flex gap-3">
+                <dt className="sr-only">When</dt>
+                <CalendarIcon className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
+                <dd className="font-medium text-brand-800">{displayDate}</dd>
+              </div>
+            )}
+            {place && (
+              <div className="flex gap-3">
+                <dt className="sr-only">Where</dt>
+                <PinIcon className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
+                <dd className="text-neutral-700">{place}</dd>
+              </div>
+            )}
+            {recurs && <div><dt className="sr-only">Recurrence</dt><dd className="text-neutral-600">{recurs}</dd></div>}
+          </dl>
+          {(formUrl || moreUrl) && (
+            <div className="mt-6 flex flex-col gap-3">
+              {formUrl && <LinkButton href={formUrl}>Sign Up / Register</LinkButton>}
+              {moreUrl && <LinkButton href={moreUrl} variant={formUrl ? 'secondary' : 'primary'}>Event details / Sign up</LinkButton>}
+            </div>
+          )}
+        </aside>
       )}
     </article>
   )

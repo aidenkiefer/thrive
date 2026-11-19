@@ -5,6 +5,7 @@
 | `schema.sql` | The current full schema. Source of truth for a **new** project. |
 | `migrations/20261107000000_mvp_foundation.sql` | Brings a database created from the **June** schema (commit `cd012bd`) up to the Nov 7 foundation schema. |
 | `migrations/20261107010000_ministry_schedule_forms.sql` | Adds nullable `ministries.schedule_description` and `ministries.churchsuite_form_url`. Run after the foundation migration. |
+| `migrations/20261107020000_contact_column_privacy.sql` | Hides `speakers.email`, `staff.email`, `staff.phone` from public (anon) reads. Run last. |
 
 Agents never run either file against a live database. The owner applies them.
 
@@ -30,7 +31,8 @@ Pick **one** path, depending on the database you have.
    group by 1, 2 having count(*) > 1;
    ```
 4. SQL editor → paste `migrations/20261107010000_ministry_schedule_forms.sql` → Run. It only adds two nullable columns, so it is safe to run twice.
-5. Seed.
+5. SQL editor → paste `migrations/20261107020000_contact_column_privacy.sql` → Run. Grants only, no data changes; safe to run twice.
+6. Seed.
 
 With the Supabase CLI instead of the SQL editor, `supabase db push` applies `migrations/` in filename order.
 
@@ -85,4 +87,10 @@ How access works: public pages read with the **anon** key (`src/lib/supabase/ser
 
 **Finding 1, fixed: occurrences of draft events were public.** The June policy was `cancelled = false`, so anyone with the anon key could list occurrences (times, location overrides, notes) of unpublished recurring events. The site's queries already dropped them in code, so the leak was API-only. The policy now also requires the parent recurring event to be published, in both `schema.sql` and the migration. Public pages are unaffected.
 
-**Finding 2, owner decision: contact columns are readable on "all rows" tables.** `speakers.email`, `staff.email`, and `staff.phone` are readable by anyone with the anon key (RLS filters rows, not columns). Every other table exposes `contact_email` only on published rows, which is intended. If speaker or staff contact details should not be public, the options are leaving those columns empty, or revoking column access (`revoke select (email) on speakers from anon;` plus a grant on the remaining columns). Not changed this session.
+**Finding 2, fixed (owner decision 2026-11-07): contact columns were readable on "all rows" tables.** `speakers.email`, `staff.email`, and `staff.phone` were readable by anyone with the anon key (RLS filters rows, not columns). Every other table exposes `contact_email` only on published rows, which is intended. The owner chose to hide them: `migrations/20261107020000_contact_column_privacy.sql` (and the end of `schema.sql`) revokes table-level `SELECT` on `speakers` and `staff` from `anon`/`authenticated` and grants it on every other column. The admin (service role) still reads everything.
+
+Rules that follow:
+- Public queries on `speakers`/`staff` must list columns. `select('*')` or an embed like `speakers(*)` fails with "permission denied". `src/lib/queries/sermons.ts` uses `SPEAKER_COLUMNS`.
+- **Adding a column to `speakers` or `staff`?** Add it to the grant in both `schema.sql` and a new migration, or public pages can't read it.
+
+Verified on a throwaway local `postgres:16` with Supabase-style table grants: June schema → all three migrations (privacy ×2) and a fresh `schema.sql` both deny `anon` on `select *` and the three contact columns, allow the listed columns, and end with identical column grants (30 rows).

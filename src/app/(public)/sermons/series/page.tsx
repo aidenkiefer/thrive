@@ -1,54 +1,64 @@
-import { getSermonSeries } from '@/lib/queries'
-import { BackLink, Container, PageHeader, Section } from '@/components/ui'
-import Image from 'next/image'
-import Link from 'next/link'
 import type { Metadata } from 'next'
+import Link from 'next/link'
+import { getSermonSeries } from '@/lib/queries'
+import type { SermonSeries } from '@/lib/queries/sermons'
+import { BackLink } from '@/components/ui'
+import { CardImage } from '@/components/events/CardImage'
+import { LinkButton } from '@/components/events/LinkButton'
+import { Band, PageHero, PendingNote, SITE, safely } from '@/components/content'
+import { PlayIcon } from '@/components/content/icons'
 
 export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Sermon Series',
   description: 'Browse sermon series from Thrive Vineyard.',
+  alternates: { canonical: '/sermons/series' },
 }
 
 export default async function SeriesListPage() {
-  const series = await getSermonSeries()
+  const series = await safely<SermonSeries[]>('sermons:series-list', () => getSermonSeries(), [])
 
   return (
-    <Section background="light">
-      <Container>
-        <div className="mb-10">
-          <BackLink href="/sermons">All sermons</BackLink>
-          <PageHeader title="Sermon Series" className="mt-5" />
-        </div>
+    <>
+      <PageHero eyebrow="Watch & Listen" title="Sermon Series" lead="Messages grouped by series." />
+      <Band tone="light" prose={false}>
+        <BackLink href="/sermons" className="mb-8 min-h-11">All messages</BackLink>
+        <h2 className="sr-only">All series</h2>
 
         {series.length === 0 ? (
-          <p className="text-neutral-600">No series available yet.</p>
+          <PendingNote title="Series are being added" className="max-w-2xl">
+            <p>Sermon series will appear here. You can also watch on our YouTube channel.</p>
+            <div className="mt-4">
+              <LinkButton href={SITE.social.youtube}>Visit our YouTube channel</LinkButton>
+            </div>
+          </PendingNote>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="reveal-stagger grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {series.map(s => (
-              <Link key={s.id} href={`/sermons/series/${s.slug}`}
-                className="group block overflow-hidden rounded-lg bg-neutral-0 shadow-sm transition-shadow hover:shadow-md">
-                {s.thumbnail_url && (
-                  <div className="relative aspect-video">
-                    <Image
-                      src={s.thumbnail_url}
-                      alt=""
-                      fill
-                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                      className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                    />
-                  </div>
-                )}
-                <div className="p-5">
+              <Link
+                key={s.id}
+                href={`/sermons/series/${s.slug}`}
+                className="group flex h-full flex-col overflow-hidden rounded-2xl bg-neutral-0 shadow-sm ring-1 ring-black/5 motion-lift hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+              >
+                <div className="relative aspect-video overflow-hidden bg-brand-100">
+                  {s.thumbnail_url ? (
+                    <CardImage src={s.thumbnail_url} className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-brand-100 to-accent-50 text-brand-600">
+                      <PlayIcon className="h-10 w-10" aria-hidden="true" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 p-5 md:p-6">
                   <h3 className="font-display text-xl font-semibold leading-snug text-neutral-950 transition-colors group-hover:text-brand-800">{s.title}</h3>
-                  {s.description && <p className="mt-2 line-clamp-2 text-sm text-neutral-600">{s.description}</p>}
+                  {s.description && <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-neutral-600">{s.description}</p>}
                 </div>
               </Link>
             ))}
           </div>
         )}
-      </Container>
-    </Section>
+      </Band>
+    </>
   )
 }

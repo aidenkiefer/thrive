@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { formatDuration } from './media'
 
 interface SermonMetaProps {
   speaker: { name: string; slug: string } | null
@@ -6,18 +7,21 @@ interface SermonMetaProps {
   series: { title: string; slug: string } | null
   scriptureReferences: string[] | null
   topics: string[] | null
+  durationSeconds?: number | null
 }
 
-export function SermonMeta({ speaker, preachedAt, series, scriptureReferences, topics }: SermonMetaProps) {
+export function SermonMeta({ speaker, preachedAt, series, scriptureReferences, topics, durationSeconds = null }: SermonMetaProps) {
   const date = preachedAt
     ? new Date(preachedAt).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
     : null
+  const duration = formatDuration(durationSeconds)
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-neutral-600">
         {speaker && <span className="font-medium text-neutral-950">{speaker.name}</span>}
         {date && <span>{date}</span>}
+        {duration && <span>Length: {duration}</span>}
         {series && (
           <Link
             href={`/sermons/series/${series.slug}`}

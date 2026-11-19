@@ -1,17 +1,18 @@
 # Assignment: 2026-11-18-shared-abuse-limiter
 
 **Session goal:** Replace per-instance OTP and native-form throttles with one fail-closed, privacy-preserving limiter shared across serverless instances.
-**Inputs read:** GitHub Project 3; planning PR #14; draft PRs #15 and #18; `2026-11-18-development-kickoff.md`; `2026-11-18-mvp-development-architecture.md`; Claude read-only review of the active Data worktrees.
+**Inputs read:** GitHub Project 3; draft PRs #15, #18, and #23; `docs/agents/assignments/2026-11-18-batch-2.md` (R1 stack order); Claude read-only review of the active Data worktrees.
 **Owner approval:** approved 2026-11-18 (Postgres strategy)
-**Carry-over:** PR #15 is the base and remains draft. PR #18 stays separately stacked on #15. This assignment does not reopen their completed D1R–D3 scope.
+**Stack:** Data PR #15 (staff actor + native form registry, base `main`) → PR #18 (Resend transport, base #15) → PR #23 (shared Postgres abuse limiter, base #18). This is the R1 order in `2026-11-18-batch-2.md`. All three remain draft. This assignment does not reopen the completed D1R–D3 scope of #15 and #18.
+**Implementation:** already open as draft [PR #23](https://github.com/aidenkiefer/thrive/pull/23) (`claude/data-shared-limiter`, base `claude/data-resend-transport`). This document is the assignment record and QA checklist for that PR; do not create the branch again.
 
 ## Lane map
 
 | Lane | Tool | Branch | Worktree | Default tier |
 |---|---|---|---|---|
-| data | claude | `claude/data-shared-limiter` | `../thrive-worktrees/claude-data-shared-limiter` | T2 design → T1 implement |
+| data | claude | `claude/data-shared-limiter` (PR #23) | `../thrive-worktrees/claude-data-shared-limiter` | T2 design → T1 implement |
 
-No Experience or Ops work is assigned. CMS publishing remains blocked until PR #15 and this limiter pass QA and configured Preview verification.
+No Experience or Ops work is assigned. CMS publishing remains blocked until PRs #15, #18, and #23 pass QA and configured Preview verification.
 
 ## Hot-file owners
 
@@ -25,20 +26,20 @@ Do not edit `package*.json`, Vitest configuration, PR #18's Resend adapter, publ
 
 ## Contract
 
-`takeSharedRateLimit(input): Promise<{ allowed: boolean; retryAfterSeconds: number }>` uses one atomic, service-role-only Postgres operation. Callers supply a purpose, a hashed subject key, a limit, and a window; no raw email, IP address, form content, or secret is persisted.
+`takeSharedRateLimit(input, deps?): Promise<{ allowed: boolean; retryAfterSeconds: number; reason: 'ok' | 'limited' | 'unavailable' }>` in `src/lib/rate-limit/index.ts` (as implemented in PR #23) uses one atomic, service-role-only Postgres operation (`take_rate_limit`). `input` is `{ purpose, subjectHash, limit, windowSeconds }`: a purpose, an HMAC-hashed subject key, a limit, and a window. Callers normally go through `createSubjectLimiter(...)`, which hashes an already-normalized subject with `RATE_LIMIT_HASH_SECRET` and then calls `takeSharedRateLimit`. Every failure (bad input, missing configuration, store error, timeout) denies with `reason: 'unavailable'`. No raw email, IP address, form content, or secret is persisted.
 
 ## Merge order
 
-1. PR #15 identity/form contract.
-2. This stacked limiter PR after security and migration review.
-3. PR #18 rebased onto the reviewed result.
+1. PR #15 (staff actor + native form registry), base `main`.
+2. PR #18 (Resend transport), base #15.
+3. PR #23 (shared Postgres abuse limiter), base #18, after security and migration review.
 4. Configured Preview verification; only then unblock CMS and feedback release work.
 
 ## Lane: data, shared abuse limiter
 
-**Tool:** claude · **Branch:** `claude/data-shared-limiter` stacked on `claude/data-mvp-foundations` · **Default tier:** T2 design → T1 implement
+**Tool:** claude · **Branch:** `claude/data-shared-limiter` (PR #23) stacked on `claude/data-resend-transport` (PR #18) · **Default tier:** T2 design → T1 implement
 **Owned paths:** new `src/lib/rate-limit/**`; narrow edits to `src/lib/admin-identities.ts`, `src/app/api/admin-login/**`, `src/app/api/forms/[formId]/route.ts`; matching colocated tests; new `supabase/migrations/**`; `supabase/schema.sql`; own session log
-**Read first (≤3):** `src/lib/admin-identities.ts`, `src/app/api/forms/[formId]/route.ts`, `supabase/migrations/20261118000000_admin_staff_accounts.sql`
+**Read first (≤3):** `src/lib/admin-identities.ts`, `src/app/api/forms/[formId]/route.ts`, `supabase/migrations/20261118000000_admin_staff_accounts.sql` (these three exist only on the PR #15 stack until it merges, not yet on `main`)
 **Out of scope:** live Supabase calls or migrations; Vercel Firewall changes; Resend transport changes; CMS revisions; changing auth provider/session design; logging submitted values or raw limiter subjects
 
 ### Tickets
@@ -54,13 +55,13 @@ Do not edit `package*.json`, Vitest configuration, PR #18's Resend adapter, publ
 - Files: `src/lib/admin-identities.ts`, narrow admin-login API route edits if required, `src/app/api/forms/[formId]/route.ts`, matching tests.
 - Done when: request, verification, and form limits are shared through the contract; email and IP subjects are normalized then irreversibly hashed with a server secret and purpose separation; store/configuration failure denies auth safely and returns F1 `unavailable` without leaking whether a staff identity exists; tests prove two limiter instances share counts, boundary/expiry behavior, purpose isolation, and fail-closed behavior; targeted tests and `scripts/agents/gate.sh` pass; no live message or database request occurs.
 
-**Lane done when:** both tickets are complete or parked with a reason; gate passes; a draft stacked PR targets `claude/data-mvp-foundations`; the scribe body records migration, secret, Preview, and rollback requirements.
+**Lane done when:** both tickets are complete or parked with a reason; gate passes; a draft stacked PR (#23) targets `claude/data-resend-transport`; the scribe body records migration, secret, Preview, and rollback requirements.
 
 ## QA focus
 
 - Review atomicity under concurrent requests, subject normalization/hash separation, grants/RLS, cleanup bounds, and fail-closed behavior.
 - Confirm responses do not disclose staff membership or submitted form content and logs contain neither raw limiter subjects nor secrets.
-- Verify the stack does not absorb PR #18 or modify the public UI. A green local gate does not replace configured Preview tests.
+- Verify PR #23 does not absorb PR #18's Resend adapter or modify the public UI. A green local gate does not replace configured Preview tests.
 
 ## Owner-controlled follow-up
 

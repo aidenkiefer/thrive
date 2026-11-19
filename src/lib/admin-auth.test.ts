@@ -77,12 +77,24 @@ describe('NextAuth staff-code provider', () => {
       token: { sub: 'x', email: 'pat@example.org', name: 'Pat', access_token: 'sb-secret' },
       user: { id: ACTOR, actorId: ACTOR, authUserId: AUTH, authVersion: 4 } as never,
     } as never)
-    expect(token).toEqual({ actorId: ACTOR, authUserId: AUTH, authVersion: 4 })
+    expect(token).toEqual({ actorId: ACTOR, authUserId: AUTH, authVersion: 4, signedInAt: expect.any(Number) })
     const session = await m.adminAuthOptions.callbacks!.session!({
       session: { user: { email: 'pat@example.org' }, expires: 'soon' },
       token: { ...token, access_token: 'sb-secret' },
     } as never)
     expect(session).toEqual({ expires: 'soon', identity: { actorId: ACTOR, authUserId: AUTH, authVersion: 4 } })
+  })
+
+  it('ends the session 4h after sign-in even while it is in use', async () => {
+    const m = await load()
+    const jwt = m.adminAuthOptions.callbacks!.jwt!
+    const now = Math.floor(Date.now() / 1000)
+    const claims = { actorId: ACTOR, authUserId: AUTH, authVersion: 4 }
+    const live = { ...claims, signedInAt: now - (4 * 60 * 60 - 60) }
+    expect(await jwt({ token: live } as never)).toEqual(live)
+    expect(await jwt({ token: { ...claims, signedInAt: now - 4 * 60 * 60 } } as never)).toEqual({})
+    // A token without a sign-in time (older format) is not extended either.
+    expect(await jwt({ token: claims } as never)).toEqual({})
   })
 
   it.each([

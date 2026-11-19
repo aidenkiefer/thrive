@@ -36,11 +36,16 @@ export const adminAuthOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
+      const now = Math.floor(Date.now() / 1000)
       if (user) {
         // Sign-in: rebuild the token from scratch with only the identity claims.
         const identity = parseSessionIdentity(user)
-        return identity ? { ...identity } : {}
+        return identity ? { ...identity, signedInAt: now } : {}
       }
+      // NextAuth re-issues the cookie on use, so maxAge alone would slide.
+      // Cap the session at SESSION_MAX_AGE_SECONDS from sign-in instead.
+      const signedInAt = token.signedInAt
+      if (typeof signedInAt !== 'number' || now - signedInAt >= SESSION_MAX_AGE_SECONDS) return {}
       return token
     },
     async session({ session, token }) {

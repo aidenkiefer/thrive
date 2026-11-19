@@ -372,7 +372,7 @@ language plpgsql
 set search_path = ''
 as $$
 begin
-  if tg_op = 'DELETE' then
+  if tg_op in ('DELETE', 'TRUNCATE') then
     raise exception 'admin_staff_accounts rows are preserved for attribution; set status = ''disabled'' instead';
   end if;
   if new.actor_id is distinct from old.actor_id then
@@ -401,6 +401,9 @@ create trigger admin_staff_accounts_guard_update before update on admin_staff_ac
 drop trigger if exists admin_staff_accounts_guard_delete on admin_staff_accounts;
 create trigger admin_staff_accounts_guard_delete before delete on admin_staff_accounts
   for each row execute function admin_staff_accounts_guard();
+drop trigger if exists admin_staff_accounts_guard_truncate on admin_staff_accounts;
+create trigger admin_staff_accounts_guard_truncate before truncate on admin_staff_accounts
+  for each statement execute function admin_staff_accounts_guard();
 
 alter table admin_staff_accounts enable row level security;
 -- No policies on purpose: anon and authenticated can read or write nothing.
@@ -417,6 +420,9 @@ begin
     revoke execute on function admin_staff_accounts_guard() from authenticated;
   end if;
   if exists (select 1 from pg_roles where rolname = 'service_role') then
+    -- Supabase default privileges give service_role everything, including
+    -- delete and truncate (a row-level trigger cannot stop TRUNCATE). Reset first.
+    revoke all on table admin_staff_accounts from service_role;
     grant select, insert, update on table admin_staff_accounts to service_role;
   end if;
 end

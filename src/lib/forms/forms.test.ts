@@ -37,6 +37,16 @@ describe('submitWebsiteForm(feedback)', () => {
     expect(await submitWebsiteForm('feedback', ok, { env: { FORMS_DEFAULT_RECIPIENT: env.FORMS_DEFAULT_RECIPIENT }, transport: new FakeMailTransport() })).toEqual({ status: 'unavailable' })
     expect(await submitWebsiteForm('feedback', ok, { env, transport: null })).toEqual({ status: 'unavailable' })
   })
+  it('logs one fixed, PII-free code per unavailable result', async () => {
+    const lines: string[] = []
+    const log = (line: string) => { lines.push(line) }
+    const visitor = { ...ok, replyEmail: 'v@test.invalid' }
+    await submitWebsiteForm('feedback', visitor, { env, log, transport: new FakeMailTransport(new Error('smtp down for inbox@test.invalid')) })
+    await submitWebsiteForm('feedback', visitor, { env: { ...env, FORMS_DEFAULT_RECIPIENT: '' }, log, transport: new FakeMailTransport() })
+    expect(lines).toEqual(['[forms] unavailable code=send_failed form=feedback', '[forms] unavailable code=not_configured form=feedback'])
+    await submitWebsiteForm('feedback', visitor, { env, log, transport: new FakeMailTransport() })
+    expect(lines).toHaveLength(2)
+  })
   it('delivers feedback to the global default plus deduplicated extras', async () => {
     const t = new FakeMailTransport()
     const r = await submitWebsiteForm('feedback', ok, { env: { ...env, FORMS_FEEDBACK_EXTRA_RECIPIENTS: 'INBOX@test.invalid, two@test.invalid' }, transport: t })

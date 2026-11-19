@@ -32,6 +32,15 @@ SUPABASE_SERVICE_ROLE_KEY=<Preview service role key, server only>
 
 `/admin/login` requests the code, then verifies it. Middleware checks for a NextAuth token, and every protected server page or action rechecks active staff membership and version. Rotating `NEXTAUTH_SECRET` during the production cutover invalidates old shared-login cookies.
 
+## Sessions and revocation
+
+A website session lasts 4 hours from sign-in. Using the admin does not extend it; after 4 hours the person signs in again with a new code. To end a person's sessions sooner, revoke them in the SQL editor in one of two ways:
+
+- Disable the row: `update admin_staff_accounts set status = 'disabled' where actor_id = '<actor UUID>';`. This blocks new sign-ins too.
+- Keep the person active but end their current sessions: `update admin_staff_accounts set auth_version = auth_version + 1 where actor_id = '<actor UUID>';`.
+
+The next protected request after either change rejects the old session. Rows are never deleted or truncated; the database refuses both so revision attribution survives.
+
 ## Release gate: shared rate limiting
 
 The current request-code and code-verification limits in `src/lib/admin-identities.ts` use process-local memory. They reset on cold starts and do not aggregate across Vercel instances. Supabase Auth has separate provider limits, but they do not establish the website's stated per-client and per-email budgets. **Do not promote staff sign-in to production until a shared, durable limiter (or equivalent trusted platform limits) covers both endpoints across instances and the limits are verified in Preview.** The Preview exercise should include repeated requests across fresh instances and a check that legitimate staff can still receive and verify codes. This is an implementation/release gate, separate from the Preview account, migration, SMTP, and sender provisioning above.

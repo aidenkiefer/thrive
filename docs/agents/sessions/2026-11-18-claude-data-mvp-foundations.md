@@ -38,3 +38,10 @@ Blocked on owner/provisioning: Supabase Auth email OTP template and Resend SMTP,
 - **fix** Admin code verification now catches a rejected `signIn()` call and clears the busy state in `finally`, so a network failure leaves the form usable.
 - **docs** Corrected the middleware's Supabase Auth comment, replaced obsolete shared-password/OAuth instructions in `.env.local.example`, `docs/admin-setup.md`, and `docs/06-integrations.md`, and clarified the historical implementation handoff. No live credentials were added.
 - **release gate** D1R's rate-limit maps are process-local. A durable shared limiter or equivalent trusted platform controls must enforce request and verification limits across serverless instances before production staff sign-in. Supabase's own OTP limits remain supplemental. Preview account, migration, SMTP, and enrollment are separate provisioning gates.
+
+## Senior QA round on the Data stack (2026-11-19, #15 items)
+- **fix** S6: `admin_staff_accounts` migration and `schema.sql` mirror revoke all from `service_role` before the select/insert/update grant (Supabase default privileges include delete and truncate), and a `before truncate` statement trigger raises through the same guard.
+- **fix** S3 (forms side): `submitWebsiteForm` logs one fixed line per unavailable result, `[forms] unavailable code=<not_configured|send_failed> form=<id>`. No fields, recipients, or transport error text.
+- **fix** N6: sessions now end 4h after sign-in. NextAuth re-issued the JWT on use (sliding), so the token carries `signedInAt` and the jwt callback empties it after 4h. Revocation (disable the row or bump `auth_version`) is documented in `docs/admin-setup.md`. Supersedes the "4h, sliding" decision above.
+- **change** N1: removed `scripts/make-admin-hash.mjs` (nothing reads `ADMIN_PASSWORD_SCRYPT`).
+- **note** S4, S5, N2 touch `admin-identities.ts`, the routes, or forms env lines that originate in #18, so they land on #23 per the stack rule.

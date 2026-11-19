@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
+import { newFormInstance, parseFormInstance } from '@/lib/admin-form-instance'
 import { isAdminInputError } from '@/lib/admin-validation'
 
-export type AdminFeedback = { error?: string; saved?: string; form?: string }
+export type AdminFeedback = { error?: string; saved?: string; form?: string; instance?: string }
 
 /**
  * Runs an admin save and reports the result on the form that submitted it.
@@ -14,11 +15,13 @@ export async function saveWithFeedback(path: string, formKey: string, save: () =
     await save()
   } catch (error) {
     if (isAdminInputError(error)) {
+      // No token: the form is not remounted, so the browser keeps what was typed.
       redirect(`${path}?${new URLSearchParams({ error: error.message, form: formKey })}#form-${formKey}`)
     }
     throw error
   }
-  redirect(`${path}?${new URLSearchParams({ saved: formKey })}#form-${formKey}`)
+  // A fresh token remounts only this form with the saved values (or blank for "new").
+  redirect(`${path}?${new URLSearchParams({ saved: formKey, fi: newFormInstance() })}#form-${formKey}`)
 }
 
 /** Reads feedback from page searchParams (Next 15 passes them as a Promise). */
@@ -27,5 +30,5 @@ export async function readFeedback(searchParams: Promise<Record<string, string |
   const one = (key: string) => (typeof params[key] === 'string' ? (params[key] as string).slice(0, 500) : undefined)
   const error = one('error')
   const saved = one('saved')
-  return { error, saved, form: error ? one('form') : saved }
+  return { error, saved, form: error ? one('form') : saved, instance: saved ? parseFormInstance(params.fi) : undefined }
 }

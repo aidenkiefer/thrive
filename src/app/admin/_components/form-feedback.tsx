@@ -1,5 +1,7 @@
 import type { AdminFeedback } from '@/lib/admin-form'
 
+export { formResetToken } from '@/lib/admin-form-instance'
+
 /** Inline result message for one admin form. Renders nothing unless the feedback targets this form. */
 export function FormFeedback({ feedback, formKey }: { feedback?: AdminFeedback; formKey: string }) {
   if (!feedback || feedback.form !== formKey) return null

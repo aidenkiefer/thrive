@@ -4,6 +4,7 @@ import { Band } from '@/components/content/Band'
 import { SectionIntro } from '@/components/content/SectionIntro'
 import { ArrowRightIcon, PlayIcon } from '@/components/content/icons'
 import { SITE } from '@/components/content/site-info'
+import { parseYouTubeId, youtubeEmbedUrl } from '@/components/sermons/media'
 
 interface Speaker {
   name: string
@@ -66,9 +67,7 @@ export function LatestSermonSection({ sermon }: { sermon: Sermon | null }) {
     )
   }
 
-  const youtubeEmbedUrl = sermon.youtube_url
-    ?.replace('watch?v=', 'embed/')
-    .replace('/embed/embed/', '/embed/')
+  const youtubeVideoId = parseYouTubeId(sermon.youtube_url)
 
   const meta = [
     sermon.speaker?.name,
@@ -98,10 +97,10 @@ export function LatestSermonSection({ sermon }: { sermon: Sermon | null }) {
         </div>
 
         <div className="lg:col-span-3">
-          {youtubeEmbedUrl ? (
+          {youtubeVideoId ? (
             <div className="aspect-video overflow-hidden rounded-2xl shadow-lg ring-1 ring-white/10">
               <iframe
-                src={youtubeEmbedUrl}
+                src={youtubeEmbedUrl(youtubeVideoId)}
                 title={sermon.title}
                 loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

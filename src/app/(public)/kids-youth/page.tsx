@@ -19,8 +19,8 @@ export default async function KidsYouthPage() {
     <>
       {/* Source: audit kids-youth.md ("Kids", "We partner with parents...") */}
       <PageHero
-        photo="familyWorship"
-        photoPosition="object-top"
+        photo="kidsMinistry"
+        photoPosition="object-left"
         title="Kids & youth"
         lead="We partner with parents, creating safe places where kids can grow in their faith and encounter Jesus."
       />

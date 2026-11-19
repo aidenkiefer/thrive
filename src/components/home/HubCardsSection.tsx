@@ -8,14 +8,14 @@ import { SectionIntro } from '@/components/content/SectionIntro'
  *  - Kids: docs/audit/2026-11/pages/kids-youth.md ("We partner with parents, creating safe places...")
  *  - Groups / Outreach: neutral navigational copy only (no invented facts).
  *  - Give: docs/audit/2026-11/pages/give.md ("Time, Talent, Treasure")
- * Photos: audited catalog keys kidsReading, prayer, water, worship.
+ * Photos: kids ministry, prayer, water, and the Sunday gathering.
  */
 export function HubCardsSection() {
   return (
     <Band tone="light" prose={false}>
       <SectionIntro eyebrow="Get involved" title="Find your place at Thrive" align="center" />
       <CardGrid columns={4}>
-        <InfoCard title="Kids & Youth" photo="kidsReading" href="/kids-youth" linkLabel="Explore Kids & Youth">
+        <InfoCard title="Kids & Youth" photo="kidsMinistryGroup" href="/kids-youth" linkLabel="Explore Kids & Youth">
           <p>
             We partner with parents, creating safe places where kids can grow in their faith and encounter Jesus.
           </p>

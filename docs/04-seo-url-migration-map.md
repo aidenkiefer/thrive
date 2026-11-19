@@ -18,7 +18,7 @@ Redirects are configured in `next.config.ts` → `redirects()`.
 | `/upcoming-events/[slug]/` | `/events/[slug]` | implemented | High | MEC prefix change — all ~62 events |
 | `/groups/` | `/groups` | same-path | — | Same path |
 | `/kids/` | `/kids-youth` | implemented | High | Path change |
-| `/youth-alpha/` | `/ministries/youth-alpha` | implemented | Medium | Dedicated ministry page; owner creates the canonical record |
+| `/youth-alpha/` | `/ministries/youth-alpha` | pending | Medium | Hold redirect until a published ministry record returns 200 and owner confirms current dates/form |
 | `/about/` | `/about` | same-path | — | Same path |
 | `/give/` | `/give` | same-path | — | Same path |
 | `/get-connected/` | TBD | pending-audit | Medium | A2 recommendation and owner decision required |
@@ -100,7 +100,6 @@ async redirects() {
     { source: '/teaching', destination: '/sermons', permanent: true },
     { source: '/upcoming-events/:slug', destination: '/events/:slug', permanent: true },
     { source: '/kids', destination: '/kids-youth', permanent: true },
-    { source: '/youth-alpha', destination: '/ministries/youth-alpha', permanent: true },
     { source: '/topics/:slug', destination: '/sermons', permanent: false },
     { source: '/book/:slug', destination: '/sermons', permanent: false },
     { source: '/service-type/:slug', destination: '/sermons', permanent: false },

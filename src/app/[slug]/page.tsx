@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Container, PageHeader, Section } from '@/components/ui'
 
 export const revalidate = 60
-const RESERVED = new Set(['plan-a-visit', 'sermons', 'events', 'groups', 'kids-youth', 'outreach', 'about', 'give', 'ministries', 'admin'])
+const RESERVED = new Set(['plan-a-visit', 'sermons', 'events', 'groups', 'kids-youth', 'outreach', 'about', 'give', 'ministries', 'admin', 'feedback'])
 type Props = { params: Promise<{ slug: string }> }
 
 async function getLanding(slug: string) {

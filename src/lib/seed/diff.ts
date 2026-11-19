@@ -82,11 +82,13 @@ export function diffPlan(plan: SeedPlan, live: Record<SeedTable, Row[]>): SeedDi
 /**
  * Slugs that would exist in both event tables after the seed. The public event
  * page reads one_time_events first, so a stale one-time row would hide the
- * planned recurring event (and the reverse). The writer refuses while any remain.
+ * planned recurring event (and the reverse). Unpublished live rows are ignored:
+ * the public page never shows them. The writer refuses while any remain.
  */
 export function crossTableCollisions(plan: SeedPlan, live: Record<SeedTable, Row[]>): string[] {
-  const liveOneTime = new Set(live.one_time_events.map(r => r.slug))
-  const liveRecurring = new Set(live.recurring_events.map(r => r.slug))
+  const published = (rows: Row[]) => new Set(rows.filter(r => r.published_at != null).map(r => r.slug))
+  const liveOneTime = published(live.one_time_events)
+  const liveRecurring = published(live.recurring_events)
   return [
     ...plan.recurring_events.filter(r => liveOneTime.has(r.slug)).map(r => `${r.slug} (live one-time, planned recurring)`),
     ...plan.one_time_events.filter(r => liveRecurring.has(r.slug)).map(r => `${r.slug} (live recurring, planned one-time)`),

@@ -93,8 +93,12 @@ describe('crossTableCollisions', () => {
   const empty = { speakers: [], sermon_series: [], sermons: [], recurring_events: [], one_time_events: [], event_occurrences: [] }
   it('reports a planned recurring slug that is live as a one-time event, and the reverse', () => {
     const plan = { ...empty, recurring_events: [{ slug: 'youth' }], one_time_events: [{ slug: 'bash' }] }
-    const live = { ...empty, one_time_events: [{ slug: 'youth' }], recurring_events: [{ slug: 'bash' }] }
+    const live = { ...empty, one_time_events: [{ slug: 'youth', published_at: 'x' }], recurring_events: [{ slug: 'bash', published_at: 'x' }] }
     expect(crossTableCollisions(plan, live)).toEqual(['youth (live one-time, planned recurring)', 'bash (live recurring, planned one-time)'])
+  })
+  it('ignores unpublished live rows', () => {
+    const plan = { ...empty, recurring_events: [{ slug: 'youth' }] }
+    expect(crossTableCollisions(plan, { ...empty, one_time_events: [{ slug: 'youth', published_at: null }] })).toEqual([])
   })
   it('is empty when slugs stay in their own table', () => {
     const plan = { ...empty, recurring_events: [{ slug: 'youth' }] }

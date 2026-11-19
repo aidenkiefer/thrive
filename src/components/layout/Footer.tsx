@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { SERVICE_TIMES } from '@/lib/constants/service-times'
 
 export function Footer() {
   return (
@@ -18,8 +19,15 @@ export function Footer() {
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wide text-accent-400">Sunday Services</h3>
             <ul className="mt-3 space-y-1 text-sm text-white/80">
-              <li>8:30 AM — Express(o) <span className="text-white/50">(paused for renovations)</span></li>
-              <li>9:30 AM — Family Worship</li>
+              {/* Single source of truth: src/lib/constants/service-times.ts (owner-confirmed schedule + pause state). */}
+              {SERVICE_TIMES.map((service) => (
+                <li key={service.name}>
+                  {service.time} — {service.name}
+                  {service.isPaused && service.pauseNote && (
+                    <span className="text-white/50"> ({service.pauseNote.replace(/\.$/, '').toLowerCase()})</span>
+                  )}
+                </li>
+              ))}
               <li className="mt-2 text-white/50 text-xs">845 E Glencoe St, Palatine, IL 60074</li>
             </ul>
           </div>
@@ -37,6 +45,11 @@ export function Footer() {
                 <a href="mailto:info@thrivevineyard.com" className="hover:text-white transition-colors">
                   info@thrivevineyard.com
                 </a>
+              </li>
+              <li>
+                <Link href="/feedback" className="hover:text-white transition-colors">
+                  Website feedback
+                </Link>
               </li>
             </ul>
             <div className="mt-4 flex gap-4">

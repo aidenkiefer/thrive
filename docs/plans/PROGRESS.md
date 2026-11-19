@@ -6,7 +6,7 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 
 ## Current status (2026-11-19)
 
-**Phase:** **Draft site merged; Data stack built and held for Preview verification.** The public site (real content, new design, motion, SEO plumbing, tracking, structured data) is on `main` and reviewable by the pastors. The staff sign-in, native forms, Resend transport, shared limiter and attributed publishing are built as draft PRs and must **not** merge to `main` (which deploys to production) until a protected Preview passes the checklist in issue #41. Launch date: **owner to confirm** (see `docs/10-launch-checklist.md`).
+**Phase:** **Draft site merged; session 2 Experience and Ops docs on `main`; Data stack still held.** The public site is on `main`. Helpful 404 and error pages (#106), the sermon audio player (#109) and the default `/og` image (#116) are merged. Ops docs for the Vercel env matrix (#107), Supabase readiness (#110) and worktree hygiene (#115) are merged. The staff sign-in, native forms, Resend transport, shared limiter and attributed publishing stay draft and must **not** merge until a protected Preview passes the checklist in issue #41. Launch date: **owner to confirm** (see `docs/10-launch-checklist.md`).
 
 **Active plan:** [`docs/agents/assignments/2026-11-19-batch-3.md`](../agents/assignments/2026-11-19-batch-3.md) (Batches 3-6 order: [`batches.md`](./batches.md); milestones M1-M5: [`roadmap-milestones.md`](./roadmap-milestones.md); lane backlogs: [`backlog/`](./backlog/)).
 **Status sources:** GitHub Project 3 (Batch, Delivery stage, Milestone fields) · [`docs/08-mvp-status-roadmap.md`](../08-mvp-status-roadmap.md) · QA reports in [`docs/agents/qa/`](../agents/qa/).
@@ -21,6 +21,8 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 | Data RC2 | Merged (#12) | Form-URL allowlist, contact privacy migration, Express(o) un-paused |
 | Tests and fixtures | Merged (#27, #85, #89) | 91 tests; colocated tests discovered; ministry fixtures and render tests |
 | Docs and planning | Merged (#26, #86, #87, #88, #92, #93) | Live URL inventory and launch checklist (`docs/10`), architecture and onboarding, milestones M1-M5, 36 shaped issues, batch order, QA reports |
+| Session 2 Experience | Merged (#106, #109, #116) | Helpful 404 and error pages; sermon audio with a host-allowlisted YouTube parser; `GET /og` 1200×630 PNG. Metadata wiring is still #43. `LatestSermonSection` still iframes `youtube_url` by string replace (E4) |
+| Session 2 Ops docs | Merged (#107, #110, #115) | Vercel env matrix and Preview smoke checklist; Supabase readiness and backup drill (plan tier, backups and RPO/RTO still owner-owned; #70 stays open); worktree hygiene log (#30 stays open) |
 
 ### In flight (draft PRs, not merged)
 
@@ -120,6 +122,7 @@ Shared abuse limiter = Postgres. Announcements: newest featured wins, no priorit
 | **v0.6.1** | UI rollout governance | 2026-07-16 | Frontend | Applied shared MDX prose styling to Plan a Visit. No URLs changed, so no redirects were added; no build, dev, test, or compile command was run under project rules. |
 | **v0.8.1** | MVP foundation (PR #2, Codex) | 2026-11-07 | Full stack | Migration prep, admin auth + CRUD, public record routes, event filters + iCal, redirects/sitemap/robots, roadmap + handoff docs (`docs/08`, `docs/09`). Seed not run; DB state unverified. |
 | **v0.8.2** | Multi-agent workflow v2 (PR #1, Claude) | 2026-11-07 | Workflow | `.agents/skills` (product-manager, lane-builder, scribe, senior-qa), lanes + worktree rules, model routing, `scripts/agents/{worktree,gate}.sh`, CI gate, PR template. Gate-before-push replaces "no verification runs". |
+| **v0.8.3** | Session 2 Experience and Ops docs | 2026-11-19 | Experience, Ops | Squash-merged #115, #110, #107, #106, #109, #116 after MERGE verdicts and green gates. Issues #34, #36, #38 and #68 closed. #30 and #70 stay open. Data stack, #101 seed, #103 DNS draft, and Ops #41/#62/#73 stay unmerged. |
 
 ---
 

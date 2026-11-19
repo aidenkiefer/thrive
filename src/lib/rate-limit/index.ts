@@ -1,4 +1,5 @@
 import { createHmac } from 'node:crypto'
+import { isIPv4, isIPv6 } from 'node:net'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 /**
@@ -122,4 +123,82 @@ export async function takeSharedRateLimit(
   } catch {
     return unavailable()
   }
+}
+
+// ---------------------------------------------------------------------------
+// Caller-facing helpers: rules, subject normalization, keyed hashing
+// ---------------------------------------------------------------------------
+
+/** One limit and window per purpose (see top note). */
+export interface LimitRule {
+  purpose: string
+  limit: number
+  windowSeconds: number
+}
+
+/** Hashes an already-normalized subject under the rule's purpose, then takes one hit. */
+export type SubjectLimiter = (rule: LimitRule, subject: string) => Promise<SharedRateLimitResult>
+
+/**
+ * Production default reads RATE_LIMIT_HASH_SECRET and the Supabase store from
+ * env. Tests inject `secret` and `store` (a present key wins, even if null).
+ * A missing secret or empty subject denies.
+ */
+export function createSubjectLimiter(deps: { secret?: string | null; store?: RateLimitStore | null } = {}): SubjectLimiter {
+  return async (rule, subject) => {
+    try {
+      const secret = 'secret' in deps ? deps.secret ?? null : limiterSecret()
+      if (!secret || typeof subject !== 'string' || !subject) return unavailable()
+      const subjectHash = hashLimiterSubject(rule.purpose, subject, secret)
+      return await takeSharedRateLimit({ ...rule, subjectHash }, 'store' in deps ? { store: deps.store } : {})
+    } catch {
+      return unavailable()
+    }
+  }
+}
+
+const IPV4_TAIL_RE = /(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/
+
+/** Our own /64 output, so normalizing twice is a no-op. */
+const PREFIX64_RE = /^(?:[0-9a-f]{1,4}:){4}:\/64$/
+
+/** The first four hextets of a valid IPv6 address as a /64 prefix, or dotted IPv4 for any mapped form. */
+function ipv6Prefix64(ip: string): string {
+  let s = ip
+  const tail = s.match(IPV4_TAIL_RE)
+  if (tail) {
+    const [a, b, c, d] = tail.slice(1).map(Number)
+    s = `${s.slice(0, -tail[0].length)}${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`
+  }
+  const [head, rest] = s.split('::')
+  const h = head ? head.split(':') : []
+  const t = rest ? rest.split(':') : []
+  const groups = (rest === undefined ? h : [...h, ...Array(8 - h.length - t.length).fill('0'), ...t])
+    .map(g => parseInt(g, 16))
+  if (groups.slice(0, 5).every(g => g === 0) && groups[5] === 0xffff) {
+    return [groups[6] >> 8, groups[6] & 255, groups[7] >> 8, groups[7] & 255].join('.')
+  }
+  return `${groups.slice(0, 4).map(g => g.toString(16)).join(':')}::/64`
+}
+
+/**
+ * Canonical client-address subject: trimmed, lowercased, port and brackets
+ * dropped, IPv4-mapped IPv6 unwrapped, and IPv6 grouped by /64 (one end
+ * site usually owns a whole /64). Idempotent. Anything else is the shared
+ * 'unknown' bucket. Trusts the first x-forwarded-for hop, which Vercel sets;
+ * revisit if hosted behind a proxy that passes client-supplied values through.
+ */
+export function normalizeIpSubject(raw: unknown): string {
+  if (typeof raw !== 'string') return 'unknown'
+  let ip = raw.trim().toLowerCase()
+  if (ip === 'unknown' || PREFIX64_RE.test(ip)) return ip
+  const bracketed = ip.match(/^\[([^\]]+)\](?::\d+)?$/)
+  if (bracketed) ip = bracketed[1]
+  else if (/^\d{1,3}(?:\.\d{1,3}){3}:\d+$/.test(ip)) ip = ip.slice(0, ip.lastIndexOf(':'))
+  ip = ip.split('%')[0]
+  const mapped = ip.match(/^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/)
+  if (mapped) ip = mapped[1]
+  if (isIPv4(ip)) return ip
+  if (isIPv6(ip)) return ipv6Prefix64(ip)
+  return 'unknown'
 }

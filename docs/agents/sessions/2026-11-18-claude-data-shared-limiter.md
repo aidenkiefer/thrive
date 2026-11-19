@@ -3,7 +3,7 @@
 **Assignment:** `docs/agents/assignments/2026-11-18-shared-abuse-limiter.md` (on PR #21, not yet on main) · **Lane:** data · **Tool:** claude · **Started:** 2026-11-18
 
 ## Status
-In progress: shared abuse limiter (D1L). Stacked on `claude/data-mvp-foundations` (PR #15).
+D1L-A and D1L-B done on draft PR #23 (stacked on `claude/data-mvp-foundations`, PR #15). Awaiting QA and configured Preview verification. One owner decision is parked (targeted lockout, see entries).
 
 ## Entries
 <!-- Append-only, oldest first. Types: decision · change · blocker · request · note -->
@@ -14,6 +14,14 @@ In progress: shared abuse limiter (D1L). Stacked on `claude/data-mvp-foundations
 - `21:30` **note**: read-only Opus review of D1L-A found no blockers. Fixed: `hashLimiterSubject` now enforces the 32-char secret minimum itself; only a configured store is cached (late env is picked up); doc states one limit/window per purpose; added a timeout/abort test. Parked: `import 'server-only'` (package not installed, `package*.json` off limits); real-Postgres checks (below).
 - `21:31` **request** ops: add the `server-only` dependency so `src/lib/rate-limit/index.ts` can import it (turns an accidental client import into a build error). Also, again, widen the vitest include to `src/**/*.test.ts`.
 - `21:32` **checkpoint** D1L-A · Opus 5.5 design, Sonnet implementation, Opus review · Atomic, service-role-only Postgres limiter and fail-closed TS boundary. Gate PASS (13 pre-existing lint warnings, none in new files); 99 Data tests pass under the local config.
+- `21:33` **change** D1L-A checkpoint pushed (46d8dde); draft PR #23 opened against `claude/data-mvp-foundations`.
+- `21:45` **decision** D1L-B: purposes `otp.request.ip` 10/15m, `otp.request.email` 3/15m (silent), `otp.request.global` 60/1h, `otp.verify.ip` 30/15m, `otp.verify.email` 8/15m, `form.submit` 5/10m (subject = form id + IP). These are the same numbers as the old per-instance maps. Email subject = `normalizeEmail()`; IP subject = `normalizeIpSubject()` (port/brackets/zone dropped, mapped v4 unwrapped, IPv6 grouped by /64, unparseable → shared `unknown`). Everything is HMAC'd with `RATE_LIMIT_HASH_SECRET` under its purpose. Limiter failure: request-code → 503 `unavailable`, nothing sent (independent of the email); verify → null before Supabase is asked; forms → 503 F1 `unavailable`, no delivery. Over-limit forms → 429 `unavailable` with the real Retry-After. The admin login page already shows a generic error for non-OK responses, so there is no UI change.
+- `21:46` **note**: implementation by two Sonnet subagents (OTP path; form route) on disjoint files. Opus read-only review found a BLOCKER: double normalization put every IPv6 client in the `unknown` bucket. Fixed by making `normalizeIpSubject` idempotent, with a regression test through `clientKeyFrom` → `requestStaffCode`. Also unwrapped hex-form mapped IPv4.
+- `21:47` **change** `src/lib/admin-auth.test.ts` (Data-lane file, test only): the mocked service client gains `rpc`, sets `RATE_LIMIT_HASH_SECRET`, and adds an end-to-end test that a missing secret or RPC error denies sign-in without calling `verifyOtp`. `src/lib/admin-auth.ts` itself is unchanged.
+- `21:48` **blocker** (owner decision, parked, not code-blocking): targeted lockout. Anyone who knows a staff email can spend its verify budget (8/15m) or request budget (3/15m) from any IP, and 6 IPs can exhaust the 60/h global send cap. Lockout lasts at most one window. Recommended: accept for MVP (brute-force resistance on a 6-digit code needs the per-email cap), and revisit with Vercel Firewall rules if it is abused. Alternative: raise the global cap.
+- `21:48` **note** (pre-existing, parked): request-code sends inline, so a Supabase send slower than the 700ms floor can make known emails measurably slower. Recommended follow-up: send via `after()` from `next/server`. Not in this ticket's scope.
+- `21:49` **request** data/docs owner: add `RATE_LIMIT_HASH_SECRET=` to `.env.local.example` and `docs/admin-setup.md`. Neither is in this assignment's owned paths.
+- `21:50` **checkpoint** D1L-B · Opus 5.5 design/review, Sonnet implementation · OTP request/verify and native form limits now shared through D1L-A and fail closed. 143 Data tests pass under the local config.
 
 ## Owner: Preview verification and rollback (D1L)
 

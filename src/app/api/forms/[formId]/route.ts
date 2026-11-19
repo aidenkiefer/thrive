@@ -1,21 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getForm } from '../../../../lib/forms/registry'
 import { submitWebsiteForm } from '../../../../lib/forms/submit'
+import { createSubjectLimiter, normalizeIpSubject, type LimitRule } from '../../../../lib/rate-limit'
 
 const MAX_BODY_BYTES = 16_000
-const WINDOW_MS = 10 * 60_000
-const MAX_PER_WINDOW = 5
-const hits = new Map<string, number[]>()
 
-/** Best-effort per-instance limiter. Serverless instances do not share it; a platform-level limit is a deployment follow-up. */
-function limited(key: string, now = Date.now()): boolean {
-  const recent = (hits.get(key) ?? []).filter(t => now - t < WINDOW_MS)
-  if (recent.length >= MAX_PER_WINDOW) { hits.set(key, recent); return true }
-  recent.push(now)
-  hits.set(key, recent)
-  if (hits.size > 5000) for (const [k, v] of hits) if (v.every(t => now - t >= WINDOW_MS)) hits.delete(k)
-  return false
-}
+/** Counts are shared across serverless instances in Postgres (D1L). Any limiter failure denies (fail closed). */
+const limiter = createSubjectLimiter()
+const FORM_SUBMIT: LimitRule = { purpose: 'form.submit', limit: 5, windowSeconds: 600 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ formId: string }> }) {
   const { formId } = await params
@@ -36,9 +28,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   // Honeypot: a hidden "website" field that people leave empty. Pretend success to bots.
   if (typeof fields.website === 'string' && fields.website.trim()) return NextResponse.json({ status: 'sent' })
 
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-  if (limited(`${formId}:${ip}`)) {
-    return NextResponse.json({ status: 'unavailable' }, { status: 429, headers: { 'Retry-After': '600' } })
+  const hop = request.headers.get('x-forwarded-for')?.split(',')[0] || request.headers.get('x-real-ip')
+  const limit = await limiter(FORM_SUBMIT, `${formId}\u0000${normalizeIpSubject(hop)}`)
+  if (!limit.allowed) {
+    const limited = limit.reason === 'limited'
+    return NextResponse.json({ status: 'unavailable' }, {
+      status: limited ? 429 : 503,
+      headers: { 'Retry-After': limited ? String(limit.retryAfterSeconds) : '60', 'Cache-Control': 'no-store' },
+    })
   }
 
   const result = await submitWebsiteForm(formId, fields)

@@ -6,6 +6,10 @@ const h = vi.hoisted(() => ({
   verifyOtp: vi.fn(),
   signOut: vi.fn(async () => ({ error: null })),
   signInWithOtp: vi.fn(),
+  // Shared limiter RPC (D1L): allow unless a test says otherwise.
+  rpc: vi.fn((): { abortSignal: () => Promise<unknown> } => ({
+    abortSignal: async () => ({ data: [{ allowed: true, retry_after_seconds: 0 }], error: null }),
+  })),
 }))
 
 vi.mock('next-auth', () => ({ getServerSession: vi.fn(async () => h.session) }))
@@ -14,6 +18,7 @@ vi.mock('next/navigation', () => ({ redirect: (to: string) => { throw new Error(
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn((_url: string, key: string) => key === 'service-key'
     ? {
+        rpc: h.rpc,
         from: () => ({
           select: () => ({
             eq: (col: string, val: string) => ({
@@ -34,6 +39,8 @@ beforeEach(() => {
   process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.test'
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key'
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-key'
+  process.env.RATE_LIMIT_HASH_SECRET = 'r'.repeat(32)
+  h.rpc.mockClear()
   h.session = null
   h.rows = [{ ...baseRow }]
   h.verifyOtp.mockReset()
@@ -68,6 +75,18 @@ describe('NextAuth staff-code provider', () => {
     expect(h.signOut).toHaveBeenCalledWith({ scope: 'local' })
     expect(user).toEqual({ id: ACTOR, actorId: ACTOR, authUserId: AUTH, authVersion: 4 })
     expect(JSON.stringify(user)).not.toContain('sb-secret')
+    expect(h.rpc).toHaveBeenCalledWith('take_rate_limit', expect.objectContaining({ p_purpose: 'otp.verify.ip' }))
+    expect(JSON.stringify(h.rpc.mock.calls)).not.toContain('pat@example.org')
+  })
+
+  it('denies sign-in without asking Supabase when the shared limiter is unconfigured or failing', async () => {
+    h.verifyOtp.mockResolvedValue({ data: { user: { id: AUTH }, session: null }, error: null })
+    delete process.env.RATE_LIMIT_HASH_SECRET
+    expect(await provider(await load()).authorize({ email: 'pat@example.org', code: '123456' }, req())).toBeNull()
+    process.env.RATE_LIMIT_HASH_SECRET = 'r'.repeat(32)
+    h.rpc.mockReturnValueOnce({ abortSignal: async () => ({ data: null, error: { message: 'db down' } }) })
+    expect(await provider(await load()).authorize({ email: 'pat@example.org', code: '123456' }, req())).toBeNull()
+    expect(h.verifyOtp).not.toHaveBeenCalled()
   })
 
   it('JWT and session hold only actorId, authUserId and authVersion', async () => {

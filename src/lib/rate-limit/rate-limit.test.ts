@@ -5,7 +5,8 @@ const createClient = vi.fn(() => ({ rpc }))
 vi.mock('@supabase/supabase-js', () => ({ createClient: (...a: unknown[]) => (createClient as (...x: unknown[]) => unknown)(...a) }))
 
 import {
-  createSupabaseRateLimitStore, hashLimiterSubject, limiterSecret, takeSharedRateLimit,
+  createSubjectLimiter, createSupabaseRateLimitStore, hashLimiterSubject, limiterSecret, normalizeIpSubject,
+  takeSharedRateLimit,
   type RateLimitStore, type SharedRateLimitInput,
 } from './index'
 import { createFakeRateLimitStore } from './fake-store'
@@ -222,5 +223,77 @@ describe('createSupabaseRateLimitStore', () => {
     await expect(createSupabaseRateLimitStore(env)!.take(input())).rejects.toThrow()
     reply({ data: [], error: null })
     await expect(createSupabaseRateLimitStore(env)!.take(input())).rejects.toThrow()
+  })
+})
+
+describe('createSubjectLimiter', () => {
+  const rule = { purpose: 'otp.request.ip', limit: 2, windowSeconds: 60 }
+
+  it('hashes per purpose and shares counts across limiter instances on one store', async () => {
+    const store = createFakeRateLimitStore(() => T0)
+    const take = vi.spyOn(store, 'take')
+    const a = createSubjectLimiter({ secret: SECRET, store })
+    const b = createSubjectLimiter({ secret: SECRET, store })
+    expect((await a(rule, '1.2.3.4')).allowed).toBe(true)
+    expect((await b(rule, '1.2.3.4')).allowed).toBe(true)
+    expect(await a(rule, '1.2.3.4')).toMatchObject({ allowed: false, reason: 'limited' })
+    expect((await a({ ...rule, purpose: 'otp.verify.ip' }, '1.2.3.4')).allowed).toBe(true)
+    const sent = take.mock.calls.map(c => c[0].subjectHash)
+    expect(sent[0]).toBe(hashLimiterSubject('otp.request.ip', '1.2.3.4', SECRET))
+    expect(sent[3]).not.toBe(sent[0])
+    expect(JSON.stringify(take.mock.calls)).not.toContain('1.2.3.4')
+  })
+
+  it('denies without a secret, with a short secret, or with an empty subject', async () => {
+    const store = createFakeRateLimitStore(() => T0)
+    const take = vi.spyOn(store, 'take')
+    expect((await createSubjectLimiter({ secret: null, store })(rule, 'x')).reason).toBe('unavailable')
+    expect((await createSubjectLimiter({ secret: 'short', store })(rule, 'x')).reason).toBe('unavailable')
+    expect((await createSubjectLimiter({ secret: SECRET, store })(rule, '')).reason).toBe('unavailable')
+    expect(take).not.toHaveBeenCalled()
+  })
+
+  it('denies by default when RATE_LIMIT_HASH_SECRET is not configured', async () => {
+    const prev = process.env.RATE_LIMIT_HASH_SECRET
+    delete process.env.RATE_LIMIT_HASH_SECRET
+    try {
+      const store = createFakeRateLimitStore(() => T0)
+      expect((await createSubjectLimiter({ store })(rule, 'x')).reason).toBe('unavailable')
+    } finally {
+      if (prev !== undefined) process.env.RATE_LIMIT_HASH_SECRET = prev
+    }
+  })
+})
+
+describe('normalizeIpSubject', () => {
+  it.each([
+    [' 1.2.3.4 ', '1.2.3.4'],
+    ['1.2.3.4:8080', '1.2.3.4'],
+    ['::ffff:1.2.3.4', '1.2.3.4'],
+    ['[2001:DB8::1]:443', '2001:db8:0:0::/64'],
+    ['2001:db8:0:0:ffff::1', '2001:db8:0:0::/64'],
+    ['2001:0db8:00aa:0001:1:2:3:4', '2001:db8:aa:1::/64'],
+    ['fe80::1%eth0', 'fe80:0:0:0::/64'],
+    ['::1', '0:0:0:0::/64'],
+    ['', 'unknown'],
+    ['unknown', 'unknown'],
+    ['not-an-ip', 'unknown'],
+    ['999.1.1.1', 'unknown'],
+    [undefined, 'unknown'],
+  ])('%s -> %s', (raw, expected) => {
+    expect(normalizeIpSubject(raw)).toBe(expected)
+  })
+
+  it('is idempotent and unwraps hex-form mapped IPv4', () => {
+    for (const raw of ['2001:db8:1:2::a', '1.2.3.4', '::ffff:102:304', 'junk']) {
+      const once = normalizeIpSubject(raw)
+      expect(normalizeIpSubject(once)).toBe(once)
+    }
+    expect(normalizeIpSubject('::ffff:102:304')).toBe('1.2.3.4')
+  })
+
+  it('groups a /64 together and separates different /64s', () => {
+    expect(normalizeIpSubject('2001:db8:1:2::a')).toBe(normalizeIpSubject('2001:db8:1:2:ffff:ffff:ffff:ffff'))
+    expect(normalizeIpSubject('2001:db8:1:2::a')).not.toBe(normalizeIpSubject('2001:db8:1:3::a'))
   })
 })

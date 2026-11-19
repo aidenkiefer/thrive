@@ -34,6 +34,11 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 | #90 | R2 attributed publishing (announcements) + `publication_events` | #15 | Same stack |
 | #96 | R2b attributed publishing for the other editors + `published_at` update guard | #90 | Same stack |
 | #95 | Real-Postgres rehearsal of the migration chain (issue #60) | #23 | Evidence for #41 |
+| #114 | Admin role on staff accounts, last-admin guard (#102) | #95 | Same stack; QA MERGE; migration before code deploy |
+| #123 | RLS matrix and admin-guard coverage tests (#45) | #95 | Same stack; when both chains combine, add `publication_events` to `SERVICE_TABLES` (see QA report) |
+| #119 | API route inventory and limiter coverage test (#48) | #23 | Same stack; QA MERGE |
+| #120 | Shared reserved-slug list (#40) | #96 | Same stack; QA MERGE |
+| #122 | One revalidation helper for admin saves (#44) | #120 | Same stack; QA MERGE |
 
 Landing procedure and verified retarget commands for these (squash-merge breaks stacked bases): [`docs/agents/qa/2026-11-19-data-stack-and-cms-slice.md`](../agents/qa/2026-11-19-data-stack-and-cms-slice.md).
 
@@ -124,6 +129,7 @@ Shared abuse limiter = Postgres. Announcements: newest featured wins, no priorit
 | **v0.8.2** | Multi-agent workflow v2 (PR #1, Claude) | 2026-11-07 | Workflow | `.agents/skills` (product-manager, lane-builder, scribe, senior-qa), lanes + worktree rules, model routing, `scripts/agents/{worktree,gate}.sh`, CI gate, PR template. Gate-before-push replaces "no verification runs". |
 | **v0.8.3** | Owner church photos and Thrive Flames (#125, #126) | 2026-11-19 | Experience | Local WebP set on the home hub, kids hero, and About gallery; `/thrive-flames` uses the live page's copy. Gate PASS at `ace6160`. |
 | **v0.8.3** | Session 2 Experience and Ops docs | 2026-11-19 | Experience, Ops | Squash-merged #115, #110, #107, #106, #109, #116 after MERGE verdicts and green gates. Issues #34, #36, #38 and #68 closed. #30 and #70 stay open. Data stack, #101 seed, #103 DNS draft, and Ops #41/#62/#73 stay unmerged. |
+| **v0.8.4** | Live database reconciliation and seed rails (#108; #101, absorbs #39) | 2026-11-19 | Data | `npm run seed -- --dry-run` reconciliation, host and fingerprint confirmations, post-write verification, generated seed SQL for the MCP. Seed and batch A were applied to live under the owner's go before merge; ledger row added. Three rounds of QA (GPT, Gemini, Claude). Gate PASS on `main` at `a8d8be0`. The rest of the Data stack stays draft until #41. |
 
 ---
 

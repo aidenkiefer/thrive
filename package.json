@@ -11,7 +11,8 @@
     "test": "vitest run",
     "media:catalog": "node scripts/build-media-library.mjs",
     "predev": "npm run media:catalog",
-    "prebuild": "npm run media:catalog"
+    "prebuild": "npm run media:catalog",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

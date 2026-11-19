@@ -15,6 +15,8 @@ import { PastorsSection } from '@/components/home/PastorsSection'
 import { HubCardsSection } from '@/components/home/HubCardsSection'
 import { NewsletterSection } from '@/components/home/NewsletterSection'
 import { LocationSection } from '@/components/home/LocationSection'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { buildChurchJsonLd } from '@/components/seo/church'
 
 export const revalidate = 60
 
@@ -29,6 +31,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd data={buildChurchJsonLd()} />
       <HeroSection />
       <ServiceTimesSection />
       {announcement && <FeaturedAnnouncement announcement={announcement} />}

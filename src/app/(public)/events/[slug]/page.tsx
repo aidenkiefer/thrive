@@ -5,6 +5,9 @@ import { getEventBySlug } from '@/lib/queries'
 import { EventDetail } from '@/components/events/EventDetail'
 import { BackLink } from '@/components/ui'
 import { Band, PageHero, safely } from '@/components/content'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { SITE_URL } from '@/components/seo/church'
+import { buildEventJsonLd } from '@/components/seo/event'
 
 export const revalidate = 60
 
@@ -32,8 +35,26 @@ export default async function EventDetailPage({ params }: Props) {
   const isOneTime = type === 'one_time'
   const isRecurring = type === 'recurring'
 
+  // Recurring events have no start of their own; the next non-cancelled occurrence
+  // (already fetched) stands in, and the builder returns null when there is none.
+  const jsonLd = buildEventJsonLd(
+    {
+      name: event.name,
+      startDatetime: isOneTime && 'start_datetime' in event ? event.start_datetime : nextOccurrence?.start_datetime,
+      endDatetime: isOneTime && 'end_datetime' in event ? event.end_datetime : nextOccurrence?.end_datetime,
+      shortSummary: event.short_summary,
+      description: event.description,
+      featuredImageUrl: event.featured_image_url,
+      venue: event.venue,
+      // An occurrence's own location overrides the series location (supabase/schema.sql).
+      location: isRecurring ? (nextOccurrence?.location ?? event.location) : event.location,
+    },
+    `${SITE_URL}/events/${slug}`,
+  )
+
   return (
     <>
+      {jsonLd && <JsonLd data={jsonLd} />}
       <PageHero eyebrow={event.category || 'Event'} title={event.name} />
       <Band tone="white" prose={false}>
         <BackLink href="/events" className="mb-8 min-h-11">All events</BackLink>

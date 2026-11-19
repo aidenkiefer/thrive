@@ -3,9 +3,10 @@
  *
  * Local files in /images/church are the owner-supplied LaSalle Studios set and
  * baptism photos (selected 2026-11-19, published with the kids-ministry shots).
- * Alt text describes what is in the frame. Staff portraits and the four kids*
- * age-group photos are still the WordPress files from the 2026-11-07 audit,
- * because this set has no identified replacement for those frames.
+ * Alt text describes what is in the frame. Individual staff headshots and the
+ * four kids* age-group photos are still the WordPress files from the
+ * 2026-11-07 audit, because this set has no identified replacement for those
+ * frames. The pastors and welcome photos use frames from this set.
  *
  * TEMPORARY: the WordPress URLs load via `remotePatterns` in next.config.ts.
  * Re-host those remaining files before the WordPress site is retired.
@@ -45,16 +46,16 @@ export const PHOTOS = {
     height: 1067,
   },
   pastors: {
-    src: `${BASE}/2024/04/Molly-and-Kevin-Pulpit-1-scaled-e1714259072637.jpg`,
-    alt: 'Pastors Kevin and Molly Kiefer standing together at the pulpit.',
-    width: 1706,
-    height: 1706,
+    src: '/images/church/lasalle-20.webp',
+    alt: 'Pastor Kevin Kiefer speaks at the pulpit beneath the cross.',
+    width: 1600,
+    height: 1067,
   },
   familyWorship: {
-    src: `${BASE}/2024/04/Adrienne-and-Judah.jpg`,
-    alt: 'A woman worships with one hand raised while holding a young child.',
-    width: 600,
-    height: 800,
+    src: '/images/church/lasalle-07.webp',
+    alt: 'A woman sings with one hand raised during worship.',
+    width: 1067,
+    height: 1600,
   },
   water: {
     src: `${BASE}/2024/08/lakesquare.jpg`,

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui'
  * Source: docs/audit/2026-11/pages/about.md, "Our History":
  *  - "Co-Pastors Kevin and Molly Kiefer" (attribution)
  *  - Kevin's quote, verbatim: "It's a privilege to be able to show our community the goodness of Jesus and how He can change lives."
- * Photo: PHOTOS.pastors (audited; alt: Pastors Kevin and Molly Kiefer at the pulpit).
+ * Photo: PHOTOS.pastors (LaSalle set: Kevin at the pulpit).
  */
 export function PastorsSection() {
   return (

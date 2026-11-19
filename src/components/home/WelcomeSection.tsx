@@ -8,7 +8,7 @@ import { Button } from '@/components/ui'
  *  - "Come as you are": existing homepage hero lead.
  *  - Worship invitation: docs/audit/2026-11/pages/about.md ("Get in Touch").
  *  - Volunteer welcome + gift: docs/audit/2026-11/pages/plan-a-visit.md (step 5).
- * Photo: PHOTOS.familyWorship (audited).
+ * Photo: PHOTOS.familyWorship (LaSalle set: worship with a raised hand).
  */
 export function WelcomeSection() {
   return (

@@ -7,14 +7,15 @@ import { CardImage } from '@/components/events/CardImage'
 import { LinkButton } from '@/components/events/LinkButton'
 import { Band, PageHero, PendingNote, SITE, safely } from '@/components/content'
 import { PlayIcon } from '@/components/content/icons'
+import { pageMetadata } from '@/components/seo/metadata'
 
 export const revalidate = 60
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Sermon Series',
   description: 'Browse sermon series from Thrive Vineyard.',
-  alternates: { canonical: '/sermons/series' },
-}
+  path: '/sermons/series',
+})
 
 export default async function SeriesListPage() {
   const series = await safely<SermonSeries[]>('sermons:series-list', () => getSermonSeries(), [])

@@ -8,6 +8,7 @@ import { isApprovedFormUrl } from '@/lib/form-urls'
 import { CardImage } from '@/components/events/CardImage'
 import { LinkButton } from '@/components/events/LinkButton'
 import { Band, PageHero, safely } from '@/components/content'
+import { pageMetadata } from '@/components/seo/metadata'
 
 export const revalidate = 60
 type Props = { params: Promise<{ slug: string }> }
@@ -18,11 +19,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const item = await loadOutreach(slug)
   return item
-    ? {
+    ? pageMetadata({
         title: item.seo_title || item.name,
-        description: item.seo_description || item.short_summary || undefined,
-        alternates: { canonical: `/outreach/${slug}` },
-      }
+        description: item.seo_description || item.short_summary,
+        path: `/outreach/${slug}`,
+        image: item.og_image_url ?? item.featured_image_url,
+      })
     : {}
 }
 

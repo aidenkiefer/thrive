@@ -5,12 +5,14 @@ import { compilePageMdx } from '@/components/content/compile-page'
 import { getMdxContent } from '@/lib/mdx'
 import { PageHero } from '@/components/content/PageHero'
 import { ServiceCards, ServiceDetails } from './ServiceCards'
+import { pageMetadata } from '@/components/seo/metadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Plan Your Visit',
   description:
     'Everything you need to know before your first visit to Thrive Vineyard Church in Palatine, IL.',
-}
+  path: '/plan-a-visit',
+})
 
 export default async function PlanAVisitPage() {
   const { content } = await compilePageMdx({

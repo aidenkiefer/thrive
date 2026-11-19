@@ -6,14 +6,15 @@ import { Badge } from '@/components/ui'
 import { CardImage } from '@/components/events/CardImage'
 import { LinkButton } from '@/components/events/LinkButton'
 import { Band, PageHero, PendingNote, SITE, safely } from '@/components/content'
+import { pageMetadata } from '@/components/seo/metadata'
 
 export const revalidate = 60
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Outreach',
   description: 'Outreach initiatives at Thrive Vineyard Church.',
-  alternates: { canonical: '/outreach' },
-}
+  path: '/outreach',
+})
 
 export default async function OutreachPage() {
   const items = await safely<Outreach[]>('outreach:list', () => getOutreachItems(), [])

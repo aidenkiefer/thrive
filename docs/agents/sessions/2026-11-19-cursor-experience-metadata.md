@@ -4,8 +4,9 @@
 
 ## Status
 <!-- ≤3 lines, kept current by scribe: done / in progress / parked / blocked -->
-In progress: E2 done, E1 starting.
+Done: E1 and E2 complete, gate passes, PR pending.
 
 ## Entries
 <!-- Append-only, oldest first. Types: decision · change · blocker · request · note -->
-- `16:50` **change** E2: `LatestSermonSection` now embeds via `parseYouTubeId`/`youtubeEmbedUrl` from `src/components/sermons/media.ts` instead of a string replace on `youtube_url`. Non-YouTube/unparseable urls fall back to the empty state. (T1) [pending]
+- `16:50` **change** E2: `LatestSermonSection` now embeds via `parseYouTubeId`/`youtubeEmbedUrl` from `src/components/sermons/media.ts` instead of a string replace on `youtube_url`. Non-YouTube/unparseable urls fall back to the empty state. (T1) [8a3a8a3]
+- `17:00` **change** E1 (#43): added `pageMetadata()` in `src/components/seo/metadata.ts` (+ unit tests); used on every public route metadata/generateMetadata export (home, `/[slug]`, sermons list/detail/series, events list/detail, groups list/detail, outreach list/detail, ministries detail, about, about/team, kids-youth, give, get-connected, plan-a-visit). `layout.tsx` default `openGraph`/`twitter` now point at `/og`. Image precedence: `og_image_url` → `thumbnail_url`/`featured_image_url` (sermon also tries a derived YouTube thumbnail) → `/og`. Curl-verified absolute `og:`/`twitter:` tags on 12 static routes; dynamic DB-backed routes (sermon/event/landing detail) could not be curled live in this worktree (no Supabase env configured) but share the same `generateMetadata` pattern and are covered by `pageMetadata` unit tests. (T1) [pending]

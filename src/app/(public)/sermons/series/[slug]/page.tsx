@@ -6,6 +6,7 @@ import type { Sermon, SermonSeries } from '@/lib/queries/sermons'
 import { SermonCard } from '@/components/sermons/SermonCard'
 import { BackLink } from '@/components/ui'
 import { Band, PageHero, PendingNote, safely } from '@/components/content'
+import { pageMetadata } from '@/components/seo/metadata'
 
 export const revalidate = 60
 
@@ -18,11 +19,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const allSeries = await loadAllSeries()
   const series = allSeries.find(s => s.slug === slug)
   if (!series) return {}
-  return {
+  return pageMetadata({
     title: series.title,
-    description: series.description ?? undefined,
-    alternates: { canonical: `/sermons/series/${slug}` },
-  }
+    description: series.description,
+    path: `/sermons/series/${slug}`,
+    image: series.og_image_url ?? series.thumbnail_url,
+  })
 }
 
 export default async function SeriesDetailPage({ params }: Props) {

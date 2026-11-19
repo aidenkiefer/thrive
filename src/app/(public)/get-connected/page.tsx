@@ -6,12 +6,14 @@ import { compilePageMdx } from '@/components/content/compile-page'
 import { getMdxContent } from '@/lib/mdx'
 import { PageHero } from '@/components/content/PageHero'
 import { ServiceTimesLines } from './ServiceTimesLines'
+import { pageMetadata } from '@/components/seo/metadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Get Connected',
   description:
     'Find a group, pre-register your kids, or let us know if you have any questions. Thrive Vineyard Church, Palatine, IL.',
-}
+  path: '/get-connected',
+})
 
 export default async function GetConnectedPage() {
   const { content } = await compilePageMdx({

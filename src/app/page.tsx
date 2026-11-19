@@ -1,9 +1,11 @@
+import type { Metadata } from 'next'
 import {
   getLatestSermon,
   getFeaturedAnnouncement,
   getUpcomingEvents,
 } from '@/lib/queries'
 import { safely } from '@/components/content/safe-data'
+import { pageMetadata } from '@/components/seo/metadata'
 import { HeroSection } from '@/components/home/HeroSection'
 import { ServiceTimesSection } from '@/components/home/ServiceTimesSection'
 import { FeaturedAnnouncement } from '@/components/home/FeaturedAnnouncement'
@@ -19,6 +21,17 @@ import { JsonLd } from '@/components/seo/JsonLd'
 import { buildChurchJsonLd } from '@/components/seo/church'
 
 export const revalidate = 60
+
+// `title: { absolute }` keeps the homepage `<title>` as the layout's bare default
+// instead of letting the `%s | Thrive Vineyard` template double it up.
+export const metadata: Metadata = {
+  ...pageMetadata({
+    title: 'Thrive Vineyard',
+    description: 'Thrive Vineyard Church — Spirit Filled. Down to Earth.',
+    path: '/',
+  }),
+  title: { absolute: 'Thrive Vineyard' },
+}
 
 export default async function HomePage() {
   // Each query falls back to an empty value so a missing/empty database renders the

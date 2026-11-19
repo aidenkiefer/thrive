@@ -3,13 +3,15 @@ import { compilePageMdx } from '@/components/content/compile-page'
 import { PageHero } from '@/components/content/PageHero'
 import { getMdxContent } from '@/lib/mdx'
 import { EmailButton } from '../ContactDetails'
+import { pageMetadata } from '@/components/seo/metadata'
 
 export const revalidate = 60
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Our Team',
   description: 'Meet the pastors, staff, and leaders of Thrive Vineyard Church in Palatine, IL.',
-}
+  path: '/about/team',
+})
 
 export default async function TeamPage() {
   const { content } = await compilePageMdx({

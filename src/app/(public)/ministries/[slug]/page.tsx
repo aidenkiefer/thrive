@@ -7,6 +7,7 @@ import { CardImage } from '@/components/events/CardImage'
 import { LinkButton } from '@/components/events/LinkButton'
 import { Band, PageHero, safely } from '@/components/content'
 import { getMinistryBySlug } from '@/lib/queries/ministries'
+import { pageMetadata } from '@/components/seo/metadata'
 import type { Ministry } from '@/lib/queries/ministries'
 
 export const revalidate = 60
@@ -19,11 +20,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const ministry = await loadMinistry(slug)
   return ministry
-    ? {
+    ? pageMetadata({
         title: ministry.seo_title || ministry.name,
-        description: ministry.seo_description || ministry.short_summary || undefined,
-        alternates: { canonical: `/ministries/${slug}` },
-      }
+        description: ministry.seo_description || ministry.short_summary,
+        path: `/ministries/${slug}`,
+        image: ministry.og_image_url ?? ministry.featured_image_url,
+      })
     : {}
 }
 

@@ -34,7 +34,7 @@ Every live `published_at` differs from the export. The older import stamped its 
 
 **Live-only rows (the seed never deletes):**
 
-- one_time_events `thrive-youth-thursday-nights` (published, start date in the past). The export has the same slug as a **recurring** event. The public event page reads one-time events first, so this stale row would hide the recurring one. The seed refuses to write until it is resolved (decision card item 3).
+- one_time_events `thrive-youth-thursday-nights` (published, start date in the past). The export has the same slug as a **recurring** event. The public event page reads one-time events first, so this stale row would hide the recurring one. The seed refuses to write while it stays published (decision card item 3).
 - event_occurrences: 8 `family-worship-service` occurrences from 2026-06-28 to 2026-08-16 (all past). They do not conflict with the export.
 
 **Columns the seed does not set:** on live rows, `seo_title`, `og_image_url`, `duration_seconds`, `leader`, `contact_email`, `contact_phone`, gallery/video arrays, speaker `email`, `photo_url`, `bio` are all empty (counted, not read). No stale values survive outside the seeded columns.

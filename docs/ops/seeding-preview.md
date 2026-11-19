@@ -31,7 +31,7 @@ The script refuses (exit 2, nothing written) when:
 
 - the service-role key is missing;
 - `SEED_CONFIRM_SUPABASE_HOST` does not equal the host of `NEXT_PUBLIC_SUPABASE_URL` (so a stray `.env.local` cannot point the write at the wrong project);
-- a planned event slug is live in the other event table (the public event page reads one-time events first, so the stale row would hide the new one).
+- a planned event slug is live and published in the other event table (the public event page reads one-time events first, so the stale row would hide the new one).
 
 It also stops before connecting if the exports are not the reviewed November set or fail their checks: counts 12 / 22 / 120 / 25 / 55 / 56, unique slugs, known speakers, series and recurring events, and Express(o) on Sundays at 08:30 America/Chicago.
 

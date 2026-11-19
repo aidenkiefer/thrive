@@ -24,10 +24,11 @@
 -- SQL as the table owner can bypass any trigger anyway; this guard is about
 -- the service_role app path.
 --
--- Known gap (follow-up): INSERT is NOT guarded. scripts/seed-current.ts
--- upserts already-published rows directly and has no staff actor to attribute
--- them to; whether seeding should go through cms_set_published (or a seed
--- actor) is an open decision for the seed path.
+-- Known gap (follow-up #94): INSERT is NOT guarded. scripts/seed-current.ts
+-- upserts already-published rows directly and has no actor to attribute them
+-- to. Owner decision 2026-11-19: automation (seed, agents, scheduled jobs)
+-- gets reserved system actor rows in admin_staff_accounts and publishes
+-- through cms_set_published like staff; the INSERT guard lands with that.
 --
 -- The trigger function is revoked from public/anon/authenticated. Idempotent:
 -- safe to run twice. Agents do not apply it.

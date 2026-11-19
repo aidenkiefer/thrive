@@ -2,6 +2,17 @@
 
 Dated record of decisions the owner has made, so agents stop re-asking. Newest first. Decisions only: no secrets, no personal contact details (this repository is public). Open questions stay in the owner issues ([#54](https://github.com/aidenkiefer/thrive/issues/54), [#55](https://github.com/aidenkiefer/thrive/issues/55), [#57](https://github.com/aidenkiefer/thrive/issues/57)).
 
+## 2026-11-19 (later): live database, sender, roles
+
+| Topic | Decision |
+|---|---|
+| Live database state | The Supabase MCP is connected in all three agent tools. A read-only audit shows the project is **not empty and out of date** (older import, stale published rows). Baseline and rules: [../ops/supabase-live-project.md](../ops/supabase-live-project.md). Reconcile and seed from the audited exports: Claude, issue #101. |
+| Staff login code sender | `info@thrivevineyard.com`. Technical caveat tracked in #103: Resend currently has `updates.thrivevineyard.com`; sending From the root address needs root-domain verification and an SPF that merges with the existing mail provider. Owner chooses after Codex shows the DNS evidence. |
+| Resend, other keys, templates | Owner will configure; Codex helps (#103). Not decided yet. |
+| Supabase Auth settings | Owner configures (signups off, OTP expiry). |
+| Admin vs staff roles | **Staff account control (create, disable, re-enable, rebind) is admin-role only.** The owner is the only admin for now. Other permissions will be assigned to roles as they come up. Issue #102. |
+| Work split | Claude: seeding, admin role. Codex: GoDaddy/email DNS first, then environment, Supabase readiness, #41 runbook, tests. Cursor: Experience batch 3 plus senior QA and merge. Plan: [session 2](../agents/assignments/2026-11-19-session-2.md). |
+
 ## 2026-11-19: Supabase, hosting, staff, form inbox, Express(o) (issue #54)
 
 | Topic | Decision |

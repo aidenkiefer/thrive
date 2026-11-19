@@ -3,7 +3,7 @@
 **Assignment:** `docs/agents/assignments/2026-11-18-development-kickoff.md` · **Lane:** experience · **Tool:** cursor · **Started:** 2026-11-18
 
 ## Status
-E1 UI complete; coordinator full gate passed. Draft PR pending integration with Data PR #15 and configured mail delivery. Footer/admin/RESERVED wiring deferred.
+E1 UI complete; full gate passed; draft PR #17 open pending integration with Data PR #15 and configured mail delivery. Footer/admin/RESERVED wiring deferred.
 
 ## Entries
 - `19:25` **note**: session start on `cursor/experience-mvp-feedback`; ticket E1 (T1). Read F1 contract from Claude PR #15 worktree (`src/lib/forms`, `src/app/api/forms`).

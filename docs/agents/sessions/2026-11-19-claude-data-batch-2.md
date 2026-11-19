@@ -3,7 +3,7 @@
 **Assignment:** `docs/agents/assignments/2026-11-18-batch-2.md` · **Lane:** data · **Tool:** claude (Claude Code, Opus 5.5) · **Started:** 2026-11-19
 
 ## Status
-In progress: data stack brought onto main (R1 checkpointed); R2 CMS attributed publishing starting on this branch, stacked on #15.
+Draft PR #90 (R2, stacked on #15) open; R1 complete. Waiting on senior QA and the owner go for #15 → #18 → #23 → #90.
 
 ## Entries
 <!-- Append-only, oldest first. Types: decision · change · blocker · request · note -->
@@ -22,3 +22,10 @@ In progress: data stack brought onto main (R1 checkpointed); R2 CMS attributed p
 - `00:30` **change** R2: Attributed publishing first slice: migration 20261119000000 (append-only publication_events + cms_set_published, active-actor check, whitelist, FOR UPDATE), schema.sql mirror, src/lib/cms (setPublished), announcements save wired (content writes no longer touch published_at). (opus) [d39735e]
   PGlite rehearsal 261/261 (fresh, June, June-no-patch; chain twice, catalogs identical; RLS, grants, append-only, error codes). Gate PASS (13 files, 151 tests). Migration also revokes service_role's default grants so it holds only select/insert.
   Left: drafts/preview copies, restore, revisions, wiring the other 8 editors, a public read of who published, ops to apply the migration.
+- `00:30` **change** R2 T1: Draft PR #90 (stacked on #15): cms_set_published + append-only publication_events, announcements wired. /code-review high found 7, fixed 5 (d769a64); DB-level enforcement deferred to #91; kept the double requireAdmin (existing pattern). Gate PASS 155 tests; PGlite 264/264. (opus+sonnet-subagent) [d769a64]
+  Files: 20261119000000_publication_events.sql, supabase/schema.sql, src/lib/cms/publication.ts, src/lib/cms/index.ts, src/lib/cms/publication.test.ts, src/app/admin/announcements/page.tsx
+- `00:30` **decision** R2 T1: Save order is unpublish before the content write and publish after, so a partial failure is never more public than intended. A new-item cleanup delete runs only on a definite Postgres rejection (SQLSTATE present). (opus)
+- `00:30` **note** R2 T1: Cross-lane request for the vitest '@' alias is fulfilled on main by Cursor's #89. Data branches keep relative imports (harmless, less churn); they can be restored later.
+- `00:30` **note** R2 T1: Senior QA of Codex PRs #16 and #20 is superseded. Cursor closed them and landed #85 and #89 as replacements during review. QA worktree removed; verdict comments remain on the closed PRs.
+- `00:30` **note** board: Added labels agent:claude/cursor/codex, stacked, needs-preview, and the Batch field (Cursor later reshaped its options into a roadmap). #15, #18, #23, #90, #79, #80, #91 on milestone M2. Filed #91 R2b (Batch 4). Closed R1 #79. Project README now describes milestones, batches and labels.
+- `00:30` **note** session end: Data lane batch 2 done (R1 complete, R2 in draft #90). Open: senior QA plus owner go for #15 → #18 → #23 → #90. All four branches merge cleanly with main as of 2026-11-19 (7 behind). Next Claude work: #91 with #44 (same admin actions) after #90; #45 RLS matrix tests after #15.

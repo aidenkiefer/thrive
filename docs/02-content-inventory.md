@@ -1,5 +1,7 @@
 # 02 — Content Inventory (Migration)
 
+> **Historical June export snapshot.** The counts and fixed-offset timezone assumption below describe the older XML parser. For the refreshed November exports, use [08-mvp-status-roadmap.md](./08-mvp-status-roadmap.md), the current migration report, and the [November live-site audit](./audit/2026-11/README.md). Do not seed from these older counts.
+
 Parsed export of WordPress events (Modern Events Calendar) and sermons (Sermon Manager Pro) into Supabase-ready JSON.
 
 **Source files:** `migration-files/events.xml`, `migration-files/sermons.xml`  

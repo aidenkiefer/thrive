@@ -31,14 +31,16 @@ export function PageHero({
     <section className="relative isolate overflow-hidden bg-brand-900 text-white">
       {image ? (
         <>
-          <Image
-            src={image.src}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className={`-z-20 object-cover ${photoPosition}`}
-          />
+          <div aria-hidden="true" className="hero-bg hero-bg-settle absolute inset-0 -z-20">
+            <Image
+              src={image.src}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className={`hero-bg-parallax object-cover ${photoPosition}`}
+            />
+          </div>
           <div
             aria-hidden="true"
             className="absolute inset-0 -z-10 bg-gradient-to-r from-brand-900/95 via-brand-900/75 to-brand-900/35"
@@ -51,7 +53,7 @@ export function PageHero({
         />
       )}
       <Container>
-        <div className={`max-w-2xl ${padding}`}>
+        <div className={`hero-enter max-w-2xl ${padding}`}>
           {eyebrow ? (
             <p className="mb-4 text-sm font-medium tracking-wide text-accent-400">{eyebrow}</p>
           ) : null}

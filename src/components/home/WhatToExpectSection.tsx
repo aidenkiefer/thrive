@@ -57,7 +57,7 @@ export function WhatToExpectSection() {
         title="5 steps if you're new to Thrive"
         // Source: plan-a-visit.md heading "5 Steps if you're new to Thrive:"
       />
-      <ol className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <ol className="reveal-stagger mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {steps.map((step, i) => (
           <li
             key={step.title}

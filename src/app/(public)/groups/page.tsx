@@ -31,12 +31,12 @@ export default async function GroupsPage() {
             </div>
           </PendingNote>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="reveal-stagger grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {groups.map(group => (
               <Link
                 key={group.id}
                 href={`/groups/${group.slug}`}
-                className="group flex h-full flex-col overflow-hidden rounded-2xl bg-neutral-0 shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+                className="group flex h-full flex-col overflow-hidden rounded-2xl bg-neutral-0 shadow-sm ring-1 ring-black/5 motion-lift hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
               >
                 {group.featured_image_url && (
                   <div className="relative aspect-[3/2] overflow-hidden bg-brand-100">

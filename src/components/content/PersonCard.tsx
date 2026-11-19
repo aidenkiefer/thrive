@@ -59,5 +59,5 @@ export function PeopleGrid({
       : columns === 3
         ? 'sm:grid-cols-2 lg:grid-cols-3'
         : 'md:grid-cols-2'
-  return <div className={`mt-10 grid grid-cols-1 gap-6 ${cols}`}>{children}</div>
+  return <div className={`reveal-stagger mt-10 grid grid-cols-1 gap-6 ${cols}`}>{children}</div>
 }

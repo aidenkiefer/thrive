@@ -70,8 +70,10 @@ export function GlobalNav() {
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
 
   const linkClass = (href: string) =>
-    `inline-flex min-h-11 items-center rounded-md px-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 ${
-      isActive(href) ? 'text-accent-400' : 'text-white/90 hover:text-white'
+    `relative inline-flex min-h-11 items-center rounded-md px-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 after:pointer-events-none after:absolute after:inset-x-2.5 after:bottom-1.5 after:h-0.5 after:origin-left after:rounded-full after:bg-accent-400 after:transition-transform after:duration-300 motion-reduce:after:transition-none ${
+      isActive(href)
+        ? 'text-accent-400 after:scale-x-100'
+        : 'text-white/90 after:scale-x-0 hover:text-white hover:after:scale-x-100'
     }`
 
   return (
@@ -110,14 +112,14 @@ export function GlobalNav() {
           <Link
             href={giveLink.href}
             aria-current={isActive(giveLink.href) ? 'page' : undefined}
-            className="rounded-md border border-white/30 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+            className="rounded-md border border-white/30 px-4 py-2 text-sm font-medium text-white press hover:bg-white/10"
           >
             {giveLink.label}
           </Link>
           <Link
             href={visitLink.href}
             aria-current={isActive(visitLink.href) ? 'page' : undefined}
-            className="rounded-md bg-accent-400 px-4 py-2 text-sm font-medium text-neutral-950 transition hover:brightness-95"
+            className="rounded-md bg-accent-400 px-4 py-2 text-sm font-medium text-neutral-950 press hover:brightness-95"
           >
             {visitLink.label}
           </Link>
@@ -151,7 +153,7 @@ export function GlobalNav() {
       {mobileOpen && (
         <div
           id="mobile-navigation"
-          className="max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-white/10 bg-brand-800 lg:hidden"
+          className="drawer-in max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-white/10 bg-brand-800 lg:hidden"
         >
           <nav className="flex flex-col px-4 py-4" aria-label="Mobile navigation">
             <Link

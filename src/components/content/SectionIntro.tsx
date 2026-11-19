@@ -19,7 +19,7 @@ export function SectionIntro({
 }: SectionIntroProps) {
   const inverse = tone === 'inverse'
   return (
-    <div className={`${align === 'center' ? 'mx-auto text-center' : ''} max-w-2xl ${className}`}>
+    <div className={`reveal ${align === 'center' ? 'mx-auto text-center' : ''} max-w-2xl ${className}`}>
       {eyebrow ? (
         <p
           className={`mb-3 text-sm font-medium tracking-wide ${

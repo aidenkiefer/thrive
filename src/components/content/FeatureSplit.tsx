@@ -22,10 +22,10 @@ export function FeatureSplit({
 }: FeatureSplitProps) {
   return (
     <div className={`grid items-center gap-10 lg:grid-cols-2 lg:gap-16 ${className}`}>
-      <div className={reverse ? 'lg:order-2' : ''}>
+      <div className={`reveal ${reverse ? 'lg:order-2' : ''}`}>
         <Photo name={photo} aspect={aspect} position={position} />
       </div>
-      <div className={`prose-content ${reverse ? 'lg:order-1' : ''}`}>{children}</div>
+      <div className={`prose-content reveal reveal-late ${reverse ? 'lg:order-1' : ''}`}>{children}</div>
     </div>
   )
 }

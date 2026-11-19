@@ -16,7 +16,7 @@ export function StepList({ children }: StepListProps) {
 
 export function Step({ title, children }: StepProps) {
   return (
-    <li className="step-item relative !pl-0 sm:pl-0">
+    <li className="step-item reveal relative !pl-0 sm:pl-0">
       <div className="flex gap-5">
         <span
           aria-hidden="true"

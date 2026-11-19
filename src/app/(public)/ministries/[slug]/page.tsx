@@ -18,12 +18,6 @@ export default async function MinistryPage({ params }: Props) {
   const ministry = await getMinistryBySlug(slug)
   if (!ministry) notFound()
 
-  // C2 fields: typed on main; select('*') returns them once migrated.
-  const { schedule_description = null, churchsuite_form_url = null } = ministry as typeof ministry & {
-    schedule_description?: string | null
-    churchsuite_form_url?: string | null
-  }
-
   return (
     <Section background="light">
       <Container>
@@ -81,8 +75,8 @@ export default async function MinistryPage({ params }: Props) {
             )}
             <MinistryScheduleSignup
               name={ministry.name}
-              schedule_description={schedule_description}
-              churchsuite_form_url={churchsuite_form_url}
+              schedule_description={ministry.schedule_description}
+              churchsuite_form_url={ministry.churchsuite_form_url}
             />
           </aside>
         </div>

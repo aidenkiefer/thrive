@@ -19,3 +19,6 @@ In progress: data stack brought onto main (R1 checkpointed); R2 CMS attributed p
   supabase/README.md on #23 updated; it now notes the harness compares table ACLs, not column grants.
 - `00:11` **request** ops: add `resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } }` (or equivalent) to vitest.config.mts. Colocated tests importing '@/lib/...' fail to load since #27; after it lands, Data restores '@/' imports.
 - `00:11` **note**: R2 (CMS attributed publishing) starting on this branch, stacked on #15.
+- `00:30` **change** R2: Attributed publishing first slice: migration 20261119000000 (append-only publication_events + cms_set_published, active-actor check, whitelist, FOR UPDATE), schema.sql mirror, src/lib/cms (setPublished), announcements save wired (content writes no longer touch published_at). (opus) [d39735e]
+  PGlite rehearsal 261/261 (fresh, June, June-no-patch; chain twice, catalogs identical; RLS, grants, append-only, error codes). Gate PASS (13 files, 151 tests). Migration also revokes service_role's default grants so it holds only select/insert.
+  Left: drafts/preview copies, restore, revisions, wiring the other 8 editors, a public read of who published, ops to apply the migration.

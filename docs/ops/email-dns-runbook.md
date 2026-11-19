@@ -6,9 +6,9 @@
 
 The owner reported successfully saving the three records using Resend's automatic GoDaddy setup. GoDaddy displayed a TTL of **1 Hour** for all three. The table below retains the TTL requested by Resend.
 
-The owner authorized Browser Control in chat: "you can use Browser Control to check on the configuration and see what we have to do next". The read-only check used already-open Chrome pages for public Resend DNS/domain settings and GoDaddy DNS. The agent made no login or configuration changes, requested no keys or passwords, and opened no API-key or SMTP-credential pages. An attempted navigation to Configuration failed because the browser control could not locate its clickable area.
+The owner authorized Browser Control in chat: "you can use Browser Control to check on the configuration and see what we have to do next". The earlier DNS check used already-open Chrome pages for public Resend DNS/domain settings and GoDaddy DNS. During that DNS check the agent made no login or configuration changes, requested no keys or passwords, and opened no API-key or SMTP-credential pages. An attempted navigation to Configuration failed because the browser control could not locate its clickable area.
 
-At 14:11 CST the optional root DMARC name still returned NXDOMAIN. The owner was offered the monitoring-policy row below. Manual publication remains unconfirmed. Before advancing to quarantine or reject, verify Google Workspace outbound authentication and DMARC alignment using authorized message headers. Other DKIM selectors may exist beyond those queried. Supabase SMTP and website forms configuration remain unverified, and sandbox delivery tests have not run.
+At 14:11 CST the optional root DMARC name still returned NXDOMAIN. The owner was offered the monitoring-policy row below. Manual publication remains unconfirmed. Before advancing to quarantine or reject, verify Google Workspace outbound authentication and DMARC alignment using authorized message headers. Other DKIM selectors may exist beyond those queried. The owner reported tracking off and Supabase custom SMTP saved successfully. At the owner's explicit request, Browser Control filled the public sender, host and username fields. The UI showed custom SMTP enabled and displayed its host and port. The owner privately created and entered the dedicated SMTP key and clicked Save. No key was observed. The Auth template, separate forms key and website forms setup remain unconfirmed. Sandbox delivery tests have not run.
 
 ## Pre-change public DNS baseline
 
@@ -76,7 +76,8 @@ Expect each public record to match Resend and the apex MX and updates alias to m
 - [x] All three required records are published in the GoDaddy-hosted zone.
 - [x] Authoritative and recursive DNS answers verified against Resend.
 - [x] Resend shows Verified for the root domain, DKIM and both sending CNAMEs.
-- [ ] Owner configured Supabase SMTP and the Auth template.
+- [x] Owner reported tracking off and Supabase custom SMTP saved.
+- [ ] Owner confirmed the code-only Auth template.
 - [ ] Owner configured website forms.
 - [ ] Owner confirmed sandbox delivery for staff Auth and forms.
 

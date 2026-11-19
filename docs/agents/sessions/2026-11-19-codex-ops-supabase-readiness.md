@@ -4,7 +4,7 @@
 
 ## Status
 
-#70 audit complete. Readiness and backup/restore documentation is in progress. Restore drill UNRUN pending owner inputs and authorization.
+#70 audit and recovery documents are ready for independent Cursor review. Owner verification is open and the restore drill remains UNRUN.
 
 ## Entries
 
@@ -16,3 +16,5 @@
 - `14:06` **request** #70: Data to evaluate covering indexes for sermons_series_id_fkey and sermons_speaker_id_fkey. Data and QA to review the three unused-index findings.
 - `14:06` **blocker** #70: Owner to confirm plan tier, usable backup and recovery point, restore access, RPO/RTO, and an approved disposable restore target. Verify backup usability before changes and preserve production.
 - `14:06` **note** #70: Drafting supabase-readiness.md and backup-restore-drill.md. The owner has not authorized a restore, and the drill remains UNRUN.
+- `14:17` **change** #70: Added the read-only audit evidence in `docs/ops/supabase-readiness.md` and the owner checklist in `docs/ops/backup-restore-drill.md`. Owner verification remains open. (tier/model unknown) [552079c]
+- `14:17` **note** #70: Full gate passed on Node 20.20.2, including all 91 tests across 10 files, typecheck, and the 30-page production build. Lint reported zero errors and four existing warnings.

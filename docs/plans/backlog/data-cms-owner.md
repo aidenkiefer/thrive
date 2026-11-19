@@ -71,12 +71,12 @@ Each item is a question with a recommended default taken from the docs. Defaults
 
 ### Preview provisioning ([#54](https://github.com/aidenkiefer/thrive/issues/54), M2)
 
-1. Create a separate Supabase Preview project, protected Vercel Preview, Preview-only env vars. *Default: yes, fresh `schema.sql` path.*
+1. ~~Separate Supabase Preview project~~ **Decided 2026-11-19: use the existing production project until launch**; owner sets the env vars and Vercel Authentication. Open: is the project empty? (see [owner-decisions.md](../owner-decisions.md))
 2. Approve seeding Preview from the audited exports (80 events, 120 sermons) after the dry run. *Default: yes.*
-3. Express(o) schedule: confirm or keep hidden. *Default: hidden until confirmed.*
-4. Staff login email: separate Resend SMTP credential and code-only template; sender on `updates.thrivevineyard.com`; who adds the GoDaddy DNS records. *Default: owner does.*
-5. Staff roster for the first Preview accounts (at least two) and who may disable them.
-6. Website form email: default recipient inbox, optional extra recipients, verified sender, send-only key, dedicated limiter hashing secret.
+3. ~~Express(o) schedule~~ **Confirmed 2026-11-19:** every Sunday 8:30 AM, before the 9:30 AM main service.
+4. Staff login email: separate Resend SMTP credential and code-only template; sender on `updates.thrivevineyard.com`. GoDaddy DNS: **owner does it (decided 2026-11-19)**. Sender address and credential still open.
+5. Staff roster: **decided 2026-11-19** (owner as main admin; Molly Kiefer, Kevin Kiefer, Carley LaPointe as staff). Open: who may disable accounts, and whether account levels are needed (the data model has none).
+6. Website form email: default inbox **`info@thrivevineyard.com` (decided 2026-11-19)**; still open: optional extra recipients, verified sender, send-only key, dedicated limiter hashing secret.
 
 ### Ministry content and destinations ([#55](https://github.com/aidenkiefer/thrive/issues/55), M1)
 

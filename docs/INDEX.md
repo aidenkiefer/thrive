@@ -2,7 +2,7 @@
 
 All documentation for the Thrive Vineyard website project.
 
-**Current phase (2026-11-19):** draft site on `main`; Data stack built and held for Preview verification. Status: [plans/PROGRESS.md](plans/PROGRESS.md) · Roadmap and milestones: [plans/roadmap-milestones.md](plans/roadmap-milestones.md) · Batch order: [plans/batches.md](plans/batches.md).
+**Current phase (2026-11-19):** draft site on `main`; Data stack built and held for Preview verification. Status: [plans/PROGRESS.md](plans/PROGRESS.md) · Roadmap and milestones: [plans/roadmap-milestones.md](plans/roadmap-milestones.md) · Batch order: [plans/batches.md](plans/batches.md) · Owner decisions: [plans/owner-decisions.md](plans/owner-decisions.md).
 
 ---
 

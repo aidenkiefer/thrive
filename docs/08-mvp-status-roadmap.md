@@ -38,14 +38,14 @@ The repo’s present parser consumes the older `migration-files/events.xml` and 
 
 As of November 7, 2026, the feature branch includes:
 
-- Current export conversion, updated parsed outputs, 43 future occurrences across eight recurring events, and an exception report. Express(o) remains held for editorial schedule review.
+- Current export conversion, updated parsed outputs, 43 future occurrences across eight recurring events, and an exception report. Express(o) is confirmed by the owner (weekly, Sundays 8:30 AM, before the 9:30 service; reconfirmed 2026-11-19).
 - A guarded seed command for the reviewed export pair, with no hand-authored placeholder rows or duplicate-prone fallback inserts. It has not been run against Supabase; schema updates still need applying and shared database state remains unverified.
 - Credential-based admin access plus create/edit/publish controls for announcements, sermons, one-time and recurring events, event occurrences, ministries, groups, outreach, staff profiles, and campaign landing pages.
 - Public group and outreach routes backed by published canonical records; campaign routes render published landing page records.
 - Confirmed legacy redirects, sitemap and robots routes, Chicago-local event display, month and grid/list event filters, and an iCalendar download.
 - A clean npm ci plus production build passed for this handoff checkpoint on November 7; prior feature pushes also passed the mandatory check. Vercel Preview deploys still need their environment variables configured.
 
-Still open before a launch candidate: apply and review the database schema changes, run a safe data import, resolve the Express(o) schedule, complete visitor-facing content and forms, confirm Search Console and active Ads destinations, and review production configuration. The later copy/content migration remains a separate pass.
+Still open before a launch candidate: apply and review the database schema changes, run a safe data import, complete visitor-facing content and forms, confirm Search Console and active Ads destinations, and review production configuration. The later copy/content migration remains a separate pass.
 
 ## Progress since November 7 (updated 2026-11-19)
 

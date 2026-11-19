@@ -43,7 +43,7 @@ Shared abuse limiter = Postgres. Announcements: newest featured wins, no priorit
 
 | Area | Status | Owner |
 |------|--------|-------|
-| Preview Supabase project, staff sign-in email, form email, staff roster | Not provisioned | Owner (#54); verification Ops (#41) |
+| Supabase for pre-launch use (decided 2026-11-19: the production project, no separate Preview project), env vars, staff sign-in email, form email, staff enrollment | Decided; owner provisioning (open: project state, sender address, Resend keys, Auth settings, account levels; see [owner-decisions.md](owner-decisions.md)) | Owner (#54); verification Ops (#41) |
 | Ministry content, destinations, form URLs | Open decisions | Owner (#55) |
 | Domain, DNS, cutover, rollback, social URLs, Ads in container | Open decisions | Owner (#57); runbook Ops (#69) |
 | Photos still hot-link `thrivevineyard.com/wp-content/uploads` (P0) | Not re-hosted | Owner supplies or approves files; Experience (#59), Data (#49), guard Ops (#73) |
@@ -51,7 +51,7 @@ Shared abuse limiter = Postgres. Announcements: newest featured wins, no priorit
 | 301 redirect manifest and `/prayer`, `/expresso`, `/volunteering` rules | Not built | Ops (#62, #63) |
 | End-to-end smoke tests, accessibility and performance passes | Not built | Ops (#64), Experience (#61, #67) |
 | Dependency advisories | Re-triage needed: a lockfile `npm audit` on 2026-11-19 showed 6 moderate (dev-only), not the "2 critical / 7 high" recorded on 2026-11-07 | Ops (#71) |
-| Seed run against Preview using audited data only | Not run | Data (#39), owner approval (#54) |
+| Seed run against the pre-launch Supabase project using audited data only | Not run; owner approval still open | Data (#39), owner approval (#54) |
 
 ---
 

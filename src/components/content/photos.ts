@@ -45,6 +45,24 @@ export const PHOTOS = {
     width: 1600,
     height: 1067,
   },
+  conversation: {
+    src: '/images/church/lasalle-11.webp',
+    alt: 'Two people talk together beside a Thrive poster.',
+    width: 1600,
+    height: 1067,
+  },
+  worshipSinging: {
+    src: '/images/church/lasalle-02.webp',
+    alt: 'A woman sings during a worship gathering.',
+    width: 1600,
+    height: 1067,
+  },
+  churchSign: {
+    src: '/images/church/lasalle-29.webp',
+    alt: 'The Thrive Vineyard Church sign on the lawn outside the building.',
+    width: 1600,
+    height: 1067,
+  },
   pastors: {
     src: '/images/church/lasalle-20.webp',
     alt: 'Pastor Kevin Kiefer speaks at the pulpit beneath the cross.',

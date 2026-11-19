@@ -32,7 +32,7 @@ export function nextResetState(state: ResetState, token: string | undefined): Re
 
 /** Reset token for one form: only the form that just saved receives it. */
 export function formResetToken(
-  feedback: { saved?: string; form?: string; instance?: string } | undefined,
+  feedback: { error?: string; saved?: string; form?: string; instance?: string } | undefined,
   formKey: string,
 ): string | undefined {
   return feedback && feedback.saved === formKey && feedback.form === formKey ? feedback.instance : undefined

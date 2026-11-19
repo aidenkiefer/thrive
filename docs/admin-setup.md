@@ -4,7 +4,7 @@ The MVP uses individual one-time email codes. Supabase Auth sends and verifies a
 
 ## Preview environment
 
-Use an isolated Preview Supabase project and set these values for the Preview deployment:
+Use the production project, before launch (there is no separate Preview project; rules in `docs/ops/supabase-live-project.md`), and set these values for the Preview deployment:
 
 ```text
 NEXTAUTH_SECRET=<random secret>
@@ -18,7 +18,7 @@ SUPABASE_SERVICE_ROLE_KEY=<Preview service role key, server only>
 
 ## Provision staff and email codes
 
-1. Apply `supabase/migrations/20261118000000_admin_staff_accounts.sql` to the isolated Preview project. Confirm RLS is enabled, no anon/authenticated policy exists, and the service role can read the table.
+1. Apply `supabase/migrations/20261118000000_admin_staff_accounts.sql` to the production project, before launch. Confirm RLS is enabled, no anon/authenticated policy exists, and the service role can read the table.
 2. Disable public email signups in Supabase Auth. Configure its email OTP template to contain the code (`{{ .Token }}`), without a sign-in link. Confirm the configured code length is 6–10 digits and record its expiry. Configure a dedicated Resend SMTP credential for Supabase Auth; this is separate from the website forms API key.
 3. Create each staff user in Supabase Auth through an owner-controlled enrollment path. Copy that user's Auth UUID into a membership row. For example, in the SQL editor after creating the Auth user:
 

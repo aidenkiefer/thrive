@@ -1,6 +1,7 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
+import { publishIntent, saveWithPublication } from '@/lib/cms'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import {
   assertEndAfterStart, assertPublishable, fail, formUrlPublishProblems, httpsUrl, parseInstant, recurringEventPublishProblems,
@@ -11,7 +12,7 @@ import { FormFeedback, feedbackTargets, formResetToken } from '../_components/fo
 
 async function saveRecurring(form: FormData) {
   'use server'
-  await requireAdmin()
+  const { actorId } = await requireAdmin()
   const id = String(form.get('id') || '')
   await saveWithFeedback('/admin/recurring-events', id || 'rec-new', async () => {
     const db = await adminDb()
@@ -19,12 +20,10 @@ async function saveRecurring(form: FormData) {
     const text = (key: string) => value(key).trim() || null
     const slug = requireSlug(value('slug'))
     const name = requireText(value('name'), 'Name')
-    let publishedAt: string | null = null
     if (id) {
-      const { data, error } = await db.from('recurring_events').select('slug,published_at').eq('id', id).single()
+      const { data, error } = await db.from('recurring_events').select('slug').eq('id', id).single()
       if (error) throw new Error(error.message)
       if (data.slug !== slug) fail('Changing an event URL requires a redirect plan')
-      publishedAt = data.published_at
     } else {
       const [oneTime, existing] = await Promise.all([
         db.from('one_time_events').select('id').eq('slug', slug).maybeSingle(),
@@ -34,7 +33,7 @@ async function saveRecurring(form: FormData) {
       if (oneTime.data) fail('This URL belongs to a one-time event')
       if (existing.data) fail('That recurring event URL already exists')
     }
-    const publish = form.get('published') === 'on'
+    const publish = publishIntent(form)
     const row = {
       slug, name,
       description: text('description'),
@@ -47,12 +46,21 @@ async function saveRecurring(form: FormData) {
       featured_image_url: httpsUrl(value('featured_image_url'), 'Image URL'),
       churchsuite_form_url: httpsUrl(value('churchsuite_form_url'), 'ChurchSuite URL'),
       external_url: httpsUrl(value('external_url'), 'Other action URL'),
-      published_at: publish ? (publishedAt || new Date().toISOString()) : null,
     }
     if (publish) assertPublishable('recurring event', [...recurringEventPublishProblems(row), ...formUrlPublishProblems(row.churchsuite_form_url, 'ChurchSuite URL')])
-    const result = id ? await db.from('recurring_events').update(row).eq('id', id) : await db.from('recurring_events').insert(row)
-    if (result.error) throw new Error(result.error.message)
-    revalidatePath('/admin/recurring-events'); revalidatePath('/admin/events'); revalidatePath('/events'); revalidatePath(`/events/${slug}`); revalidatePath('/')
+    try {
+      await saveWithPublication(db, {
+        table: 'recurring_events', entityType: 'recurring_event', label: 'recurring event',
+        id: id || null, row, publish, actorId,
+      })
+    } finally {
+      // Also on failure: an unpublish may have committed before a later step threw.
+      revalidatePath('/admin/recurring-events')
+      revalidatePath('/admin/events')
+      revalidatePath('/events')
+      revalidatePath(`/events/${slug}`)
+      revalidatePath('/')
+    }
   })
 }
 

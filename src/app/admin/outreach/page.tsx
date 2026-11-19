@@ -1,6 +1,7 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
+import { publishIntent, saveWithPublication } from '@/lib/cms'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import { assertPublishable, fail, formUrlPublishProblems, httpsUrl, requireSlug, requireText } from '@/lib/admin-validation'
 import { AdminForm } from '../_components/admin-form'
@@ -8,19 +9,17 @@ import { FormFeedback, feedbackTargets, formResetToken } from '../_components/fo
 
 async function saveOutreach(form: FormData) {
   'use server'
-  await requireAdmin()
+  const { actorId } = await requireAdmin()
   const id = String(form.get('id') || '')
   await saveWithFeedback('/admin/outreach', id || 'new', async () => {
     const db = await adminDb()
     const text = (key: string) => String(form.get(key) || '').trim() || null
     const name = requireText(String(form.get('name') || ''), 'Name')
     const slug = requireSlug(String(form.get('slug') || ''))
-    let publishedAt: string | null = null
     if (id) {
-      const { data, error } = await db.from('outreach').select('slug,published_at').eq('id', id).single()
+      const { data, error } = await db.from('outreach').select('slug').eq('id', id).single()
       if (error) throw new Error(error.message)
       if (data.slug !== slug) fail('Changing an outreach URL requires a redirect plan')
-      publishedAt = data.published_at
     } else {
       const { data, error } = await db.from('outreach').select('id').eq('slug', slug).maybeSingle()
       if (error) throw new Error(error.message)
@@ -30,7 +29,7 @@ async function saveOutreach(form: FormData) {
     const end = String(form.get('end_date') || '') || null
     if ((start && Number.isNaN(Date.parse(start))) || (end && Number.isNaN(Date.parse(end)))) fail('Enter valid dates')
     if (start && end && end < start) fail('End date must follow start date')
-    const publish = form.get('published') === 'on'
+    const publish = publishIntent(form)
     const row = {
       slug, name,
       description: text('description'),
@@ -41,12 +40,20 @@ async function saveOutreach(form: FormData) {
       churchsuite_form_url: httpsUrl(String(form.get('churchsuite_form_url') || ''), 'ChurchSuite URL'),
       is_ongoing: form.get('is_ongoing') === 'on',
       start_date: start, end_date: end,
-      published_at: publish ? (publishedAt || new Date().toISOString()) : null,
     }
     if (publish) assertPublishable('outreach initiative', formUrlPublishProblems(row.churchsuite_form_url, 'ChurchSuite URL'))
-    const result = id ? await db.from('outreach').update(row).eq('id', id) : await db.from('outreach').insert(row)
-    if (result.error) throw new Error(result.error.message)
-    revalidatePath('/admin/outreach'); revalidatePath('/outreach'); revalidatePath(`/outreach/${slug}`); revalidatePath('/')
+    try {
+      await saveWithPublication(db, {
+        table: 'outreach', entityType: 'outreach', label: 'outreach',
+        id: id || null, row, publish, actorId,
+      })
+    } finally {
+      // Also on failure: an unpublish may have committed before a later step threw.
+      revalidatePath('/admin/outreach')
+      revalidatePath('/outreach')
+      revalidatePath(`/outreach/${slug}`)
+      revalidatePath('/')
+    }
   })
 }
 

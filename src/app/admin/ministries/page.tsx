@@ -1,6 +1,7 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
+import { publishIntent, saveWithPublication } from '@/lib/cms'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import { assertPublishable, fail, formUrlPublishProblems, httpsUrl, requireSlug, requireText } from '@/lib/admin-validation'
 import { AdminForm } from '../_components/admin-form'
@@ -8,26 +9,24 @@ import { FormFeedback, feedbackTargets, formResetToken } from '../_components/fo
 
 async function saveMinistry(form: FormData) {
   'use server'
-  await requireAdmin()
+  const { actorId } = await requireAdmin()
   const id = String(form.get('id') || '')
   await saveWithFeedback('/admin/ministries', id || 'new', async () => {
     const db = await adminDb()
     const text = (key: string) => String(form.get(key) || '').trim() || null
     const name = requireText(String(form.get('name') || ''), 'Name')
     const slug = requireSlug(String(form.get('slug') || ''))
-    let publishedAt: string | null = null
     if (id) {
-      const { data, error } = await db.from('ministries').select('slug,published_at').eq('id', id).single()
+      const { data, error } = await db.from('ministries').select('slug').eq('id', id).single()
       if (error) throw new Error(error.message)
       if (data.slug !== slug) fail('Changing a ministry URL requires a redirect plan')
-      publishedAt = data.published_at
     } else {
       const { data, error } = await db.from('ministries').select('id').eq('slug', slug).maybeSingle()
       if (error) throw new Error(error.message)
       if (data) fail('That ministry URL already exists')
     }
     const photo = httpsUrl(String(form.get('featured_image_url') || ''), 'Image URL')
-    const publish = form.get('published') === 'on'
+    const publish = publishIntent(form)
     const row = {
       slug, name,
       description: text('description'),
@@ -39,14 +38,19 @@ async function saveMinistry(form: FormData) {
       seo_title: text('seo_title'),
       seo_description: text('seo_description'),
       og_image_url: photo,
-      published_at: publish ? (publishedAt || new Date().toISOString()) : null,
     }
     if (publish) assertPublishable('ministry', formUrlPublishProblems(row.churchsuite_form_url))
-    const result = id ? await db.from('ministries').update(row).eq('id', id) : await db.from('ministries').insert(row)
-    if (result.error) throw new Error(result.error.message)
-    revalidatePath('/admin/ministries')
-    revalidatePath(`/ministries/${slug}`)
-    revalidatePath('/sitemap.xml')
+    try {
+      await saveWithPublication(db, {
+        table: 'ministries', entityType: 'ministry', label: 'ministry',
+        id: id || null, row, publish, actorId,
+      })
+    } finally {
+      // Also on failure: an unpublish may have committed before a later step threw.
+      revalidatePath('/admin/ministries')
+      revalidatePath(`/ministries/${slug}`)
+      revalidatePath('/sitemap.xml')
+    }
   })
 }
 

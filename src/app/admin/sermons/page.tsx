@@ -1,6 +1,7 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
+import { publishIntent, saveWithPublication } from '@/lib/cms'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import {
   assertPublishable, fail, httpsUrl, parseDateOnly, requireSlug, requireText, sermonPublishProblems,
@@ -13,7 +14,7 @@ const list = (value: FormDataEntryValue | null) =>
 
 async function saveSermon(form: FormData) {
   'use server'
-  await requireAdmin()
+  const { actorId } = await requireAdmin()
   const id = String(form.get('id') || '')
   await saveWithFeedback('/admin/sermons', id || 'new', async () => {
     const db = await adminDb()
@@ -21,12 +22,10 @@ async function saveSermon(form: FormData) {
     const slug = requireSlug(value('slug'))
     const title = requireText(value('title'), 'Title')
     const date = parseDateOnly(value('preached_at'), 'Preached date') ?? fail('Preached date is required')
-    let currentPublished: string | null = null
     if (id) {
-      const { data, error } = await db.from('sermons').select('slug,published_at').eq('id', id).single()
+      const { data, error } = await db.from('sermons').select('slug').eq('id', id).single()
       if (error) throw new Error(error.message)
       if (data.slug !== slug) fail('Changing a sermon URL requires a redirect plan')
-      currentPublished = data.published_at
     } else {
       const { data, error } = await db.from('sermons').select('id').eq('slug', slug).maybeSingle()
       if (error) throw new Error(error.message)
@@ -39,7 +38,7 @@ async function saveSermon(form: FormData) {
       if (error) throw new Error(error.message)
       if (!data) fail('The selected speaker no longer exists')
     }
-    const publish = form.get('published') === 'on'
+    const publish = publishIntent(form)
     if (seriesId) {
       const { data, error } = await db.from('sermon_series').select('id,published_at').eq('id', seriesId).maybeSingle()
       if (error) throw new Error(error.message)
@@ -57,17 +56,20 @@ async function saveSermon(form: FormData) {
       audio_url: httpsUrl(value('audio_url'), 'Audio URL'),
       video_url: httpsUrl(value('video_url'), 'Video URL'),
       thumbnail_url: httpsUrl(value('thumbnail_url'), 'Thumbnail URL'),
-      published_at: publish ? (currentPublished || new Date().toISOString()) : null,
     }
     if (publish) assertPublishable('sermon', sermonPublishProblems(row))
-    const result = id
-      ? await db.from('sermons').update(row).eq('id', id)
-      : await db.from('sermons').insert(row)
-    if (result.error) throw new Error(result.error.message)
-    revalidatePath('/admin/sermons')
-    revalidatePath('/sermons')
-    revalidatePath(`/sermons/${slug}`)
-    revalidatePath('/')
+    try {
+      await saveWithPublication(db, {
+        table: 'sermons', entityType: 'sermon', label: 'sermon',
+        id: id || null, row, publish, actorId,
+      })
+    } finally {
+      // Also on failure: an unpublish may have committed before a later step threw.
+      revalidatePath('/admin/sermons')
+      revalidatePath('/sermons')
+      revalidatePath(`/sermons/${slug}`)
+      revalidatePath('/')
+    }
   })
 }
 

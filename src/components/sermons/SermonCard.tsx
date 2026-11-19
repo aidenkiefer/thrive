@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui'
 import { PlayIcon } from '@/components/content/icons'
 import { CardImage } from '@/components/events/CardImage'
+import { parseYouTubeId } from './media'
 
 interface SermonCardProps {
   sermon: {
@@ -20,11 +21,8 @@ export function SermonCard({ sermon }: SermonCardProps) {
     ? new Date(sermon.preached_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
     : null
 
-  // Extract YouTube video ID for thumbnail (handles embed/, watch?v= and youtu.be forms)
-  const ytId = sermon.youtube_url?.match(/embed\/([^?]+)/)?.[1]
-    ?? sermon.youtube_url?.match(/[?&]v=([^&]+)/)?.[1]
-    ?? sermon.youtube_url?.match(/youtu\.be\/([^?&]+)/)?.[1]
-    ?? null
+  // Same validated parser as the detail page; only allowed YouTube hosts yield an id.
+  const ytId = parseYouTubeId(sermon.youtube_url)
   const thumbUrl = sermon.thumbnail_url ?? (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null)
 
   return (

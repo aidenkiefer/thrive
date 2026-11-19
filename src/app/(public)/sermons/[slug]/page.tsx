@@ -38,7 +38,12 @@ export default async function SermonDetailPage({ params }: Props) {
         <BackLink href="/sermons" className="mb-8 min-h-11">All messages</BackLink>
 
         <div className="max-w-3xl">
-          <SermonPlayer youtubeUrl={sermon.youtube_url} title={sermon.title} />
+          <SermonPlayer
+            youtubeUrl={sermon.youtube_url}
+            videoUrl={sermon.video_url}
+            audioUrl={sermon.audio_url}
+            title={sermon.title}
+          />
         </div>
 
         <div className="mt-8 max-w-3xl">
@@ -48,6 +53,7 @@ export default async function SermonDetailPage({ params }: Props) {
             series={sermon.series}
             scriptureReferences={sermon.scripture_references}
             topics={sermon.topics}
+            durationSeconds={sermon.duration_seconds}
           />
         </div>
 

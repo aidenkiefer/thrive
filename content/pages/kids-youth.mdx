@@ -1,0 +1,54 @@
+---
+title: Kids & Youth
+description: Kids are the Future!
+---
+
+{/* Source: docs/audit/2026-11/pages/kids-youth.md. No ages are stated per room because the audit has none. */}
+
+{/* Source: audit kids-youth.md, "Kids are the Future!" and intro line */}
+<Band tone="white" prose={false}>
+  <SectionIntro
+    eyebrow="Kids"
+    title="Kids are the Future!"
+    lead="Let’s establish the foundation for a lifelong friendship with Jesus together!!"
+  />
+</Band>
+
+{/* Source: audit kids-youth.md room names, text, and image order */}
+<Band tone="light" prose={false} id="rooms">
+  <SectionIntro title="Our kids’ spaces" />
+  <CardGrid columns={2}>
+    {/* The Nest: no description captured in the audit */}
+    <InfoCard title="The Nest" photo="kidsNewborns">
+      <p className="italic">Details coming soon.</p>
+    </InfoCard>
+
+    <InfoCard title="Lil Buds" photo="kidsPreschool">
+      <p>Arrive a few minutes early to check your child into their classroom for the duration of the service. If you want to keep them with you for worship and then bring them down for the service, that’s an option as well.</p>
+    </InfoCard>
+
+    <InfoCard title="Treehouse" photo="kidsReading">
+      <p>School-aged kids have their own space to work through a Bible lesson, have a snack, and watch an application video. It’s an age-appropriate opportunity for kids to discover who God is and how great He made them. Parents will be dismissed to check their elementary-aged child in to Treehouse after family worship.</p>
+    </InfoCard>
+
+    {/* Thrive Youth Group: no description captured; deliberately not linked to Youth Alpha (no published record) */}
+    <InfoCard title="Thrive Youth Group" photo="kidsSchoolAge">
+      <p className="italic">Details coming soon.</p>
+    </InfoCard>
+  </CardGrid>
+</Band>
+
+{/* Source: audit kids-youth.md, "Any Questions?" (legacy Gravity Form not embeddable; email/phone from site-info.ts) */}
+<Band tone="white" id="questions">
+  <PendingNote title="Any questions?">
+    Our online contact form isn’t ready here yet. Email us at <a href={'mailto:' + SITE.email}>{SITE.email}</a> or call <a href={SITE.phoneHref}>{SITE.phone}</a>.
+  </PendingNote>
+</Band>
+
+{/* Source: audit plan-a-visit.md step 3 (kids check-in) */}
+<CtaBand
+  title="Ready to visit?"
+  actions={<Button variant="accent" href="/plan-a-visit">Plan your visit</Button>}
+>
+  See what to expect and how to check in your kids.
+</CtaBand>

@@ -1,22 +1,19 @@
-import { Section, Container, Heading, Button } from '@/components/ui'
+import { Band } from '@/components/content/Band'
+import { SectionIntro } from '@/components/content/SectionIntro'
+import { NewsletterSignup } from '@/components/forms/NewsletterSignup'
 
+/**
+ * Newsletter band.
+ * Source: heading "Subscribe to the Thrive Newsletter" from docs/audit/2026-11/pages/get-connected.md.
+ * Form: Mailchimp POST via NewsletterSignup (live list, no API calls).
+ */
 export function NewsletterSection() {
   return (
-    <Section background="brand">
-      <Container>
-        <div className="text-center max-w-xl mx-auto">
-          <Heading level="h2" className="text-white mb-3">
-            Stay Connected
-          </Heading>
-          <p className="text-white/80 mb-6">
-            Get updates on services, events, and community news from Thrive Vineyard.
-          </p>
-          {/* Mailchimp embed coming in Sprint 02 */}
-          <Button href="https://thrivevineyard.com/get-connected/" variant="accent">
-            Sign Up for Updates
-          </Button>
-        </div>
-      </Container>
-    </Section>
+    <Band tone="navy" prose={false}>
+      <div className="flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between">
+        <SectionIntro tone="inverse" title="Subscribe to the Thrive newsletter" />
+        <NewsletterSignup tone="inverse" idPrefix="home-newsletter" />
+      </div>
+    </Band>
   )
 }

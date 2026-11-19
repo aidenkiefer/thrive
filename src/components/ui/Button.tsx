@@ -22,7 +22,7 @@ const variantClasses: Record<ButtonVariant, string> = {
 }
 
 const baseClasses =
-  'inline-flex items-center justify-center rounded-md px-5 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+  'inline-flex min-h-11 items-center justify-center rounded-md px-5 py-2.5 text-sm font-medium press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
 
 export function Button({
   variant = 'primary',

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Fraunces, Inter } from 'next/font/google'
+import { Analytics, AnalyticsNoScript } from '@/components/analytics/Analytics'
 import { SiteShell } from '@/components/layout/SiteShell'
 import './globals.css'
 
@@ -24,8 +25,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable}`}>
-      <body><SiteShell>{children}</SiteShell></body>
+    <html lang="en" data-scroll-behavior="smooth" className={`${fraunces.variable} ${inter.variable}`}>
+      <body>
+        <AnalyticsNoScript />
+        <Analytics />
+        <SiteShell>{children}</SiteShell>
+      </body>
     </html>
   )
 }

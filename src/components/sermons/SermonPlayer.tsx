@@ -1,3 +1,5 @@
+import { SITE } from '@/components/content/site-info'
+
 interface SermonPlayerProps {
   youtubeUrl: string | null
   title: string
@@ -6,8 +8,16 @@ interface SermonPlayerProps {
 export function SermonPlayer({ youtubeUrl, title }: SermonPlayerProps) {
   if (!youtubeUrl) {
     return (
-      <div className="aspect-video bg-brand-100 rounded-lg flex items-center justify-center">
-        <p className="text-neutral-600 text-sm">Video not available</p>
+      <div className="flex aspect-video flex-col items-center justify-center gap-2 rounded-2xl bg-brand-100 p-6 text-center">
+        <p className="text-sm text-neutral-600">Video not available</p>
+        <a
+          href={SITE.social.youtube}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-11 items-center text-sm font-medium text-brand-800 underline underline-offset-4 hover:text-brand-600"
+        >
+          Visit our YouTube channel
+        </a>
       </div>
     )
   }
@@ -24,13 +34,14 @@ export function SermonPlayer({ youtubeUrl, title }: SermonPlayerProps) {
   }
 
   return (
-    <div className="aspect-video rounded-lg overflow-hidden">
+    <div className="aspect-video overflow-hidden rounded-2xl bg-neutral-950 shadow-sm">
       <iframe
         src={embedUrl}
         title={title}
+        loading="lazy"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
-        className="w-full h-full"
+        className="h-full w-full"
       />
     </div>
   )

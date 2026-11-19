@@ -32,16 +32,21 @@ async function saveAnnouncement(formData: FormData) {
       expires_at: expiresAt,
     }
     if (publish) assertPublishable('announcement', announcementPublishProblems(row, new Date()))
-    let entityId = id
     if (id) {
       const { error } = await db.from('announcements').update(row).eq('id', id)
       if (error) throw new Error(error.message)
+      await setPublished(db, { entityType: 'announcement', entityId: id, publish, actorId })
     } else {
       const { data, error } = await db.from('announcements').insert(row).select('id').single()
       if (error) throw new Error(error.message)
-      entityId = data.id
+      try {
+        await setPublished(db, { entityType: 'announcement', entityId: data.id, publish, actorId })
+      } catch (publishError) {
+        // All or nothing for a new item: drop the unpublished draft so a retry can't duplicate it.
+        await db.from('announcements').delete().eq('id', data.id)
+        throw publishError
+      }
     }
-    await setPublished(db, { entityType: 'announcement', entityId, publish, actorId })
     revalidatePath('/admin/announcements')
     revalidatePath('/')
   })

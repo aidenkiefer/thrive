@@ -5,6 +5,8 @@
  * transaction. See supabase/migrations/20261119000000_publication_events.sql.
  */
 
+import { AdminInputError } from '../admin-validation'
+
 export type PublishableEntity =
   | 'sermon_series'
   | 'sermon'
@@ -42,16 +44,17 @@ export function publishIntent(formData: FormData, field = 'published'): boolean 
   return formData.get(field) === 'on'
 }
 
-function friendlyMessage(error: PublicationRpcError): string {
+/** Staff-actionable failures become AdminInputError so the form shows them inline and keeps its input. */
+function publicationError(error: PublicationRpcError): Error {
   switch (error.code) {
     case '42501':
-      return 'Your staff account is not active; sign in again'
+      return new AdminInputError('Your staff account is not active; sign in again')
     case 'P0002':
-      return 'This item no longer exists, so its publish state could not be changed'
+      return new AdminInputError('This item no longer exists, so its publish state could not be changed')
     case '22023':
-      return 'This item cannot be published from this form'
+      return new AdminInputError('This item cannot be published from this form')
     default:
-      return `Could not change the publish state: ${error.message || 'unknown error'}`
+      return new Error(`Could not change the publish state: ${error.message || 'unknown error'}`)
   }
 }
 
@@ -67,6 +70,6 @@ export async function setPublished(db: PublicationDb, input: SetPublishedInput):
     p_publish: input.publish,
     p_actor_id: input.actorId,
   })
-  if (error) throw new Error(friendlyMessage(error))
+  if (error) throw publicationError(error)
   return typeof data === 'string' ? data : null
 }

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { isAdminInputError } from '../admin-validation'
 import { publishIntent, setPublished, type PublicationDb } from './publication'
 
 const ACTOR = '11111111-1111-4111-8111-111111111111'
@@ -35,6 +36,17 @@ describe('setPublished', () => {
     const { db } = fakeDb({ data: null, error: { code: '42501', message: 'inactive or unknown staff actor' } })
     await expect(setPublished(db, { entityType: 'group', entityId: ID, publish: true, actorId: ACTOR }))
       .rejects.toThrow('Your staff account is not active; sign in again')
+  })
+
+  it('raises staff-actionable failures as AdminInputError so the form keeps its input', async () => {
+    for (const code of ['42501', 'P0002', '22023']) {
+      const { db } = fakeDb({ data: null, error: { code, message: 'x' } })
+      const err = await setPublished(db, { entityType: 'announcement', entityId: 'e', publish: true, actorId: 'a' }).catch(e => e)
+      expect(isAdminInputError(err)).toBe(true)
+    }
+    const { db } = fakeDb({ data: null, error: { code: '57014', message: 'timeout' } })
+    const err = await setPublished(db, { entityType: 'announcement', entityId: 'e', publish: true, actorId: 'a' }).catch(e => e)
+    expect(isAdminInputError(err)).toBe(false)
   })
 
   it('maps P0002 and 22023 to friendly messages', async () => {

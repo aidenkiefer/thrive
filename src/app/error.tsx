@@ -1,7 +1,9 @@
 'use client'
 
 import { Button, Container, Heading, Section } from '@/components/ui'
+import { RecoveryLinks } from '@/components/layout/RecoveryLinks'
 
+// The error and its digest are intentionally never rendered to visitors.
 export default function GlobalError({
   reset,
 }: {
@@ -17,12 +19,14 @@ export default function GlobalError({
           </p>
           <Heading level="h1">Please try again</Heading>
           <p className="mt-4 text-lg text-neutral-600">
-            We were unable to load this page.
+            We were unable to load this page. Trying again often fixes it, or you can head
+            somewhere else below.
           </p>
-          <div className="mt-8 flex justify-center gap-3">
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button onClick={reset}>Try again</Button>
             <Button href="/" variant="secondary">Return home</Button>
           </div>
+          <RecoveryLinks />
         </div>
       </Container>
     </Section>

@@ -9,7 +9,8 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
  * serverless instance shares one fixed window per (purpose, window, subject).
  * Only an HMAC of the subject is sent or stored, never the raw value. Every
  * failure (bad input, missing config, DB error, timeout, malformed reply)
- * denies. Nothing here logs.
+ * denies and logs one line with a fixed code and the purpose
+ * (`[rate-limit] unavailable code=<code> purpose=<purpose>`), never the subject.
  *
  * Each purpose has exactly one limit and window: the limit is not part of the
  * bucket key, so two call sites sharing a purpose share one counter.
@@ -36,13 +37,32 @@ export interface RateLimitStore {
   take(input: SharedRateLimitInput): Promise<{ allowed: boolean; retryAfterSeconds: number }>
 }
 
+/** Fixed failure codes. The only detail a failure log carries besides the purpose. */
+export type RateLimitFailureCode = 'not_configured' | 'invalid_input' | 'rpc_error' | 'timeout'
+
+/** Thrown by a store to name its failure. The message never includes the subject. */
+export class RateLimitStoreError extends Error {
+  constructor(readonly code: 'rpc_error' | 'timeout') {
+    super('rate limit store failed')
+  }
+}
+
+/** Receives one PII-free line per failure. Defaults to console.error. */
+export type RateLimitLog = (line: string) => void
+
 export const LIMITER_SECRET_ENV = 'RATE_LIMIT_HASH_SECRET'
 export const UNAVAILABLE_RETRY_SECONDS = 60
 const MIN_SECRET_LENGTH = 32
 
 const PURPOSE_RE = /^[a-z][a-z0-9_.-]{0,63}$/
 const HASH_RE = /^[0-9a-f]{64}$/
-const unavailable = (): SharedRateLimitResult => ({ allowed: false, retryAfterSeconds: UNAVAILABLE_RETRY_SECONDS, reason: 'unavailable' })
+
+/** Logs the failure (purpose only when well-formed) and returns the deny result. */
+function unavailable(code: RateLimitFailureCode, purpose: unknown, log: RateLimitLog = console.error): SharedRateLimitResult {
+  const name = typeof purpose === 'string' && PURPOSE_RE.test(purpose) ? purpose : 'invalid'
+  try { log(`[rate-limit] unavailable code=${code} purpose=${name}`) } catch { /* logging never changes the result */ }
+  return { allowed: false, retryAfterSeconds: UNAVAILABLE_RETRY_SECONDS, reason: 'unavailable' }
+}
 
 const intIn = (v: unknown, min: number, max: number) => typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max
 
@@ -88,40 +108,59 @@ export function createSupabaseRateLimitStore(env: RateLimitEnv = process.env, ti
   })
   return {
     async take(input) {
-      const { data, error } = await db.rpc('take_rate_limit', {
-        p_purpose: input.purpose,
-        p_subject_hash: input.subjectHash,
-        p_limit: input.limit,
-        p_window_seconds: input.windowSeconds,
-      }).abortSignal(AbortSignal.timeout(timeoutMs))
-      if (error) throw new Error('rate limit store failed')
-      return parseRow(data)
+      const signal = AbortSignal.timeout(timeoutMs)
+      let reply: { data: unknown; error: unknown }
+      try {
+        reply = await db.rpc('take_rate_limit', {
+          p_purpose: input.purpose,
+          p_subject_hash: input.subjectHash,
+          p_limit: input.limit,
+          p_window_seconds: input.windowSeconds,
+        }).abortSignal(signal)
+      } catch (e) {
+        throw new RateLimitStoreError(signal.aborted || isAbort(e) ? 'timeout' : 'rpc_error')
+      }
+      // supabase-js reports an aborted fetch as `error`, not a throw.
+      if (reply.error) throw new RateLimitStoreError(signal.aborted || isAbort(reply.error) ? 'timeout' : 'rpc_error')
+      try {
+        return parseRow(reply.data)
+      } catch {
+        throw new RateLimitStoreError('rpc_error')
+      }
     },
   }
+}
+
+function isAbort(e: unknown): boolean {
+  if (!e || typeof e !== 'object') return false
+  const { name, message } = e as { name?: unknown; message?: unknown }
+  return name === 'TimeoutError' || name === 'AbortError'
+    || (typeof message === 'string' && /^(TimeoutError|AbortError)\b/.test(message))
 }
 
 /** Only a configured store is cached, so a late-provisioned env is picked up. */
 let cachedStore: RateLimitStore | null = null
 
-/** Count one hit. Never throws, never logs. `deps.store: null` means unconfigured. */
+/** Count one hit. Never throws; logs one fixed-code line per failure. `deps.store: null` means unconfigured. */
 export async function takeSharedRateLimit(
   input: SharedRateLimitInput,
-  deps: { store?: RateLimitStore | null } = {},
+  deps: { store?: RateLimitStore | null; log?: RateLimitLog } = {},
 ): Promise<SharedRateLimitResult> {
+  const purpose = (input as Partial<SharedRateLimitInput> | null)?.purpose
   try {
-    if (!isValidRateLimitInput(input)) return unavailable()
+    if (!isValidRateLimitInput(input)) return unavailable('invalid_input', purpose, deps.log)
     let store: RateLimitStore | null
     if ('store' in deps) store = deps.store ?? null
     else store = cachedStore ??= createSupabaseRateLimitStore()
-    if (!store) return unavailable()
+    if (!store) return unavailable('not_configured', purpose, deps.log)
     const r = await store.take({ ...input })
     if (!r || typeof r.allowed !== 'boolean' || typeof r.retryAfterSeconds !== 'number'
       || !Number.isInteger(r.retryAfterSeconds) || r.retryAfterSeconds < 0
-      || (!r.allowed && r.retryAfterSeconds < 1)) return unavailable()
+      || (!r.allowed && r.retryAfterSeconds < 1)) return unavailable('rpc_error', purpose, deps.log)
     if (r.allowed) return { allowed: true, retryAfterSeconds: 0, reason: 'ok' }
     return { allowed: false, retryAfterSeconds: Math.min(r.retryAfterSeconds, input.windowSeconds), reason: 'limited' }
-  } catch {
-    return unavailable()
+  } catch (e) {
+    return unavailable(e instanceof RateLimitStoreError ? e.code : 'rpc_error', purpose, deps.log)
   }
 }
 
@@ -144,15 +183,18 @@ export type SubjectLimiter = (rule: LimitRule, subject: string) => Promise<Share
  * env. Tests inject `secret` and `store` (a present key wins, even if null).
  * A missing secret or empty subject denies.
  */
-export function createSubjectLimiter(deps: { secret?: string | null; store?: RateLimitStore | null } = {}): SubjectLimiter {
+export function createSubjectLimiter(
+  deps: { secret?: string | null; store?: RateLimitStore | null; log?: RateLimitLog } = {},
+): SubjectLimiter {
   return async (rule, subject) => {
     try {
       const secret = 'secret' in deps ? deps.secret ?? null : limiterSecret()
-      if (!secret || typeof subject !== 'string' || !subject) return unavailable()
+      if (!secret) return unavailable('not_configured', rule.purpose, deps.log)
+      if (typeof subject !== 'string' || !subject) return unavailable('invalid_input', rule.purpose, deps.log)
       const subjectHash = hashLimiterSubject(rule.purpose, subject, secret)
-      return await takeSharedRateLimit({ ...rule, subjectHash }, 'store' in deps ? { store: deps.store } : {})
+      return await takeSharedRateLimit({ ...rule, subjectHash }, 'store' in deps ? { store: deps.store, log: deps.log } : { log: deps.log })
     } catch {
-      return unavailable()
+      return unavailable('invalid_input', rule?.purpose, deps.log)
     }
   }
 }
@@ -185,8 +227,7 @@ function ipv6Prefix64(ip: string): string {
  * Canonical client-address subject: trimmed, lowercased, port and brackets
  * dropped, IPv4-mapped IPv6 unwrapped, and IPv6 grouped by /64 (one end
  * site usually owns a whole /64). Idempotent. Anything else is the shared
- * 'unknown' bucket. Trusts the first x-forwarded-for hop, which Vercel sets;
- * revisit if hosted behind a proxy that passes client-supplied values through.
+ * 'unknown' bucket. Callers get the raw value from clientKeyFrom().
  */
 export function normalizeIpSubject(raw: unknown): string {
   if (typeof raw !== 'string') return 'unknown'
@@ -201,4 +242,30 @@ export function normalizeIpSubject(raw: unknown): string {
   if (isIPv4(ip)) return ip
   if (isIPv6(ip)) return ipv6Prefix64(ip)
   return 'unknown'
+}
+
+type HeaderSource = { get(name: string): string | null } | Record<string, unknown> | undefined
+
+/**
+ * The one place a client-address subject is derived from request headers
+ * (OTP request/verify and native forms all use it). Takes the first
+ * x-forwarded-for hop, else x-real-ip, then normalizeIpSubject().
+ *
+ * Trust: this believes x-forwarded-for. That is safe on Vercel, whose edge
+ * overwrites the header with the real client address, so a visitor cannot
+ * pick their own bucket. Behind a host or proxy that passes a client-supplied
+ * x-forwarded-for through, a visitor could rotate the value to dodge the
+ * per-address limits; derive the address from that platform's trusted header
+ * instead before moving hosts.
+ */
+export function clientKeyFrom(headers: HeaderSource): string {
+  if (!headers) return normalizeIpSubject(undefined)
+  const read = (name: string): string => {
+    const value = typeof (headers as { get?: unknown }).get === 'function'
+      ? (headers as { get(n: string): string | null }).get(name)
+      : (headers as Record<string, unknown>)[name]
+    return typeof value === 'string' ? value : ''
+  }
+  const forwarded = read('x-forwarded-for').split(',')[0]?.trim()
+  return normalizeIpSubject(forwarded || read('x-real-ip').trim())
 }

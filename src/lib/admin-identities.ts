@@ -1,6 +1,8 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { createSubjectLimiter, normalizeIpSubject, type LimitRule, type SubjectLimiter } from './rate-limit'
 
+export { clientKeyFrom } from './rate-limit'
+
 /**
  * A1 staff actor contract (D1R): individual one-time email code sign-in.
  *
@@ -14,7 +16,7 @@ import { createSubjectLimiter, normalizeIpSubject, type LimitRule, type SubjectL
  * authorship key. Nothing here logs emails, codes, or tokens.
  */
 
-/** Short website session (seconds). JWT sessions slide while in use. */
+/** Website session length (seconds), counted from sign-in; use does not extend it. */
 export const SESSION_MAX_AGE_SECONDS = 4 * 60 * 60
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -146,18 +148,39 @@ export type RequestCodeResult =
   | { status: 'rate_limited'; retryAfterSeconds: number }
   | { status: 'unavailable' }
 
-export interface RequestCodeDeps {
-  store: StaffStore | null
-  otp: OtpAuth | null
-  limiter?: SubjectLimiter
-  clientKey: string
+interface TimingDeps {
   /** Minimum wall time per call, so known and unknown emails take similar time. */
   minDurationMs?: number
   sleep?: (ms: number) => Promise<void>
   now?: () => number
 }
 
+export interface RequestCodeDeps extends TimingDeps {
+  store: StaffStore | null
+  otp: OtpAuth | null
+  limiter?: SubjectLimiter
+  clientKey: string
+  /**
+   * Runs the roster lookup and send after the response (the route passes
+   * next/server `after`), so response time never depends on membership.
+   * Without it the task runs inline, which only tests should rely on.
+   */
+  defer?: (task: () => Promise<void>) => void
+}
+
 const defaultSleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
+
+/** Starts the clock; the returned function waits out the rest of minDurationMs, then returns its argument. */
+function padToMinimum(deps: TimingDeps): <T>(result: T) => Promise<T> {
+  const now = deps.now ?? Date.now
+  const sleep = deps.sleep ?? defaultSleep
+  const started = now()
+  return async result => {
+    const wait = (deps.minDurationMs ?? 0) - (now() - started)
+    if (wait > 0) await sleep(wait)
+    return result
+  }
+}
 
 /**
  * Sends a code only when the email belongs to an active preprovisioned staff
@@ -166,19 +189,12 @@ const defaultSleep = (ms: number) => new Promise<void>(resolve => setTimeout(res
  * identically to every email. The per-email limit is silent (no send, still
  * 'accepted'). If the shared limiter is unhealthy at any step the result is
  * 'unavailable' and nothing is sent; that depends only on limiter health, never
- * on whether the email is a staff member.
+ * on whether the email is a staff member. The roster lookup and send run in
+ * `deps.defer`, after the answer is decided.
  */
 export async function requestStaffCode(rawEmail: unknown, deps: RequestCodeDeps): Promise<RequestCodeResult> {
-  const now = deps.now ?? Date.now
-  const sleep = deps.sleep ?? defaultSleep
-  const started = now()
+  const finish = padToMinimum(deps)
   const limiter = deps.limiter ?? defaultLimiter
-
-  const finish = async (result: RequestCodeResult): Promise<RequestCodeResult> => {
-    const wait = (deps.minDurationMs ?? 0) - (now() - started)
-    if (wait > 0) await sleep(wait)
-    return result
-  }
 
   const ipResult = await limiter(codeRequestRules.ip, normalizeIpSubject(deps.clientKey))
   const visible = ipResult.allowed ? await limiter(codeRequestRules.global, GLOBAL_SUBJECT) : ipResult
@@ -190,18 +206,23 @@ export async function requestStaffCode(rawEmail: unknown, deps: RequestCodeDeps)
   }
 
   const email = normalizeEmail(rawEmail)
-  if (!email || !deps.store || !deps.otp) return finish({ status: 'accepted' })
+  const { store, otp } = deps
+  if (!email || !store || !otp) return finish({ status: 'accepted' })
   const emailResult = await limiter(codeRequestRules.email, email)
   if (!emailResult.allowed) {
     return finish(emailResult.reason === 'limited' ? { status: 'accepted' } : { status: 'unavailable' })
   }
 
-  try {
-    const row = await deps.store.findByEmail(email)
-    if (isActive(row)) await deps.otp.requestCode(email)
-  } catch {
-    // Swallowed on purpose: a failure must look the same as success.
+  const send = async () => {
+    try {
+      const row = await store.findByEmail(email)
+      if (isActive(row)) await otp.requestCode(email)
+    } catch {
+      // Swallowed on purpose: a failure must look the same as success.
+    }
   }
+  if (deps.defer) deps.defer(send)
+  else await send()
   return finish({ status: 'accepted' })
 }
 
@@ -209,7 +230,7 @@ export async function requestStaffCode(rawEmail: unknown, deps: RequestCodeDeps)
 // Verify a code
 // ---------------------------------------------------------------------------
 
-export interface VerifyCodeDeps {
+export interface VerifyCodeDeps extends TimingDeps {
   store: StaffStore | null
   otp: OtpAuth | null
   limiter?: SubjectLimiter
@@ -220,12 +241,19 @@ export interface VerifyCodeDeps {
  * Verifies the emailed code and returns the active actor, or null for every
  * failure (unknown/disabled staff, wrong, expired, or replayed code, Auth user
  * that is not the bound one, throttling, limiter failure, or any error).
+ * Unknown and disabled emails skip the Supabase call, so every result is
+ * padded to `deps.minDurationMs`.
  */
 export async function verifyStaffCode(
   rawEmail: unknown,
   rawCode: unknown,
   deps: VerifyCodeDeps,
 ): Promise<StaffActor | null> {
+  const finish = padToMinimum(deps)
+  return finish(await verifyUnpadded(rawEmail, rawCode, deps))
+}
+
+async function verifyUnpadded(rawEmail: unknown, rawCode: unknown, deps: VerifyCodeDeps): Promise<StaffActor | null> {
   const limiter = deps.limiter ?? defaultLimiter
   const email = normalizeEmail(rawEmail)
   const code = normalizeCode(rawCode)
@@ -301,17 +329,4 @@ export function createOtpAuth(env: IdentityEnv = process.env): OtpAuth | null {
       return data.user.id
     },
   }
-}
-
-/** First hop of x-forwarded-for (set by the platform), else x-real-ip, normalized; unparseable is the shared 'unknown' bucket. */
-export function clientKeyFrom(headers: { get(name: string): string | null } | Record<string, unknown> | undefined): string {
-  if (!headers) return normalizeIpSubject(undefined)
-  const read = (name: string): string => {
-    const value = typeof (headers as { get?: unknown }).get === 'function'
-      ? (headers as { get(n: string): string | null }).get(name)
-      : (headers as Record<string, unknown>)[name]
-    return typeof value === 'string' ? value : ''
-  }
-  const forwarded = read('x-forwarded-for').split(',')[0]?.trim()
-  return normalizeIpSubject(forwarded || read('x-real-ip').trim())
 }

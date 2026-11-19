@@ -126,12 +126,14 @@ Two control checks prove the harness can fail. Removing the `anon` revoke fails 
 - **Hosted Supabase roles.** The roles and default privileges were stubbed by hand. Real Supabase role details (`supabase_admin` as owner, PostgREST exposure, whether `service_role` really bypasses RLS) are unproven. Re-run the privilege query in the D1L session log on Preview.
 - **Postgres version.** Hosted Supabase runs an older major version than PGlite's 18.6. The SQL uses only long-standing features.
 
-Re-run it: PGlite is **not** a repo dependency. Put a throwaway package outside the repo, for example `/tmp/pglite-rehearsal` (this session used the gitignored `node_modules/.cache/pglite-rehearsal/`):
+Re-run it. The harness is committed in `scripts/pglite-rehearsal/`, a standalone package with its own lockfile. PGlite is **not** an app dependency, and the app build does not touch the folder:
 
 ```sh
-cd /tmp/pglite-rehearsal && npm init -y && npm install @electric-sql/pglite
-git -C <repo> show cd012bd:supabase/schema.sql > june-schema.sql
-node rehearse.mjs <repo>   # exit 0 = all checks pass
+cd scripts/pglite-rehearsal && npm ci && npm run rehearse   # exit 0 = all checks pass
 ```
 
-`rehearse.mjs` is attached to PR #23 and summarized in `docs/agents/sessions/2026-11-18-claude-data-shared-limiter.md`.
+It reads the June baseline schema from this checkout's git history (`cd012bd`). Since the QA round on 2026-11-19 it also checks the D1R staff table: `service_role` has only select, insert, and update, and delete and truncate are refused, with the row surviving. That makes 395 checks. To prove the harness can fail, build a mutated copy and rehearse it. It must exit 1:
+
+```sh
+node mutate.mjs ../.. /tmp/mut staff-truncate && node rehearse.mjs /tmp/mut   # also: revoke, cap
+```

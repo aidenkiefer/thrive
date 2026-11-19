@@ -1,0 +1,12 @@
+{
+  "name": "pglite-rehearsal",
+  "private": true,
+  "type": "module",
+  "description": "Rehearses supabase/schema.sql and migrations on PGlite. Not part of the app build.",
+  "scripts": {
+    "rehearse": "node rehearse.mjs ../.."
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.16"
+  }
+}

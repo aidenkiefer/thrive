@@ -265,6 +265,58 @@ describe('createSubjectLimiter', () => {
   })
 })
 
+describe('failure logging', () => {
+  const env = { NEXT_PUBLIC_SUPABASE_URL: 'https://x.supabase.co', SUPABASE_SERVICE_ROLE_KEY: 'service-key' }
+  const capture = () => {
+    const lines: string[] = []
+    return { lines, log: (line: string) => { lines.push(line) } }
+  }
+
+  it('logs one fixed code per failure and nothing on success or a normal limit', async () => {
+    const { lines, log } = capture()
+    await takeSharedRateLimit(input(), { store: null, log })
+    await takeSharedRateLimit(input({ purpose: 'Bad Purpose' }), { store: null, log })
+    await takeSharedRateLimit(input(), { store: { take: async () => { throw new Error(`boom ${H1}`) } }, log })
+    await takeSharedRateLimit(input(), { store: { take: async () => ({ allowed: 'yes' }) } as unknown as RateLimitStore, log })
+    expect(lines).toEqual([
+      '[rate-limit] unavailable code=not_configured purpose=forms.submit',
+      '[rate-limit] unavailable code=invalid_input purpose=invalid',
+      '[rate-limit] unavailable code=rpc_error purpose=forms.submit',
+      '[rate-limit] unavailable code=rpc_error purpose=forms.submit',
+    ])
+    const store = createFakeRateLimitStore(() => T0)
+    for (let i = 0; i < 5; i++) await takeSharedRateLimit(input(), { store, log })
+    expect(lines).toHaveLength(4)
+  })
+
+  it('tells a timeout from an rpc error on the Supabase store', async () => {
+    const { lines, log } = capture()
+    rpc.mockReturnValue({ abortSignal: vi.fn(async () => { throw new DOMException('timed out', 'TimeoutError') }) })
+    await takeSharedRateLimit(input(), { store: createSupabaseRateLimitStore(env, 5), log })
+    rpc.mockReturnValue({ abortSignal: vi.fn(async () => ({ data: null, error: { message: 'AbortError: signal is aborted' } })) })
+    await takeSharedRateLimit(input(), { store: createSupabaseRateLimitStore(env), log })
+    rpc.mockReturnValue({ abortSignal: vi.fn(async () => ({ data: null, error: { message: `permission denied for ${H1}` } })) })
+    await takeSharedRateLimit(input(), { store: createSupabaseRateLimitStore(env), log })
+    rpc.mockReturnValue({ abortSignal: vi.fn(async () => ({ data: [], error: null })) })
+    await takeSharedRateLimit(input(), { store: createSupabaseRateLimitStore(env), log })
+    expect(lines.map(l => l.split(' ')[2])).toEqual(['code=timeout', 'code=timeout', 'code=rpc_error', 'code=rpc_error'])
+  })
+
+  it('never logs the subject or its hash from the subject limiter', async () => {
+    const { lines, log } = capture()
+    const rule = { purpose: 'otp.request.email', limit: 1, windowSeconds: 60 }
+    await createSubjectLimiter({ secret: null, store: createFakeRateLimitStore(), log })(rule, 'pat@example.org')
+    await createSubjectLimiter({ secret: SECRET, store: createFakeRateLimitStore(), log })(rule, '')
+    await createSubjectLimiter({ secret: SECRET, store: { take: async () => { throw new Error('pat@example.org') } }, log })(rule, 'pat@example.org')
+    expect(lines).toEqual([
+      '[rate-limit] unavailable code=not_configured purpose=otp.request.email',
+      '[rate-limit] unavailable code=invalid_input purpose=otp.request.email',
+      '[rate-limit] unavailable code=rpc_error purpose=otp.request.email',
+    ])
+    expect(lines.join('\n')).not.toContain(hashLimiterSubject(rule.purpose, 'pat@example.org', SECRET))
+  })
+})
+
 describe('normalizeIpSubject', () => {
   it.each([
     [' 1.2.3.4 ', '1.2.3.4'],

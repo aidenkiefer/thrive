@@ -98,6 +98,23 @@ describe('requestStaffCode', () => {
     }
     expect(otp.requestCode).not.toHaveBeenCalled()
   })
+  it('answers before the roster lookup and send when given defer (next/server after)', async () => {
+    const tasks: Array<() => Promise<void>> = []
+    const store = memoryStore([row()])
+    const findByEmail = vi.spyOn(store, 'findByEmail')
+    const otp = fakeOtp()
+    const r = await requestStaffCode('pat@example.org', { store, otp, limiter: open(), clientKey: 'a', defer: t => { tasks.push(t) } })
+    expect(r).toEqual({ status: 'accepted' })
+    expect(findByEmail).not.toHaveBeenCalled()
+    expect(otp.requestCode).not.toHaveBeenCalled()
+    expect(tasks).toHaveLength(1)
+    await tasks[0]()
+    expect(otp.requestCode).toHaveBeenCalledWith('pat@example.org')
+    // A failing deferred task never rejects (after() would surface it as an unhandled error).
+    const failing = fakeOtp({ requestCode: vi.fn(async () => { throw new Error('smtp') }) })
+    await requestStaffCode('pat@example.org', { store, otp: failing, limiter: open(), clientKey: 'b', defer: t => { tasks.push(t) } })
+    await expect(tasks[1]()).resolves.toBeUndefined()
+  })
   it('hides Supabase Auth failures behind the same result', async () => {
     const otp = fakeOtp({ requestCode: vi.fn(async () => { throw new Error('over_email_send_rate_limit') }) })
     const r = await requestStaffCode('pat@example.org', { store: memoryStore([row()]), otp, limiter: open(), clientKey: 'a' })
@@ -290,6 +307,19 @@ describe('limiter privacy', () => {
 
 describe('verifyStaffCode', () => {
   const deps = (rows: StaffAccountRow[], otp: OtpAuth) => ({ store: memoryStore(rows), otp, limiter: open(), clientKey: 'a' })
+
+  it('pads known, unknown, and malformed attempts to the same minimum duration', async () => {
+    for (const [email, rows] of [['pat@example.org', [row()]], ['nobody@example.org', []], ['bad', []]] as const) {
+      const sleeps: number[] = []
+      let t = 0
+      const otp = fakeOtp({ verifyCode: vi.fn(async () => { t += 200; return AUTH }) })
+      await verifyStaffCode(email, '123456', {
+        ...deps([...rows], otp), minDurationMs: 700, now: () => t, sleep: async ms => { sleeps.push(ms); t += ms },
+      })
+      expect(t).toBe(700)
+      expect(sleeps).toEqual([email === 'pat@example.org' ? 500 : 700])
+    }
+  })
 
   it('returns the actor when Supabase confirms the bound auth user', async () => {
     const otp = fakeOtp()

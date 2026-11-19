@@ -7,8 +7,12 @@ const SCHEMA_HEADER = '-- D1L: rate_limit_buckets (mirror of migrations/20261118
 const migration = readFileSync(MIGRATION_PATH, 'utf8')
 const schemaFull = readFileSync('supabase/schema.sql', 'utf8')
 const schemaStart = schemaFull.indexOf(SCHEMA_HEADER)
-// Only the D1L portion, so unrelated earlier content cannot satisfy or break assertions.
-const schemaD1L = schemaStart === -1 ? '' : schemaFull.slice(schemaStart)
+// Section rule lines (`-- =====`) frame each mirrored block in schema.sql.
+const RULE = '-- ' + '='.repeat(77)
+const bodyStart = schemaStart === -1 ? -1 : schemaFull.indexOf(RULE, schemaStart) + RULE.length
+const nextSection = bodyStart === -1 ? -1 : schemaFull.indexOf('\n' + RULE, bodyStart)
+// Only the D1L section, so unrelated content before or after it cannot satisfy or break assertions.
+const schemaD1L = schemaStart === -1 ? '' : schemaFull.slice(schemaStart, nextSection === -1 ? undefined : nextSection)
 
 const targets: Array<[string, string]> = [
   ['migration', migration],
@@ -88,9 +92,8 @@ describe('shared rate limiter migration and schema (D1L)', () => {
   it('schema.sql mirror SQL matches the migration body', () => {
     const norm = (s: string) => s.replace(/\s+/g, ' ').trim()
     const migBody = migration.slice(migration.indexOf('\nbegin;\n') + '\nbegin;\n'.length, migration.lastIndexOf('commit;'))
-    // Skip the section header block (two ===== lines around the title).
-    const rule = '-- ' + '='.repeat(77)
-    const afterHeader = schemaD1L.slice(schemaD1L.indexOf(rule) + rule.length)
+    // Skip the section header block (two rule lines around the title).
+    const afterHeader = schemaD1L.slice(schemaD1L.indexOf(RULE) + RULE.length)
     expect(norm(afterHeader)).toBe(norm(migBody))
   })
 })

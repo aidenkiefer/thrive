@@ -6,6 +6,9 @@ import {
   resolveActor, verifyStaffCode, type SessionIdentity, type StaffActor,
 } from './admin-identities'
 
+/** Pads every verification so unknown or disabled emails (no Supabase call) take similar time. */
+const VERIFY_MIN_DURATION_MS = 700
+
 /**
  * Staff sign-in is a one-time email code (Supabase Auth OTP, preprovisioned
  * staff only). There is no shared-password or OIDC path. The JWT carries only
@@ -27,6 +30,7 @@ export const adminAuthOptions: NextAuthOptions = {
           store: createStaffStore(),
           otp: createOtpAuth(),
           clientKey: clientKeyFrom(req?.headers),
+          minDurationMs: VERIFY_MIN_DURATION_MS,
         })
         if (!actor) return null
         // No email/name here, so NextAuth cannot copy them into the JWT.

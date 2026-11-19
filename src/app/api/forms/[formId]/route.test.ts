@@ -23,7 +23,7 @@ const WINDOW_MS = 600_000
 let now = 0
 let store: ReturnType<typeof createFakeRateLimitStore>
 
-const fields = { name: 'Zed Quimby', message: 'secret-message-body-123' }
+const fields = { category: 'bug', name: 'Zed Quimby', message: 'secret-message-body-123' }
 
 function send(ip: string | null, body: Record<string, unknown> = fields, formId = 'feedback') {
   const headers: Record<string, string> = { 'content-type': 'application/json' }
@@ -128,6 +128,33 @@ describe('POST /api/forms/[formId] shared limiter', () => {
     const body = await last!.text()
     expect(body).not.toContain('Zed Quimby')
     expect(body).not.toContain('secret-message-body-123')
+  })
+
+  it('validates before counting: invalid input is a 422 that spends no budget, even with the limiter down', async () => {
+    const take = vi.spyOn(store, 'take')
+    for (let i = 0; i < 10; i++) {
+      const res = await send('1.2.3.4', { ...fields, category: 'other' })
+      expect(res.status).toBe(422)
+      expect(await res.json()).toMatchObject({ status: 'invalid', fieldErrors: { category: expect.any(String) } })
+    }
+    expect(take).not.toHaveBeenCalled()
+    expect(state.submit).not.toHaveBeenCalled()
+    for (let i = 0; i < 5; i++) expect((await send('1.2.3.4')).status).toBe(200)
+    state.limiter = state.make({ secret: null, store })
+    expect((await send('1.2.3.4', { ...fields, message: '' })).status).toBe(422)
+  })
+
+  it('caps the body while streaming, without trusting content-length', async () => {
+    const enc = new TextEncoder()
+    let pulls = 0
+    const body = new ReadableStream<Uint8Array>({
+      pull(c) { if (++pulls > 100) c.close(); else c.enqueue(enc.encode('x'.repeat(1000))) },
+    })
+    const req = new NextRequest('http://localhost/api/forms/feedback', { method: 'POST', body, duplex: 'half' } as never)
+    const res = await POST(req, { params: Promise.resolve({ formId: 'feedback' }) })
+    expect(res.status).toBe(413)
+    expect(pulls).toBeLessThan(30)
+    expect(state.submit).not.toHaveBeenCalled()
   })
 
   it('returns 404 for an unknown form and consumes nothing', async () => {

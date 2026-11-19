@@ -50,3 +50,14 @@ delete from public.rate_limit_buckets where purpose = 'verify.test';
 Also run the migration a second time and repeat the privilege query. Optional concurrency check: 50 parallel calls with limit 3 must allow exactly 3.
 
 **Rollback:** counters are disposable. `drop function if exists public.take_rate_limit(text, text, integer, integer); drop function if exists public.prune_rate_limit_buckets(integer); drop table if exists public.rate_limit_buckets;` Revert the app commit at the same time, or every limited path will deny.
+
+## Senior QA round on the Data stack (2026-11-19, #23 items)
+- **merge** #15 QA fixes (S6, S3 forms, N1, N6) via #18; clean.
+- **fix** S3 (limiter side): every limiter failure logs `[rate-limit] unavailable code=<not_configured|invalid_input|rpc_error|timeout> purpose=<purpose>`; never the subject or its hash. The Supabase store throws `RateLimitStoreError` with `timeout` when its abort signal fired (thrown or returned as `error`), else `rpc_error`.
+- **fix** S4 (moved here from #15 per the stack rule): `requestStaffCode` takes `defer`; the route passes `next/server` `after`, so the roster lookup and Supabase send run after the response. `verifyStaffCode` pads to `minDurationMs` (700 ms from `admin-auth.ts`), since unknown or disabled emails skip the Supabase call.
+- **fix** S5 (moved here): `src/lib/http/limited-body.ts` streams the body and stops past the cap. Forms (16 KB) and request-code (2 KB) no longer call `request.text()`/`request.json()`. Oversize → 413.
+- **fix** N3: the forms route validates before the limiter. Invalid input → 422, spends no budget, even with the limiter down.
+- **change** N4: `clientKeyFrom` lives in `src/lib/rate-limit` (re-exported from `admin-identities`); the forms route uses it. Its comment and the docs say it trusts the first `x-forwarded-for` hop (safe on Vercel).
+- **fix** F1 (#90 review): `migration.test.ts` bounds the schema.sql D1L slice at the next section rule, so an appended section (R2) no longer breaks it.
+- **docs** S1/N2: `.env.local.example` adds `RATE_LIMIT_HASH_SECRET=` and uses `FORMS_MAIL_TRANSPORT=fake` and example.org addresses (lines from #18). `docs/admin-setup.md` adds the limiter apply step and env, and replaces the "process-local" release gate with the Preview checklist. `docs/06-integrations.md` says the limiter fails closed.
+- **test** PGlite harness committed at `scripts/pglite-rehearsal/` (own package and lockfile; `npm ci && npm run rehearse`). Reads the June schema from git, adds S6 staff-table checks: 395/395 pass. Mutations `staff-truncate` (18 fail) and `cap` (3 fail) exit 1.

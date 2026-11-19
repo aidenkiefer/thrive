@@ -10,11 +10,23 @@ const h = vi.hoisted(() => ({
   rpc: vi.fn((): { abortSignal: () => Promise<unknown> } => ({
     abortSignal: async () => ({ data: [{ allowed: true, retry_after_seconds: 0 }], error: null }),
   })),
+  verifyPads: [] as Array<number | undefined>,
 }))
 
 vi.mock('next-auth', () => ({ getServerSession: vi.fn(async () => h.session) }))
 vi.mock('next-auth/providers/credentials', () => ({ default: (o: unknown) => o }))
 vi.mock('next/navigation', () => ({ redirect: (to: string) => { throw new Error(`REDIRECT:${to}`) } }))
+vi.mock('./admin-identities', async importOriginal => {
+  const actual = await importOriginal<typeof import('./admin-identities')>()
+  return {
+    ...actual,
+    // Record the padding the provider asks for, then skip the wait so tests stay fast.
+    verifyStaffCode: (email: unknown, code: unknown, deps: Parameters<typeof actual.verifyStaffCode>[2]) => {
+      h.verifyPads.push(deps.minDurationMs)
+      return actual.verifyStaffCode(email, code, { ...deps, minDurationMs: 0 })
+    },
+  }
+})
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn((_url: string, key: string) => key === 'service-key'
     ? {
@@ -45,6 +57,7 @@ beforeEach(() => {
   h.rows = [{ ...baseRow }]
   h.verifyOtp.mockReset()
   h.signOut.mockClear()
+  h.verifyPads = []
 })
 
 async function load() {
@@ -124,6 +137,14 @@ describe('NextAuth staff-code provider', () => {
     h.verifyOtp.mockResolvedValue(response)
     const m = await load()
     expect(await provider(m).authorize({ email: 'pat@example.org', code: '123456' }, req())).toBeNull()
+  })
+
+  it('pads every verification, known or unknown, to the same minimum time', async () => {
+    h.verifyOtp.mockResolvedValue({ data: { user: { id: AUTH }, session: null }, error: null })
+    const m = await load()
+    await provider(m).authorize({ email: 'pat@example.org', code: '123456' }, req())
+    await provider(m).authorize({ email: 'nobody@example.org', code: '123456' }, req())
+    expect(h.verifyPads).toEqual([700, 700])
   })
 
   it('rejects disabled or unknown staff before asking Supabase to verify', async () => {

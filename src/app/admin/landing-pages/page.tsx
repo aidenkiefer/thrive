@@ -2,8 +2,8 @@ import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
 import { publishIntent, saveWithPublication } from '@/lib/cms'
+import { isReservedSlug } from '@/lib/reserved-slugs'
 
-const reserved = new Set(['plan-a-visit', 'sermons', 'events', 'groups', 'kids-youth', 'outreach', 'about', 'give', 'ministries', 'admin'])
 function secureUrl(value: FormDataEntryValue | null) {
   const url = String(value || '').trim()
   if (!url) return null
@@ -18,9 +18,10 @@ async function saveLanding(form: FormData) {
   const id = String(form.get('id') || '')
   const slug = String(form.get('slug') || '').trim().toLowerCase()
   const title = String(form.get('title') || '').trim()
-  if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || reserved.has(slug)) {
-    throw new Error('Enter a title and a valid, available root URL slug')
+  if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    throw new Error('Enter a title and a valid root URL slug (lowercase letters, numbers and single hyphens)')
   }
+  if (isReservedSlug(slug)) throw new Error(`/${slug} is already a page on the site. Choose a different root URL slug`)
   if (id) {
     const { data, error } = await db.from('landing_pages').select('slug').eq('id', id).single()
     if (error) throw new Error(error.message)

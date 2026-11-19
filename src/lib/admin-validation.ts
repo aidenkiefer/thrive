@@ -9,6 +9,8 @@
  *   needs. Drafts may be saved incomplete, within the database's NOT NULL columns.
  */
 
+import { isApprovedFormUrl } from './form-urls'
+
 export const CHURCH_TIME_ZONE = 'America/Chicago'
 
 /** A validation failure the admin can fix. Shown in the form, not the error page. */
@@ -173,4 +175,14 @@ export function recurringEventPublishProblems(row: {
   if (blank(row.recurrence_description)) problems.push('add a schedule description (for example "Sundays")')
   if (blank(row.typical_time)) problems.push('add a typical time (for example "8:30 AM")')
   return problems
+}
+
+/**
+ * Publish rule for any signup-form field (`churchsuite_form_url`): only
+ * ChurchSuite or Google Forms links can go live. Drafts may hold any HTTPS link.
+ */
+export function formUrlPublishProblems(url: string | null | undefined, label = 'Signup form URL'): string[] {
+  return !blank(url) && !isApprovedFormUrl(url)
+    ? [`${label} must be a ChurchSuite (churchsuite.com) or Google Forms (docs.google.com/forms or forms.gle) link`]
+    : []
 }

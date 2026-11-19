@@ -167,6 +167,8 @@ create table if not exists ministries (
   leader              text,
   contact_email       text,
   featured_image_url  text,
+  schedule_description text,  -- free-text meeting schedule, owner-entered (never inferred)
+  churchsuite_form_url text,  -- signup form: ChurchSuite, or Google Forms where ChurchSuite has none
   -- SEO
   seo_title           text,
   seo_description     text,

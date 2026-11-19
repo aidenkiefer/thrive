@@ -67,7 +67,7 @@ async function expectError(db, scenario, item, sql, code) {
     record(scenario, item, false, 'no error raised');
   } catch (e) {
     await db.exec('reset role').catch(() => {});
-    record(scenario, item, e.code === code, `${e.code} ${e.message.split('\n')[0]}`);
+    record(scenario, item, [code].flat().includes(e.code), `${e.code} ${e.message.split('\n')[0]}`);
   }
 }
 
@@ -318,7 +318,11 @@ async function assertStaff(db, s) {
   await expectError(db, s, 'service_role delete on staff table denied',
     `set role service_role; delete from ${T}; reset role;`, '42501');
   // Owner (superuser here) bypasses grants, so only the triggers stand in the way.
-  await expectError(db, s, 'owner truncate on staff table raised by trigger', `truncate ${T}`, 'P0001');
+  // Once a table references this one (R2 publication_events), plain TRUNCATE is
+  // refused even earlier by the FK check (0A000); CASCADE skips that check and
+  // reaches the trigger.
+  await expectError(db, s, 'owner truncate on staff table refused', `truncate ${T}`, ['P0001', '0A000']);
+  await expectError(db, s, 'owner truncate cascade on staff table raised by trigger', `truncate ${T} cascade`, 'P0001');
   await expectError(db, s, 'owner delete on staff table raised by trigger', `delete from ${T}`, 'P0001');
   const n = await one(db, `select count(*)::int n from ${T}`);
   record(s, 'staff row survives truncate and delete attempts', n.n === 1, `${n.n} rows`);

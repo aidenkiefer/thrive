@@ -132,7 +132,7 @@ Re-run it. The harness is committed in `scripts/pglite-rehearsal/`, a standalone
 cd scripts/pglite-rehearsal && npm ci && npm run rehearse   # exit 0 = all checks pass
 ```
 
-It reads the June baseline schema from this checkout's git history (`cd012bd`). Since the QA round on 2026-11-19 it also checks the D1R staff table: `service_role` has only select, insert, and update, and delete and truncate are refused, with the row surviving. That makes 395 checks. To prove the harness can fail, build a mutated copy and rehearse it. It must exit 1:
+It reads the June baseline schema from this checkout's git history (`cd012bd`). Since the QA round on 2026-11-19 it also checks the D1R staff table: `service_role` has only select, insert, and update, and delete and truncate are refused, with the row surviving. That makes 398 checks on this branch (406 once #90's R2 block is stacked on top). To prove the harness can fail, build a mutated copy and rehearse it. It must exit 1:
 
 ```sh
 node mutate.mjs ../.. /tmp/mut staff-truncate && node rehearse.mjs /tmp/mut   # also: revoke, cap

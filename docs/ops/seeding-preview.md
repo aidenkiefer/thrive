@@ -47,6 +47,10 @@ To re-check later without writing, run the dry run: "already applied, nothing to
 
 **One writer at a time.** The fingerprint check happens once, before writing. The script reads the six tables one after another, then sends about 290 separate upserts (roughly 15 to 45 seconds) with no transaction and no per-row check at write time. An edit made in that window, through `/admin` or SQL, can be overwritten without a refusal. Run the seed only when nobody else is writing to the content tables. That holds today, since no staff accounts exist yet. Once staff are editing, schedule the run and pause edits for it.
 
+## Applying as SQL (no service-role key)
+
+For #101 the owner chose to apply the seed as SQL through the Supabase MCP, since agents never hold the service-role key. `npx tsx scripts/seed-sql.ts` writes [`supabase/ops/2026-11-19-seed.sql`](../../supabase/ops/2026-11-19-seed.sql) from the same plan (`src/lib/seed/sql.ts`), and a unit test fails if the committed file no longer matches the exports. The file is one transaction of upserts that never deletes. It refuses while a planned event slug is published in the other event table, so run batch A first. The fingerprint does not apply to this path: the go names the file at a commit instead. Afterwards, the dry run should report 0 to insert and 0 to update. Every planned row is published, so the publishable key sees all of them.
+
 ## Exit codes
 
 | Code | Meaning |

@@ -23,7 +23,7 @@ Gate: #15, #18, #23 merged (and R2 merged for the CMS rows).
 | Ops | #62-follow-up #63 activate redirects, #64 Playwright smoke tests, #68 Vercel/Preview audit | #63 needs #62 and the disposition spec (merged in #85). `next.config.ts` has Ops as sole owner. #64 owns `package.json` |
 
 ## Batch 5: needs Preview and owner
-Gate: Preview Supabase provisioned and seeded (#54 answered, #41 done); owner inputs for photos and branding.
+Gate: the pre-launch Supabase project (the production project; see [owner-decisions.md](owner-decisions.md)) prepared and seeded (#54 answered, #41 done); owner inputs for photos and branding.
 
 #41 migration rehearsal on Preview, #46 verify announcements, #31 and #35 verify staff accounts and form email on Preview (built in #15/#18), #49 admin image handling (storage decision), #59 re-host photos (P0), #56 favicon/logo, #67 performance pass (after #59).
 

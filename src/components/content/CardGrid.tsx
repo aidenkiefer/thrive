@@ -16,7 +16,7 @@ export function CardGrid({
       : columns === 2
         ? 'md:grid-cols-2'
         : 'md:grid-cols-2 lg:grid-cols-3'
-  return <div className={`mt-10 grid grid-cols-1 gap-6 ${cols}`}>{children}</div>
+  return <div className={`reveal-stagger mt-10 grid grid-cols-1 gap-6 ${cols}`}>{children}</div>
 }
 
 interface InfoCardProps {
@@ -64,14 +64,14 @@ export function InfoCard({ title, icon, photo, href, linkLabel = 'Learn more', c
       </div>
     </>
   )
-  const classes =
-    'group flex flex-col overflow-hidden rounded-2xl bg-neutral-0 shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md'
+  const classes = 'group flex flex-col overflow-hidden rounded-2xl bg-neutral-0 shadow-sm ring-1 ring-black/5'
   if (!href) return <article className={classes}>{body}</article>
+  const linkClasses = `${classes} motion-lift hover:shadow-md`
   if (external) {
     return (
       <a
         href={href}
-        className={classes}
+        className={linkClasses}
         {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       >
         {body}
@@ -79,7 +79,7 @@ export function InfoCard({ title, icon, photo, href, linkLabel = 'Learn more', c
     )
   }
   return (
-    <Link href={href} className={classes}>
+    <Link href={href} className={linkClasses}>
       {body}
     </Link>
   )

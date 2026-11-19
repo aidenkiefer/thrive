@@ -4,7 +4,7 @@ import { ArrowRightIcon, PinIcon } from './icons'
 /** Audited Google Maps embed plus a plain directions link. */
 export function MapEmbed({ className = '' }: { className?: string }) {
   return (
-    <div className={`overflow-hidden rounded-2xl bg-neutral-0 shadow-sm ring-1 ring-black/5 ${className}`}>
+    <div className={`reveal overflow-hidden rounded-2xl bg-neutral-0 shadow-sm ring-1 ring-black/5 ${className}`}>
       <iframe
         title={`Map showing ${SITE.name} at ${SITE.addressLine}`}
         src={SITE.mapEmbedUrl}

@@ -122,19 +122,226 @@
     @apply border-l-4 border-accent-400 pl-4 italic text-neutral-600;
   }
 
+  /* ------------------------------------------------------------------
+   * Motion system
+   *
+   * Principles: subtle, fast, and compositor-only. Everything animates
+   * `transform`/`translate`/`opacity` (never layout properties), and every
+   * effect is gated behind prefers-reduced-motion. Scroll reveals use native
+   * scroll-driven animations (no JavaScript); browsers without support simply
+   * show the content, so nothing is ever hidden by a failed script.
+   * ------------------------------------------------------------------ */
+
+  :root {
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Hero photo is scaled slightly so settle/parallax never reveal an edge. */
+  .hero-bg {
+    scale: 1.08;
+  }
+
   @keyframes fade-up {
     from {
       opacity: 0;
-      transform: translateY(12px);
+      translate: 0 12px;
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      translate: 0 0;
     }
   }
 
   .animate-fade-up {
-    animation: fade-up 0.6s ease-out both;
+    animation: fade-up 0.6s var(--ease-out) both;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 5rem; /* clear the sticky header on anchor jumps */
+    }
+
+    /* Hero: text staggers in; the headline only slides (no fade) so it paints immediately for LCP. */
+    @keyframes hero-fade {
+      from {
+        opacity: 0;
+        translate: 0 14px;
+      }
+      to {
+        opacity: 1;
+        translate: 0 0;
+      }
+    }
+
+    @keyframes hero-slide {
+      from {
+        translate: 0 14px;
+      }
+      to {
+        translate: 0 0;
+      }
+    }
+
+    .hero-enter > * {
+      animation: hero-fade 700ms var(--ease-out) both;
+    }
+
+    .hero-enter > h1 {
+      animation-name: hero-slide;
+    }
+
+    .hero-enter > :nth-child(2) {
+      animation-delay: 70ms;
+    }
+
+    .hero-enter > :nth-child(3) {
+      animation-delay: 150ms;
+    }
+
+    .hero-enter > :nth-child(4) {
+      animation-delay: 230ms;
+    }
+
+    /* Hero photo gently settles in on load. */
+    @keyframes hero-settle {
+      from {
+        scale: 1.15;
+      }
+      to {
+        scale: 1.08;
+      }
+    }
+
+    .hero-bg-settle {
+      animation: hero-settle 1600ms var(--ease-out) both;
+    }
+
+    /* Mobile drawer entrance. */
+    @keyframes drawer-in {
+      from {
+        opacity: 0;
+        translate: 0 -8px;
+      }
+      to {
+        opacity: 1;
+        translate: 0 0;
+      }
+    }
+
+    .drawer-in {
+      animation: drawer-in 220ms var(--ease-out) both;
+    }
+
+    /* Interactive lift for whole-card links (hover devices only). */
+    .motion-lift {
+      transition:
+        transform 250ms var(--ease-out),
+        box-shadow 250ms var(--ease-out);
+    }
+
+    @media (hover: hover) {
+      .motion-lift:hover {
+        transform: translateY(-3px);
+      }
+    }
+
+    /* Buttons: quick press feedback and a 1px lift on hover. */
+    .press {
+      transition:
+        transform 150ms var(--ease-out),
+        background-color 200ms ease,
+        color 200ms ease,
+        border-color 200ms ease,
+        box-shadow 200ms ease,
+        filter 200ms ease;
+    }
+
+    .press:active {
+      transform: scale(0.98);
+    }
+
+    .press:disabled {
+      transform: none;
+    }
+
+    @media (hover: hover) {
+      .press:hover {
+        transform: translateY(-1px);
+      }
+
+      .press:active {
+        transform: scale(0.98);
+      }
+    }
+  }
+
+  /* Scroll-driven effects (Chromium, Safari 26+). Skipped when unsupported or when motion is reduced. */
+  @media screen and (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      @keyframes reveal-up {
+        from {
+          opacity: 0;
+          translate: 0 20px;
+        }
+        to {
+          opacity: 1;
+          translate: 0 0;
+        }
+      }
+
+      .reveal,
+      .reveal-stagger > * {
+        animation: reveal-up linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 40%;
+      }
+
+      /* Slightly later for the second column of a split and for later cards in a row. */
+      .reveal-late,
+      .reveal-stagger > :nth-child(4n + 2) {
+        animation-range: entry 6% entry 46%;
+      }
+
+      .reveal-stagger > :nth-child(4n + 3) {
+        animation-range: entry 12% entry 52%;
+      }
+
+      .reveal-stagger > :nth-child(4n + 4) {
+        animation-range: entry 18% entry 58%;
+      }
+
+      /* Hero photo drifts slower than the page for a hint of depth. */
+      @keyframes hero-parallax {
+        from {
+          translate: 0 0;
+        }
+        to {
+          translate: 0 3.5%;
+        }
+      }
+
+      .hero-bg-parallax {
+        animation: hero-parallax linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0px 640px;
+      }
+    }
+  }
+
+  /* Loading skeleton pulse (used by route loading states). */
+  @keyframes skeleton-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
+
+  .skeleton {
+    animation: skeleton-pulse 1.6s ease-in-out infinite;
   }
 
   @media (prefers-reduced-motion: reduce) {

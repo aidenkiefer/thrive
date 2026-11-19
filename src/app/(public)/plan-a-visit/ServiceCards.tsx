@@ -7,7 +7,7 @@ import { ClockIcon, PinIcon } from '@/components/content/icons'
 
 export function ServiceCards() {
   return (
-    <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
+    <div className="reveal-stagger mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
       {SERVICE_TIMES.map((service) => (
         <article
           key={service.name}

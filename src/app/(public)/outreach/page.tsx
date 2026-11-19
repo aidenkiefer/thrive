@@ -31,7 +31,7 @@ export default async function OutreachPage() {
             </div>
           </PendingNote>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="reveal-stagger grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {items.map(item => (
               <Link
                 key={item.id}

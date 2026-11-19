@@ -34,7 +34,7 @@ export default async function SermonsPage() {
             </div>
           </PendingNote>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="reveal-stagger grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {sermons.map(sermon => (
               <SermonCard key={sermon.id} sermon={sermon} />
             ))}

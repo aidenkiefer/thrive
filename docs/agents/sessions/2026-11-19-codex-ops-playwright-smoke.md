@@ -4,7 +4,7 @@
 
 ## Status
 
-#64 parked for handoff with a local checkpoint pending. Last completed run passed 22 of 31 tests. Rerun the revised fixture twice and investigate hydration before the full gate, push, PR, and QA.
+#64 blocked on React hydration error 418. Latest smoke run passed 28 of 31 tests. Second run deferred after failure. Default gate passed. Keep the PR in draft and hold merge.
 
 ## Entries
 
@@ -21,3 +21,8 @@
 - `14:42` **decision** #63: Activation requires #62 to merge and explicit owner approval on the issue.
 - `14:51` **change** #64: The fixture filters errors from deliberately blocked resources. Admin redirects must reach the login pathname on the same loopback port, accepting localhost or 127.0.0.1.
 - `14:51` **blocker** #64: The isolated rerun hit the 240-second Playwright web server timeout during the build while eight WSL builds ran concurrently. It produced no test results. Hydration remains unconfirmed, and application source was unchanged.
+- `14:54` **note** #64: Once build load cleared, the isolated run with temporary browser libraries passed 28 of 31 tests. All seven unknown-route 404 checks and admin redirects passed. Blocked resources and loopback aliases no longer caused failures.
+- `14:54` **blocker** #64: /plan-a-visit and /kids-youth reported React hydration error 418. The /im-new/ test reached /plan-a-visit and reported the same error. The second run was deferred because the first failed.
+- `14:54` **request** #64: Experience to investigate and fix hydration on both pages. Nested paragraph markup in CtaBand is an unconfirmed hypothesis. Ops made no application source changes.
+- `14:54` **request** #64: Ops to investigate the two-hop /im-new/ redirect and rerun smoke twice after the hydration fix. Keep the PR in draft for handoff.
+- `14:56` **change** #64: Added an explanatory ESLint suppression limited to the Playwright fixture callback. The default gate passed on Node 20 with 91 tests in 10 files, typecheck, and build. Lint reported zero errors and four existing warnings.

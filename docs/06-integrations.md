@@ -9,7 +9,7 @@ The [current floorplan](../floorplan.md) adds server-side email for Thrive-owned
 **What lives here:**
 - All content tables (sermons, events, groups, announcements, landing pages, etc.)
 - Media file storage (images, audio, video uploaded through the admin panel)
-- Admin authentication (via NextAuth using Supabase as the user store, or Supabase Auth directly)
+- Staff email-code issuance and verification in Supabase Auth; service-only `admin_staff_accounts` membership binds each Auth user to a durable actor ID
 
 **Access pattern:**
 - Public pages query Supabase from Next.js Server Components using the `@supabase/supabase-js` server client
@@ -34,23 +34,25 @@ Dynamic pages (sermons, events, groups) use `next: { revalidate: 60 }` on fetch 
 
 **Scope:** Protects all `/admin/**` routes. The rest of the site is public.
 
-**Recommended provider:** Credentials (email + password) stored in Supabase, or Google OAuth restricted to `@thrivevineyard.com` accounts if the church uses Google Workspace.
+**Provider:** One-time email code through Supabase Auth for owner-provisioned staff users only. NextAuth's credentials callback verifies the code and issues a website JWT only after a service-only active membership check. There is no shared-password or Google OAuth fallback.
 
 **Session strategy:** JWT sessions — no additional database table needed.
 
 **Implementation:**
 - `middleware.ts` at the project root intercepts all `/admin` requests and redirects unauthenticated users to `/admin/login`
-- `auth()` from NextAuth is called in Server Components to get the session
+- `requireAdmin()` is called on every protected server page and action to recheck active membership and auth version before reading or writing
 - The login page lives at `/admin/login` (outside the middleware-protected path)
 
 **Environment variables:**
 ```
 NEXTAUTH_SECRET=
 NEXTAUTH_URL=
-# If using Google OAuth:
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY= # or NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY=          # server only
 ```
+
+Supabase Auth needs a code-only email template and dedicated SMTP credentials. Public signup stays disabled. See [admin-setup.md](./admin-setup.md) for staff enrollment, Preview checks, and the shared rate-limit release gate.
 
 ---
 

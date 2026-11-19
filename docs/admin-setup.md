@@ -1,23 +1,37 @@
 # Admin access setup
 
-The first MVP admin account uses NextAuth credentials backed by a server-side scrypt hash. No account signup is exposed. Set these values in `.env.local` and in the deployment's server environment:
+The MVP uses individual one-time email codes. Supabase Auth sends and verifies a code for an owner-created Auth user; a service-only `admin_staff_accounts` row binds that user's UUID to a durable staff actor. NextAuth then issues the website session. There is no shared admin password, public staff signup, or OIDC fallback.
+
+## Preview environment
+
+Use an isolated Preview Supabase project and set these values for the Preview deployment:
 
 ```text
 NEXTAUTH_SECRET=<random secret>
-NEXTAUTH_URL=<site origin>
-ADMIN_EMAIL=<editor email>
-ADMIN_PASSWORD_SCRYPT=<saltHex:hashHex>
+NEXTAUTH_URL=<Preview site origin>
+NEXT_PUBLIC_SUPABASE_URL=<Preview Supabase project URL>
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<Preview publishable key>
+SUPABASE_SERVICE_ROLE_KEY=<Preview service role key, server only>
 ```
 
-In WSL, create the hash without entering the password in shell history:
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` can replace the publishable key. Generate `NEXTAUTH_SECRET` with `openssl rand -base64 32`. Keep the service role key and SMTP credentials out of Git and browser code. The obsolete `ADMIN_EMAIL`, `ADMIN_PASSWORD_SCRYPT`, `ADMIN_OIDC_*`, `ADMIN_STAFF_ALLOWLIST`, and `ADMIN_LEGACY_SHARED_ACCOUNT` settings have no effect.
 
-```bash
-read -rs -p 'Admin password: ' THRIVE_ADMIN_PASSWORD
-printf '\n'
-printf '%s' "$THRIVE_ADMIN_PASSWORD" | node scripts/make-admin-hash.mjs
-unset THRIVE_ADMIN_PASSWORD
-```
+## Provision staff and email codes
 
-Copy the printed value to `ADMIN_PASSWORD_SCRYPT`. Use a unique password of at least 16 characters. Generate `NEXTAUTH_SECRET` with `openssl rand -base64 32`.
+1. Apply `supabase/migrations/20261118000000_admin_staff_accounts.sql` to the isolated Preview project. Confirm RLS is enabled, no anon/authenticated policy exists, and the service role can read the table.
+2. Disable public email signups in Supabase Auth. Configure its email OTP template to contain the code (`{{ .Token }}`), without a sign-in link. Confirm the configured code length is 6–10 digits and record its expiry. Configure a dedicated Resend SMTP credential for Supabase Auth; this is separate from the website forms API key.
+3. Create each staff user in Supabase Auth through an owner-controlled enrollment path. Copy that user's Auth UUID into a membership row. For example, in the SQL editor after creating the Auth user:
 
-`/admin/login` accepts the configured email and password. Middleware protects `/admin/**` except the login page. Admin editors now cover announcements, sermons, one-time and recurring events, occurrences, ministries, groups, outreach, staff profiles, and campaign landing pages. Rotate the password by generating a new hash and updating the environment value.
+   ```sql
+   insert into admin_staff_accounts (email, auth_user_id)
+   values ('person@example.org', '<Auth user UUID>');
+   ```
+
+   Use the staff member's actual normalized email and UUID. The insert is active by default. Disable a person with `update admin_staff_accounts set status = 'disabled' where actor_id = '<actor UUID>';`. A status change or Auth UUID rebind increments `auth_version` and revokes existing website sessions.
+4. In Preview, verify one successful sign-in and the denial paths: unknown or disabled email, wrong/expired/replayed code, changed Auth UUID, changed auth version, and missing service-role configuration. Confirm requests and verification do not expose staff membership, codes, or Supabase tokens.
+
+`/admin/login` requests the code, then verifies it. Middleware checks for a NextAuth token, and every protected server page or action rechecks active staff membership and version. Rotating `NEXTAUTH_SECRET` during the production cutover invalidates old shared-login cookies.
+
+## Release gate: shared rate limiting
+
+The current request-code and code-verification limits in `src/lib/admin-identities.ts` use process-local memory. They reset on cold starts and do not aggregate across Vercel instances. Supabase Auth has separate provider limits, but they do not establish the website's stated per-client and per-email budgets. **Do not promote staff sign-in to production until a shared, durable limiter (or equivalent trusted platform limits) covers both endpoints across instances and the limits are verified in Preview.** The Preview exercise should include repeated requests across fresh instances and a check that legitimate staff can still receive and verify codes. This is an implementation/release gate, separate from the Preview account, migration, SMTP, and sender provisioning above.

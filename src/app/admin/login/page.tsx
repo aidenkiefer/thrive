@@ -45,14 +45,19 @@ export default function AdminLoginPage() {
     setBusy(true)
     setError('')
     const code = String(new FormData(event.currentTarget).get('code') ?? '')
-    const result = await signIn('staff-code', { email, code, redirect: false })
-    setBusy(false)
-    if (!result?.ok) {
+    try {
+      const result = await signIn('staff-code', { email, code, redirect: false })
+      if (result?.ok) {
+        router.push('/admin')
+        router.refresh()
+        return
+      }
       setError('That code did not work. Check it, or request a new one.')
-      return
+    } catch {
+      setError('Could not check the code. Try again.')
+    } finally {
+      setBusy(false)
     }
-    router.push('/admin')
-    router.refresh()
   }
 
   function startOver() {

@@ -4,37 +4,54 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 
 ---
 
-## Current status (2026-11-07)
+## Current status (2026-11-19)
 
-**Phase:** **MVP foundation merged** (PR #2) + **multi-agent workflow v2** (PR #1). Next: session `mvp-launch-readiness-1` for the **Nov 13, 2026** MVP target.
+**Phase:** **Draft site merged; Data stack built and held for Preview verification.** The public site (real content, new design, motion, SEO plumbing, tracking, structured data) is on `main` and reviewable by the pastors. The staff sign-in, native forms, Resend transport, shared limiter and attributed publishing are built as draft PRs and must **not** merge to `main` (which deploys to production) until a protected Preview passes the checklist in issue #41. Launch date: **owner to confirm** (see `docs/10-launch-checklist.md`).
 
-**Active plan:** [`docs/agents/assignments/2026-11-07-mvp-launch-readiness-1.md`](../agents/assignments/2026-11-07-mvp-launch-readiness-1.md) (data: claude · experience: cursor · ops: codex)
-**Status sources:** [`docs/08-mvp-status-roadmap.md`](../08-mvp-status-roadmap.md) (roadmap) · [`docs/09-implementation-handoff.md`](../09-implementation-handoff.md) (PR #2 handoff)
+**Active plan:** [`docs/agents/assignments/2026-11-19-batch-3.md`](../agents/assignments/2026-11-19-batch-3.md) (Batches 3-6 order: [`batches.md`](./batches.md); milestones M1-M5: [`roadmap-milestones.md`](./roadmap-milestones.md); lane backlogs: [`backlog/`](./backlog/)).
+**Status sources:** GitHub Project 3 (Batch, Delivery stage, Milestone fields) · [`docs/08-mvp-status-roadmap.md`](../08-mvp-status-roadmap.md) · QA reports in [`docs/agents/qa/`](../agents/qa/).
 
-### What's done
+### What's done (on `main`)
 
 | Area | Status | Notes |
 |------|--------|-------|
-| App foundation | Code complete | Next 15.5 App Router, server-side Supabase helpers, 12-table schema, query layer |
-| Migration prep | Parsed, **not seeded** | Refreshed WXR + MEC JSON → 120 published sermons, 80 events, 43 occurrences across 8 recurring events; Express(o) held for review |
-| Admin | Code complete, **runtime unverified** | NextAuth credentials (scrypt) + create/edit/publish for announcements, sermons, events, recurring events/occurrences, ministries, groups, outreach, staff, landing pages |
-| Public routes | Partial | Sermons, events (month + grid/list, iCal), groups, outreach, ministries, campaign pages backed by records; About / Give / Kids & Youth are still shells |
-| SEO | Partial | 5 legacy redirects, sitemap, robots; ~30-row redirect map not fully implemented |
-| Workflow | v2 | PM → 3 lanes (worktrees `<tool>/*`) → scribe → senior QA; `scripts/agents/gate.sh` + CI gate on every PR |
-| Build | Green | `npm ci && npm run build` (Codex, Nov 7) and CI `gate` on PR #1 both passed |
+| Public site | Merged (#24) | About, About/Team, Plan a Visit, Kids & Youth, Give, Get Connected, ministries, events, sermons, groups, outreach from audited content; graceful empty states; `compilePageMdx` for MDX pages |
+| Motion, SEO plumbing | Merged (#25, #27, #29) | Scroll-driven reveals and hover/press (reduced-motion gated); sitemap incl. `/get-connected` that degrades outside production; Church and Event JSON-LD |
+| Tracking | Merged (#28) | GTM `GTM-PRJX6P9H` (owner choice) in production builds only; no consent notice yet; Ads `AW-16575196430` not loaded directly (owner to confirm it is inside the container) |
+| Data RC2 | Merged (#12) | Form-URL allowlist, contact privacy migration, Express(o) un-paused |
+| Tests and fixtures | Merged (#27, #85, #89) | 91 tests; colocated tests discovered; ministry fixtures and render tests |
+| Docs and planning | Merged (#26, #86, #87, #88, #92, #93) | Live URL inventory and launch checklist (`docs/10`), architecture and onboarding, milestones M1-M5, 36 shaped issues, batch order, QA reports |
+
+### In flight (draft PRs, not merged)
+
+| PR | What | Base | Held because |
+|----|------|------|--------------|
+| #15 | D1 staff identity (email one-time code) + D2 native form registry | `main` | Production deploy would lock out shared-password admins until staff are enrolled; needs Preview verification (#41) |
+| #18 | D3 Resend transport | #15 | Stack lands as a unit |
+| #23 | D1L shared Postgres abuse limiter | #18 | Needs `RATE_LIMIT_HASH_SECRET` + migration applied before deploy or sign-in and feedback return 503 |
+| #90 | R2 attributed publishing (announcements) + `publication_events` | #15 | Same stack |
+| #96 | R2b attributed publishing for the other editors + `published_at` update guard | #90 | Same stack |
+| #95 | Real-Postgres rehearsal of the migration chain (issue #60) | #23 | Evidence for #41 |
+
+Landing procedure and verified retarget commands for these (squash-merge breaks stacked bases): [`docs/agents/qa/2026-11-19-data-stack-and-cms-slice.md`](../agents/qa/2026-11-19-data-stack-and-cms-slice.md).
+
+### Owner decisions on record
+
+Shared abuse limiter = Postgres. Announcements: newest featured wins, no priority or scheduling (staff guide `docs/staff/announcements.md`). GTM container `GTM-PRJX6P9H`; no consent notice for now. Native email forms replace Google Forms (`AGENTS.md` forms constraint, approved 2026-11-19). Automated publishing uses reserved system actor rows in `admin_staff_accounts` (#94, decided 2026-11-19). Redirects `/expresso` to `/plan-a-visit#services` (301) and `/prayer`, `/volunteering` to `/get-connected` (302) are decided but **not yet implemented** (#63).
 
 ### Still pending before launch
 
 | Area | Status | Owner |
 |------|--------|-------|
-| Admin server actions verify session themselves | Missing (middleware-only) | data lane, D1 |
-| Schema applied to the live Supabase project | Unverified | Human (D3 prepares the migration) |
-| Seed import run + reviewed | Not run | Human (D4 readiness check first) |
-| Vercel Preview/Production env vars | Not configured | Human |
-| Visitor pages (About, Give, Kids & Youth), forms, giving URL | Shells / undecided | experience lane + owner decisions |
-| Redirect coverage vs Search Console + Ads URLs | Partial | ops lane O1 + human data export |
-| Lint config, tests, `npm audit` (2 critical / 7 high) | Missing / open | ops lane O2–O4 |
-| Launch checklist, church content approval | Not started | ops lane O5 + human |
+| Preview Supabase project, staff sign-in email, form email, staff roster | Not provisioned | Owner (#54); verification Ops (#41) |
+| Ministry content, destinations, form URLs | Open decisions | Owner (#55) |
+| Domain, DNS, cutover, rollback, social URLs, Ads in container | Open decisions | Owner (#57); runbook Ops (#69) |
+| Photos still hot-link `thrivevineyard.com/wp-content/uploads` (P0) | Not re-hosted | Owner supplies or approves files; Experience (#59), Data (#49), guard Ops (#73) |
+| Logo, favicon | Needed from owner | Owner; Experience (#56) |
+| 301 redirect manifest and `/prayer`, `/expresso`, `/volunteering` rules | Not built | Ops (#62, #63) |
+| End-to-end smoke tests, accessibility and performance passes | Not built | Ops (#64), Experience (#61, #67) |
+| Dependency advisories | Re-triage needed: a lockfile `npm audit` on 2026-11-19 showed 6 moderate (dev-only), not the "2 critical / 7 high" recorded on 2026-11-07 | Ops (#71) |
+| Seed run against Preview using audited data only | Not run | Data (#39), owner approval (#54) |
 
 ---
 
@@ -73,6 +90,9 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 | **v0.1.2** | Workflow docs setup from workflow-core templates | 2026-06-11 | Workflow | CLAUDE.md, AGENTS.md, execution-rules, skill-map, task-type-reference-map, context-flow |
 | **v0.1.3** | Next.js project scaffold and Supabase schema | 2026-06-11 | App | All route placeholders, config files, full `supabase/schema.sql` |
 | **v0.1.4** | npm audit vulnerabilities documented | 2026-06-11 | Docs | `next-mdx-remote` upgrade path in PROGRESS backlog; notes in `06-integrations.md` |
+| **v0.9.1** | Draft-handoff public site, motion, sitemap, GTM, JSON-LD (#24, #25, #27, #28, #29) | 2026-11-19 | Experience/Ops | Merged to `main` after independent QA; QA caught and fixed a soft-404 regression from a route-group `loading.tsx` |
+| **v0.9.2** | Carry-over PRs replaced and merged (#85, #86, #87, #89, #21); #5, #9, #14, #16, #20 closed as superseded | 2026-11-19 | Ops/Audit/PM | Senior QA review found stale or false statements in #9 (closed) and stacked-base problems in #20 |
+| **v0.9.3** | Milestones M1-M5, 54 board issues, Batch field, roadmap and lane backlogs (#88, #92) | 2026-11-19 | PM | Draft cards converted to real issues; no due dates set |
 | **v0.1.5** | Live WordPress site audit | 2026-06-20 | Docs | `01-current-site-audit.md`, draft `04-seo-url-migration-map.md`; integrations + IA updates |
 | **v0.1.6** | Brand style subaudit + design revamp plan | 2026-06-20 | Docs | `07-design-system.md` — colors, typography, component plan |
 | **v0.1.7** | WordPress XML parse (events + sermons) | 2026-06-20 | Migration | `parse-export.py`, `parsed/*.json`, `02-content-inventory.md` |

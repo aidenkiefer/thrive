@@ -2,7 +2,7 @@
 
 All documentation for the Thrive Vineyard website project.
 
-**Current phase:** v0.1.0 done → starting **v0.2.0** (Supabase + data layer). Full status, checklist, and roadmap: [plans/PROGRESS.md](plans/PROGRESS.md).
+**Current phase (2026-11-19):** draft site on `main`; Data stack built and held for Preview verification. Status: [plans/PROGRESS.md](plans/PROGRESS.md) · Roadmap and milestones: [plans/roadmap-milestones.md](plans/roadmap-milestones.md) · Batch order: [plans/batches.md](plans/batches.md).
 
 ---
 
@@ -60,7 +60,11 @@ All documentation for the Thrive Vineyard website project.
 | Doc | Description |
 |---|---|
 | `docs/plans/PROGRESS.md` | Milestone log, patch history, backlog (written by senior QA only) |
-| `docs/agents/` | Multi-agent records: assignments (PM), session logs (scribe), QA reports |
+| `docs/plans/roadmap-milestones.md` | Milestones M1-M5: exit criteria, dependency map, critical path, risks |
+| `docs/plans/batches.md` | Delivery batches 3-6, owner track, post-MVP: gates and lane order |
+| `docs/plans/backlog/` | Lane backlogs: `experience.md`, `ops-qa-launch.md`, `data-cms-owner.md` (issue tables, owner-decision digests) |
+| `docs/staff/` | Staff guides (e.g. `announcements.md`) |
+| `docs/agents/` | Multi-agent records: assignments (PM), session logs (scribe), QA reports (`docs/agents/qa/`, latest: `2026-11-19-data-stack-and-cms-slice.md`) |
 | `docs/plans/specs/` | Feature specs — **active:** `sprint-01-demo-draft.md` |
 | `docs/plans/tickets/` | Bounded agent tasks — **10 tickets** for Sprint 01 |
 | `docs/plans/summaries/` | Sprint and feature completion summaries |

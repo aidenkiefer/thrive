@@ -47,6 +47,10 @@ As of November 7, 2026, the feature branch includes:
 
 Still open before a launch candidate: apply and review the database schema changes, run a safe data import, resolve the Express(o) schedule, complete visitor-facing content and forms, confirm Search Console and active Ads destinations, and review production configuration. The later copy/content migration remains a separate pass.
 
+## Progress since November 7 (updated 2026-11-19)
+
+This document is a historical assessment (November 6-7). Current status lives in [`plans/PROGRESS.md`](plans/PROGRESS.md) and GitHub Project 3. Highlights: the visitor pages, motion, sitemap with `/get-connected`, GTM (production only), and JSON-LD are on `main`; Data RC2 (#12) and the draft-handoff pass (#24) merged; the staff sign-in, native forms, Resend transport, shared Postgres limiter, and attributed publishing are built as draft PRs awaiting Preview verification; the redirect map implementation, photo re-hosting, owner content decisions, and cutover runbook remain open. Milestones M1-M5 and the issue backlog: [`plans/roadmap-milestones.md`](plans/roadmap-milestones.md).
+
 ## Canonical architecture guardrails
 
 - Keep each ministry, event, sermon, group, outreach initiative, and announcement as one canonical record. Homepage cards, archive rows, event detail pages, and campaign pages should read from that record.

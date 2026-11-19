@@ -17,7 +17,9 @@ export async function safely<T>(label: string, run: () => Promise<T>, fallback: 
     return await run()
   } catch (error) {
     unstable_rethrow(error)
-    console.warn(
+    // In production this means missing config or a real outage, so make it loud in the logs.
+    const log = process.env.VERCEL_ENV === 'production' ? console.error : console.warn
+    log(
       `[public-data] ${label} unavailable; rendering empty state.`,
       error instanceof Error ? error.message : 'unknown error'
     )

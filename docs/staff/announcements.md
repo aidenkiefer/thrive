@@ -20,7 +20,7 @@ Use an **announcement** to tell visitors about a closure, a schedule change, or 
 1. Go to **Admin → Announcements** and create a new announcement.
 2. Write a clear **title** and **body** (for example, what changed and which service it affects). Only add text you have confirmed with the pastors.
 3. Optional: add button text **and** a button link together. Both or neither.
-4. Set an **expiry** so the notice goes away on its own. Publishing requires a future expiry.
+4. Set an **expiry** so the notice goes away on its own. If you set an expiry it must be in the future; leave it empty only if the notice should stay until you unpublish it.
 5. Turn on **Feature on homepage** and **Published**, then save.
 6. **Before you publish, unfeature any older announcement** you do not want to compete with. A newer featured announcement will hide an older one, and a closure notice that is older than another featured item will not show.
 7. Open the homepage and confirm the banner looks right.

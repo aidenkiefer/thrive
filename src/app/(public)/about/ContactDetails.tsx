@@ -84,7 +84,7 @@ export function EmailButton({ children }: { children: React.ReactNode }) {
   return (
     <a
       href={`mailto:${SITE.email}`}
-      className="inline-flex items-center justify-center rounded-md border border-white/60 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-900"
+      className="inline-flex min-h-11 items-center justify-center rounded-md border border-white/60 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-900"
     >
       {children}
     </a>

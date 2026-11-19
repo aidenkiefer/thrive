@@ -25,7 +25,7 @@ export function MapEmbed({ className = '' }: { className?: string }) {
           href={SITE.mapsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-sm font-medium text-brand-800 hover:text-brand-600"
+          className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-brand-800 hover:text-brand-600"
         >
           Get directions
           <ArrowRightIcon className="h-4 w-4" />

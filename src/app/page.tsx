@@ -2,8 +2,6 @@ import {
   getLatestSermon,
   getFeaturedAnnouncement,
   getUpcomingEvents,
-  getHighlightedGroups,
-  getActiveOutreach,
 } from '@/lib/queries'
 import { safely } from '@/components/content/safe-data'
 import { HeroSection } from '@/components/home/HeroSection'
@@ -23,12 +21,10 @@ export const revalidate = 60
 export default async function HomePage() {
   // Each query falls back to an empty value so a missing/empty database renders the
   // designed empty states instead of a 500.
-  const [latestSermon, announcement, upcomingEvents, groups, outreach] = await Promise.all([
+  const [latestSermon, announcement, upcomingEvents] = await Promise.all([
     safely('home: latest sermon', () => getLatestSermon(), null),
     safely('home: featured announcement', () => getFeaturedAnnouncement(), null),
     safely('home: upcoming events', () => getUpcomingEvents(4), { oneTime: [], occurrences: [] }),
-    safely('home: highlighted groups', () => getHighlightedGroups(3), []),
-    safely('home: active outreach', () => getActiveOutreach(2), []),
   ])
 
   return (
@@ -44,7 +40,7 @@ export default async function HomePage() {
       />
       <LatestSermonSection sermon={latestSermon} />
       <PastorsSection />
-      <HubCardsSection groups={groups} outreach={outreach} />
+      <HubCardsSection />
       <NewsletterSection />
       <LocationSection />
     </>

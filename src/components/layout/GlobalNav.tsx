@@ -57,10 +57,20 @@ export function GlobalNav() {
     }
   }, [mobileOpen])
 
+  // If the window is widened past the mobile breakpoint, close the drawer so the scroll lock is released.
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 1024px)')
+    function onChange(event: MediaQueryListEvent) {
+      if (event.matches) setMobileOpen(false)
+    }
+    query.addEventListener('change', onChange)
+    return () => query.removeEventListener('change', onChange)
+  }, [])
+
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
 
   const linkClass = (href: string) =>
-    `rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
+    `inline-flex min-h-11 items-center rounded-md px-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 ${
       isActive(href) ? 'text-accent-400' : 'text-white/90 hover:text-white'
     }`
 

@@ -1,9 +1,10 @@
 /**
  * Church facts reused across the public site.
  *
- * Every value is copied from the live-site audit (docs/audit/2026-11/pages/*.md,
- * captured 2026-11-07) or from existing code that already carried it. Do not add
- * facts here without an audit or owner source.
+ * Values come from the live-site audit (docs/audit/2026-11/pages/*.md, captured
+ * 2026-11-07), except the YouTube/Facebook/Instagram URLs, which come from the site
+ * footer that already shipped on main and docs/01. Do not add facts here without an
+ * audit or owner source.
  */
 export const SITE = {
   name: 'Thrive Vineyard Church',

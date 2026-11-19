@@ -112,11 +112,8 @@ export function Footer() {
                   Get connected
                 </Link>
               </li>
-              <li>
-                <Link href="/feedback" className={linkClass}>
-                  Website feedback
-                </Link>
-              </li>
+              {/* "Website feedback" link (/feedback) is intentionally hidden until the
+                  /api/forms/feedback route from Data PR #15 is merged; the form cannot submit without it. */}
             </ul>
           </div>
         </div>

@@ -2,9 +2,10 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { Container, PageHeader, Section } from '@/components/ui'
+import { safely } from '@/components/content/safe-data'
 
 export const revalidate = 60
-const RESERVED = new Set(['plan-a-visit', 'sermons', 'events', 'groups', 'kids-youth', 'outreach', 'about', 'give', 'ministries', 'admin', 'feedback'])
+const RESERVED = new Set(['plan-a-visit', 'sermons', 'events', 'groups', 'kids-youth', 'outreach', 'about', 'give', 'ministries', 'admin', 'feedback', 'get-connected'])
 type Props = { params: Promise<{ slug: string }> }
 
 async function getLanding(slug: string) {
@@ -31,7 +32,7 @@ async function getLanding(slug: string) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const landing = await getLanding(slug)
+  const landing = await safely(`landing:${slug}`, () => getLanding(slug), null)
   if (!landing) return { robots: { index: false, follow: false } }
   return {
     title: landing.page.seo_title || landing.page.hero_heading || landing.page.title,
@@ -43,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LandingPage({ params }: Props) {
   const { slug } = await params
-  const landing = await getLanding(slug)
+  const landing = await safely(`landing:${slug}`, () => getLanding(slug), null)
   if (!landing) notFound()
   const { page, entity } = landing
   const heading = page.hero_heading || (entity?.name as string) || page.title

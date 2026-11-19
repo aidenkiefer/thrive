@@ -40,7 +40,7 @@ export const PHOTOS = {
   },
   familyWorship: {
     src: `${BASE}/2024/04/Adrienne-and-Judah.jpg`,
-    alt: 'A woman worships with one hand raised while holding her young son.',
+    alt: 'A woman worships with one hand raised while holding a young child.',
     width: 600,
     height: 800,
   },
@@ -106,7 +106,7 @@ export const PHOTOS = {
   },
   kidsNewborns: {
     src: `${BASE}/2022/12/kids-newborns_600x400-1.jpg`,
-    alt: 'A smiling dad holds his baby in warm afternoon light.',
+    alt: 'A smiling adult holds a baby in warm afternoon light.',
     width: 600,
     height: 400,
   },
@@ -124,7 +124,7 @@ export const PHOTOS = {
   },
   kidsSchoolAge: {
     src: `${BASE}/2022/12/boy-facial-expression-girl-2150606-1.jpg`,
-    alt: 'Two teenagers sit together outdoors, smiling.',
+    alt: 'Two young people sit together outdoors, smiling.',
     width: 600,
     height: 399,
   },

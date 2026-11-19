@@ -1,6 +1,6 @@
-import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
+import { revalidateEntity } from '@/lib/revalidate'
 
 async function saveStaff(form: FormData) {
   'use server'
@@ -37,7 +37,7 @@ async function saveStaff(form: FormData) {
   }
   const result = id ? await db.from('staff').update(row).eq('id', id) : await db.from('staff').insert(row)
   if (result.error) throw new Error(result.error.message)
-  revalidatePath('/admin/staff'); revalidatePath('/about/team'); revalidatePath('/about')
+  revalidateEntity('staff')
 }
 
 type Staff = { id: string; slug: string; name: string; title: string | null; bio: string | null; photo_url: string | null; email: string | null; phone: string | null; display_order: number | null }

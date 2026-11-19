@@ -17,7 +17,13 @@ All documentation for the Thrive Vineyard website project.
 | `docs/06-integrations.md` | Supabase, NextAuth, ChurchSuite, Vercel, Google Ads, future integrations | M |
 | `supabase/schema.sql` | Full Postgres schema (tables, indexes, RLS policies) | L |
 
-**Written from live site audit (2026-06-20):**
+**Site evidence and launch readiness (November 2026):**
+- [audit/2026-11/README.md](./audit/2026-11/README.md) — November 7 live page audit
+- [audit/2026-11/url-inventory.md](./audit/2026-11/url-inventory.md) — All 985 live sitemap URLs with status, titles, and redirect decisions
+- [audit/2026-11/integrations.md](./audit/2026-11/integrations.md) — Live forms, giving, embeds, and tracking IDs
+- [10-launch-checklist.md](./10-launch-checklist.md) — Owner release checks (target date: owner to confirm)
+
+**Written from live site audit (2026-06-20; historical, see November evidence above):**
 - [01-current-site-audit.md](./01-current-site-audit.md) — WordPress crawl: URLs, content, forms, integrations
 - [02-content-inventory.md](./02-content-inventory.md) — Parsed events/sermons export → Supabase mapping
 - [04-seo-url-migration-map.md](./04-seo-url-migration-map.md) — Draft redirect map (needs Search Console to finalize)

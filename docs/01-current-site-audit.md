@@ -1,5 +1,7 @@
 # 01 — Current Site Audit
 
+> **Historical June 2026 snapshot.** The November 7 live review is in [audit/2026-11](./audit/2026-11/README.md), including current page copy, links, forms, and URL inventory. Statements below may have changed; use the dated November evidence for launch decisions.
+
 Audit of the live WordPress site at [thrivevineyard.com](https://www.thrivevineyard.com/) (2026-06-20). Use this doc for migration planning, MDX content sourcing, and SEO redirect mapping. Search Console data still needed before finalizing redirects — see [04-seo-url-migration-map.md](./04-seo-url-migration-map.md).
 
 ---

@@ -122,6 +122,7 @@ Shared abuse limiter = Postgres. Announcements: newest featured wins, no priorit
 | **v0.6.1** | UI rollout governance | 2026-07-16 | Frontend | Applied shared MDX prose styling to Plan a Visit. No URLs changed, so no redirects were added; no build, dev, test, or compile command was run under project rules. |
 | **v0.8.1** | MVP foundation (PR #2, Codex) | 2026-11-07 | Full stack | Migration prep, admin auth + CRUD, public record routes, event filters + iCal, redirects/sitemap/robots, roadmap + handoff docs (`docs/08`, `docs/09`). Seed not run; DB state unverified. |
 | **v0.8.2** | Multi-agent workflow v2 (PR #1, Claude) | 2026-11-07 | Workflow | `.agents/skills` (product-manager, lane-builder, scribe, senior-qa), lanes + worktree rules, model routing, `scripts/agents/{worktree,gate}.sh`, CI gate, PR template. Gate-before-push replaces "no verification runs". |
+| **v0.8.3** | Owner church photos and Thrive Flames (#125, #126) | 2026-11-19 | Experience | Local WebP set on the home hub, kids hero, and About gallery; `/thrive-flames` uses the live page's copy. Gate PASS at `ace6160`. |
 | **v0.8.3** | Session 2 Experience and Ops docs | 2026-11-19 | Experience, Ops | Squash-merged #115, #110, #107, #106, #109, #116 after MERGE verdicts and green gates. Issues #34, #36, #38 and #68 closed. #30 and #70 stay open. Data stack, #101 seed, #103 DNS draft, and Ops #41/#62/#73 stay unmerged. |
 
 ---

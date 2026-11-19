@@ -111,7 +111,6 @@ export async function assertRlsMatrix(db, s, record) {
             record(s, `RLS matrix: ${role} cannot read ${t}.${col}`, !r.ok && r.code === '42501', r.ok ? 'readable' : r.code);
           }
         } else {
-          const want = t === 'announcements' ? ['rlsm-pub'] : ['rlsm-pub'];
           const seen = await visible(db, t);
           record(s, `RLS matrix: ${role} sees published ${t} only (no drafts${t === 'announcements' ? ', no expired' : ''})`,
             JSON.stringify(seen) === '["rlsm-pub"]', seen.join(','));

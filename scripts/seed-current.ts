@@ -17,14 +17,16 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import fs from 'node:fs'
 import path from 'node:path'
 import { buildSeedPlan, checkExpresso, SEED_TABLES, type Row, type SeedTable } from '../src/lib/seed/plan'
-import { crossTableCollisions, diffFingerprint, diffPlan, formatDiff, fromLive, isApplied, LIVE_SELECT } from '../src/lib/seed/diff'
+import { crossTableCollisions, diffFingerprint, diffPlan, formatDiff, fromLive, isApplied, LIVE_SELECT, writeRefusal } from '../src/lib/seed/diff'
 
 const root = process.cwd()
 const envFile = path.join(root, '.env.local')
+// The confirmations must be typed on the command line for each run, never read from a file.
+const CONFIRMATIONS = new Set(['SEED_CONFIRM_SUPABASE_HOST', 'SEED_EXPECT_FINGERPRINT'])
 if (fs.existsSync(envFile)) {
   for (const line of fs.readFileSync(envFile, 'utf8').split(/\r?\n/)) {
     const match = line.match(/^([A-Z0-9_]+)=(.*)$/)
-    if (match && !process.env[match[1]]) process.env[match[1]] = match[2].replace(/^['"]|['"]$/g, '')
+    if (match && !CONFIRMATIONS.has(match[1]) && !process.env[match[1]]) process.env[match[1]] = match[2].replace(/^['"]|['"]$/g, '')
   }
 }
 
@@ -106,7 +108,7 @@ async function main() {
   console.log(formatDiff(before))
   const collisions = crossTableCollisions(plan, current)
   if (collisions.length) console.log(`Slug in both event tables after seeding: ${collisions.join(', ')}`)
-  const fingerprint = diffFingerprint(before)
+  const fingerprint = diffFingerprint(before, plan)
   console.log(`Fingerprint: ${fingerprint}`)
   if (dryRun) {
     for (const t of SEED_TABLES) {
@@ -119,10 +121,8 @@ async function main() {
     return
   }
 
-  if (collisions.length) refuse('resolve the event slug collisions above first (owner decision on #101)')
-  if (fingerprint !== process.env.SEED_EXPECT_FINGERPRINT) {
-    refuse(`live rows differ from the approved dry run (fingerprint ${fingerprint}, expected ${process.env.SEED_EXPECT_FINGERPRINT}); nothing written. Re-run the dry run and get it approved`)
-  }
+  const refusal = writeRefusal(collisions, fingerprint, process.env.SEED_EXPECT_FINGERPRINT)
+  if (refusal) refuse(refusal)
   await write(db, plan)
   const live = await fetchLive(db)
   const after = diffPlan(plan, live)

@@ -97,20 +97,48 @@ export function crossTableCollisions(plan: SeedPlan, live: Record<SeedTable, Row
   ]
 }
 
+const byCodePoint = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0)
+
+/** Instants as ISO UTC, so `+00:00` and `-06:00` spellings of one moment hash the same. */
+function canonical(column: string, value: unknown): unknown {
+  if (value == null || !INSTANT.test(column)) return value ?? null
+  const ms = Date.parse(String(value))
+  return Number.isNaN(ms) ? value : new Date(ms).toISOString()
+}
+
 /**
- * Fingerprint of what the write would change: every key to insert, and every
- * key to update with its columns and their current database values. The owner
- * approves a dry run's fingerprint; the writer recomputes it just before
- * writing and refuses on any difference, so a value someone changed since the
- * approved dry run (a staff edit included) is never silently overwritten.
+ * Fingerprint of what the write would change: every key to insert, every key
+ * to update with its columns and their current database values, and every
+ * planned row the write would send. The owner approves a dry run's
+ * fingerprint; the writer recomputes it just before writing and refuses on any
+ * difference, so a value someone changed since the approved dry run (a staff
+ * edit included) is never silently overwritten, and an edited export cannot
+ * write values the owner never saw.
  */
-export function diffFingerprint(diff: SeedDiff): string {
+export function diffFingerprint(diff: SeedDiff, plan: SeedPlan): string {
   const material = SEED_TABLES.map(t => [
     t,
-    [...diff[t].insert].sort(),
-    [...diff[t].update].sort((a, b) => a.key.localeCompare(b.key)).map(u => [u.key, u.columns, u.columns.map(c => u.before[c])]),
+    [...diff[t].insert].sort(byCodePoint),
+    [...diff[t].update].sort((a, b) => byCodePoint(a.key, b.key)).map(u => {
+      const columns = [...u.columns].sort(byCodePoint)
+      return [u.key, columns, columns.map(c => canonical(c, u.before[c]))]
+    }),
+    plan[t],
   ])
   return createHash('sha256').update(JSON.stringify(material)).digest('hex').slice(0, 16)
+}
+
+/**
+ * Why the writer must not write, or null when it may. Kept here (not in the
+ * script) so dropping a rail fails a unit test.
+ */
+export function writeRefusal(collisions: string[], fingerprint: string, expected: string | undefined): string | null {
+  if (collisions.length) return 'resolve the event slug collisions above first (owner decision on #101)'
+  if (!expected) return 'set SEED_EXPECT_FINGERPRINT to the fingerprint of the approved dry run'
+  if (fingerprint !== expected) {
+    return `live rows or planned values differ from the approved dry run (fingerprint ${fingerprint}, expected ${expected}); nothing written. Re-run the dry run and get it approved`
+  }
+  return null
 }
 
 /** True when every planned row exists with the planned values (live-only rows are allowed). */

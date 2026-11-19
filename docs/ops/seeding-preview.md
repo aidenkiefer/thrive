@@ -31,9 +31,9 @@ npm run seed
 The script refuses (exit 2, nothing written) when:
 
 - the service-role key, the host confirmation or the expected fingerprint is missing (checked before connecting);
-- `SEED_CONFIRM_SUPABASE_HOST` does not equal the host of `NEXT_PUBLIC_SUPABASE_URL` (so a stray `.env.local` cannot point the write at the wrong project);
+- `SEED_CONFIRM_SUPABASE_HOST` does not equal the host of `NEXT_PUBLIC_SUPABASE_URL` (so a stray `.env.local` cannot point the write at the wrong project). Both confirmations are read only from the command line, never from `.env.local`;
 - a planned event slug is live and published in the other event table (the public event page reads one-time events first, so the stale row would hide the new one);
-- the fingerprint it computes from the live rows just before writing differs from `SEED_EXPECT_FINGERPRINT`. Any change since the approved dry run, such as a staff edit to a title, schedule or URL, changes it, so nothing is overwritten without a fresh, approved dry run. If a planned row is unpublished in the database, the publishable-key dry run cannot see it and the fingerprints differ; the write then refuses (safe), and the row needs a look before going on.
+- the fingerprint it computes just before writing differs from `SEED_EXPECT_FINGERPRINT`. It covers the live values the seed would overwrite, the keys it would insert, and every planned row it would send. Any change since the approved dry run changes it: a staff edit to a title, schedule or URL, or an edited file in `migration-files/parsed/`. Nothing is written without a fresh, approved dry run. Still run from a clean checkout of the approved commit. If a planned row is unpublished in the database, the publishable-key dry run cannot see it and the fingerprints differ; the write then refuses (safe), and the row needs a look before going on.
 
 It also stops before connecting if the exports are not the reviewed November set or fail their checks: counts 12 / 22 / 120 / 25 / 55 / 56, unique slugs, known speakers, series and recurring events, and Express(o) on Sundays at 08:30 America/Chicago.
 
@@ -44,6 +44,8 @@ After writing, the script re-reads every planned row with the service-role clien
 To re-check later without writing, run the dry run: "already applied, nothing to write" means every planned row matches.
 
 **Not all-or-nothing.** Each upsert commits on its own. If a write fails part way (exit 1), the rows before the failure are already written. Re-running the dry run shows exactly what is left, and its new fingerprint needs a fresh approval. The backup taken before the write is the rollback.
+
+**One writer at a time.** The fingerprint check happens once, before writing. The script reads the six tables one after another, then sends about 290 separate upserts (roughly 15 to 45 seconds) with no transaction and no per-row check at write time. An edit made in that window, through `/admin` or SQL, can be overwritten without a refusal. Run the seed only when nobody else is writing to the content tables. That holds today, since no staff accounts exist yet. Once staff are editing, schedule the run and pause edits for it.
 
 ## Exit codes
 

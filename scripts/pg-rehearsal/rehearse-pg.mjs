@@ -360,6 +360,93 @@ async function assertStaff(db, dbName, s) {
   record(s, 'staff row survives truncate and delete attempts', n.n === 1, `${n.n} rows`);
 }
 
+// D1R roles (#102): role column, check constraint, auth_version bump on role
+// change, and the last-active-admin guard. Runs after assertStaff (which expects
+// exactly one staff row). Rows can never be deleted, so the end state is: 2 staff
+// (1 disabled), 2 admins (1 active, role-admin2).
+async function assertStaffRoles(db, dbName, s) {
+  const T = 'public.admin_staff_accounts';
+  const col = await one(db, `select is_nullable, column_default from information_schema.columns
+                             where table_schema = 'public' and table_name = 'admin_staff_accounts' and column_name = 'role'`);
+  record(s, 'staff role column exists, not null, default staff',
+    col && col.is_nullable === 'NO' && /'staff'/.test(col.column_default ?? ''), `${col?.is_nullable} ${col?.column_default}`);
+  const row = (email) => one(db, `select role, status, auth_version from ${T} where email = $1`, [email]);
+  const adminCount = async () => (await one(db, `select count(*)::int n from ${T} where role = 'admin' and status = 'active'`)).n;
+  const same = (a, b) => a && b && a.role === b.role && a.status === b.status && a.auth_version === b.auth_version;
+  const sv = await connect(dbName, 'service_role');
+  const run = (sql) => sv.query(sql).then(() => '', (e) => `${e.code} ${e.message.split('\n')[0]}`);
+  const msg = 'cannot demote or disable the last active admin';
+
+  record(s, 'no admin exists before bootstrap', (await adminCount()) === 0);
+  await sv.query(`insert into ${T} (email, auth_user_id) values ('role-default@example.org', gen_random_uuid())`);
+  const d = await row('role-default@example.org');
+  record(s, 'insert without role gets staff (service_role, no admin yet)', d?.role === 'staff', d?.role);
+  const bad = await run(`insert into ${T} (email, auth_user_id, role) values ('role-owner@example.org', gen_random_uuid(), 'owner')`);
+  record(s, 'insert with role owner fails the check constraint', bad.startsWith('23514'), bad);
+
+  await sv.query(`insert into ${T} (email, auth_user_id, role) values ('role-admin1@example.org', gen_random_uuid(), 'staff')`);
+  const before = await row('role-admin1@example.org');
+  await sv.query(`update ${T} set role = 'admin' where email = 'role-admin1@example.org'`);
+  const after = await row('role-admin1@example.org');
+  record(s, 'role change staff to admin bumps auth_version by exactly 1',
+    after.role === 'admin' && after.auth_version === before.auth_version + 1, `${before.auth_version} -> ${after.auth_version}`);
+
+  record(s, 'exactly one active admin', (await adminCount()) === 1);
+  for (const [item, set] of [['demoting', `role = 'staff'`], ['disabling', `status = 'disabled'`]]) {
+    const b = await row('role-admin1@example.org');
+    const err = await run(`update ${T} set ${set} where email = 'role-admin1@example.org'`);
+    record(s, `${item} the last active admin is refused`, err.startsWith('P0001') && err.includes(msg), err || 'no error raised');
+    record(s, `row unchanged after refused ${item}`, same(b, await row('role-admin1@example.org')));
+  }
+  await sv.query(`update ${T} set status = 'disabled' where email = 'role-default@example.org'`);
+  record(s, 'a staff row can be disabled while one admin exists', (await row('role-default@example.org')).status === 'disabled');
+
+  await sv.query(`insert into ${T} (email, auth_user_id, role) values ('role-admin2@example.org', gen_random_uuid(), 'admin')`);
+  record(s, 'two active admins after adding a second', (await adminCount()) === 2);
+  await sv.query(`update ${T} set role = 'staff' where email = 'role-admin1@example.org'`);
+  record(s, 'demoting one of two active admins succeeds', (await row('role-admin1@example.org')).role === 'staff' && (await adminCount()) === 1);
+  const prot = await run(`update ${T} set role = 'staff' where email = 'role-admin2@example.org'`);
+  record(s, 'the remaining admin is now protected', prot.startsWith('P0001') && prot.includes(msg), prot || 'no error raised');
+  await close(sv);
+}
+
+// Two admins demote each other concurrently from separate connections: the
+// advisory lock serializes them, so exactly one succeeds. Starts with role-admin2
+// (left active by assertStaffRoles) plus a new role-admin3.
+async function assertAdminRace(db, dbName, s) {
+  const T = 'public.admin_staff_accounts';
+  const msg = 'cannot demote or disable the last active admin';
+  await db.query(`insert into ${T} (email, auth_user_id, role) values ('role-admin3@example.org', gen_random_uuid(), 'admin')`);
+  const active = async () => (await one(db, `select count(*)::int n from ${T} where role = 'admin' and status = 'active'`)).n;
+  record(s, 'race setup: two active admins', (await active()) === 2);
+  const c1 = await connect(dbName, 'service_role');
+  const c2 = await connect(dbName, 'service_role');
+  await c1.query('begin');
+  await c2.query('begin');
+  const r1 = c1.query(`update ${T} set role = 'staff' where email = 'role-admin2@example.org'`).then(() => '', (e) => e.message);
+  await r1; // connection 1 now holds the advisory lock until it commits
+  let r2done = false;
+  const r2 = c2.query(`update ${T} set role = 'staff' where email = 'role-admin3@example.org'`)
+    .then(() => '', (e) => e.message).then((m) => { r2done = true; return m; });
+  let blocked = 0;
+  for (let i = 0; i < 200 && blocked < 1; i++) {
+    blocked = (await one(db, `select count(*)::int n from pg_locks where locktype = 'advisory' and not granted`)).n;
+    if (blocked < 1) await sleep(25);
+  }
+  await sleep(200);
+  record(s, 'race: second demotion blocks on the advisory lock while the first is uncommitted', blocked >= 1 && !r2done, `${blocked} waiting, finished early: ${r2done}`);
+  await c1.query('commit');
+  const e2 = await r2;
+  const e1 = await r1;
+  await c2.query(e2 ? 'rollback' : 'commit');
+  record(s, 'race: first demotion succeeded', e1 === '', e1 || 'ok');
+  record(s, 'race: second demotion raised the last-admin error', e2.includes(msg), e2 || 'no error raised');
+  record(s, 'race: exactly one active admin remains', (await active()) === 1);
+  const left = await one(db, `select email from ${T} where role = 'admin' and status = 'active'`);
+  record(s, 'race: the survivor is the admin whose demotion was refused', left?.email === 'role-admin3@example.org', left?.email);
+  await Promise.all([c1, c2].map(close));
+}
+
 // ---------------------------------------------------------------------------
 // Concurrency.
 // ---------------------------------------------------------------------------
@@ -576,6 +663,8 @@ async function main() {
     compare(A, freshSnap, await snapshot(a), 'schema.sql before migrations (chain is a no-op)');
     await assertLimiter(a, 'scn_a', A);
     await assertStaff(a, 'scn_a', A);
+    await assertStaffRoles(a, 'scn_a', A);
+    await assertAdminRace(a, 'scn_a', A);
     await assertConcurrency(a, 'scn_a', A);
     await mutationProof(a, 'scn_a', A);
 
@@ -591,6 +680,8 @@ async function main() {
       compare(label, freshSnap, await snapshot(db), 'fresh schema.sql');
       await assertLimiter(db, name, label);
       await assertStaff(db, name, label);
+      await assertStaffRoles(db, name, label);
+      await assertAdminRace(db, name, label);
       await assertConcurrency(db, name, label);
     }
     await close(root);

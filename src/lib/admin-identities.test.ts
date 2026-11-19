@@ -428,4 +428,13 @@ describe('admin_staff_accounts migration and schema', () => {
     expect(s).toMatch(/before truncate on admin_staff_accounts\s+for each statement execute function admin_staff_accounts_guard\(\)/)
     expect(s).toMatch(/actor_id is immutable/)
   })
+  it.each([
+    ['role migration', readFileSync('supabase/migrations/20261119020000_admin_staff_roles.sql', 'utf8')],
+    ['schema.sql', sql[1]],
+  ])('%s enforces roles and the last-admin rule', (_n, s) => {
+    expect(s).toContain("role in ('admin', 'staff')")
+    expect(s).toContain('new.role is distinct from old.role')
+    expect(s).toContain('pg_advisory_xact_lock')
+    expect(s).toContain('cannot demote or disable the last active admin')
+  })
 })

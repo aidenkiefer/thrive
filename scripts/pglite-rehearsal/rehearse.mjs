@@ -328,6 +328,62 @@ async function assertStaff(db, s) {
   record(s, 'staff row survives truncate and delete attempts', n.n === 1, `${n.n} rows`);
 }
 
+// D1R roles (#102): role column, check constraint, auth_version bump on role
+// change, and the last-active-admin guard. Runs after assertStaff (which expects
+// exactly one staff row), so it adds rows only here; rows can never be deleted,
+// so the end state is: 2 active staff, 1 disabled staff, 2 admins (1 active).
+async function assertStaffRoles(db, s) {
+  const T = 'public.admin_staff_accounts';
+  const col = await one(db, `select is_nullable, column_default from information_schema.columns
+                             where table_schema = 'public' and table_name = 'admin_staff_accounts' and column_name = 'role'`);
+  record(s, 'staff role column exists, not null, default staff',
+    col && col.is_nullable === 'NO' && /'staff'/.test(col.column_default ?? ''), `${col?.is_nullable} ${col?.column_default}`);
+  const row = (email) => one(db, `select role, status, auth_version from ${T} where email = $1`, [email]);
+  const adminCount = async () => (await one(db, `select count(*)::int n from ${T} where role = 'admin' and status = 'active'`)).n;
+  const same = (a, b) => a && b && a.role === b.role && a.status === b.status && a.auth_version === b.auth_version;
+
+  // Bootstrap: no admin exists yet, inserts work.
+  record(s, 'no admin exists before bootstrap', (await adminCount()) === 0);
+  await db.exec(`set role service_role; insert into ${T} (email, auth_user_id) values ('role-default@example.org', gen_random_uuid()); reset role;`);
+  const d = await row('role-default@example.org');
+  record(s, 'insert without role gets staff (service_role, no admin yet)', d?.role === 'staff', d?.role);
+  await expectError(db, s, 'insert with role owner fails the check constraint',
+    `set role service_role; insert into ${T} (email, auth_user_id, role) values ('role-owner@example.org', gen_random_uuid(), 'owner'); reset role;`, '23514');
+
+  // Role change bumps auth_version by exactly 1.
+  await db.exec(`insert into ${T} (email, auth_user_id, role) values ('role-admin1@example.org', gen_random_uuid(), 'staff')`);
+  const before = await row('role-admin1@example.org');
+  await db.exec(`set role service_role; update ${T} set role = 'admin' where email = 'role-admin1@example.org'; reset role;`);
+  const after = await row('role-admin1@example.org');
+  record(s, 'role change staff to admin bumps auth_version by exactly 1',
+    after.role === 'admin' && after.auth_version === before.auth_version + 1, `${before.auth_version} -> ${after.auth_version}`);
+
+  // Exactly one active admin: demote and disable refused, row unchanged.
+  record(s, 'exactly one active admin', (await adminCount()) === 1);
+  const msg = 'cannot demote or disable the last active admin';
+  for (const [item, set] of [['demoting', `role = 'staff'`], ['disabling', `status = 'disabled'`]]) {
+    const b = await row('role-admin1@example.org');
+    let err = '';
+    try { await db.exec(`set role service_role; update ${T} set ${set} where email = 'role-admin1@example.org'; reset role;`); }
+    catch (e) { err = e.message; await db.exec('reset role').catch(() => {}); }
+    record(s, `${item} the last active admin is refused`, err.includes(msg), err.split('\n')[0] || 'no error raised');
+    record(s, `row unchanged after refused ${item}`, same(b, await row('role-admin1@example.org')));
+  }
+  // A staff row can be disabled while only one admin exists.
+  await db.exec(`set role service_role; update ${T} set status = 'disabled' where email = 'role-default@example.org'; reset role;`);
+  const dis = await row('role-default@example.org');
+  record(s, 'a staff row can be disabled while one admin exists', dis.status === 'disabled');
+
+  // Two active admins: demoting one succeeds, the other is then protected.
+  await db.exec(`insert into ${T} (email, auth_user_id, role) values ('role-admin2@example.org', gen_random_uuid(), 'admin')`);
+  record(s, 'two active admins after adding a second', (await adminCount()) === 2);
+  await db.exec(`set role service_role; update ${T} set role = 'staff' where email = 'role-admin1@example.org'; reset role;`);
+  const dem = await row('role-admin1@example.org');
+  record(s, 'demoting one of two active admins succeeds', dem.role === 'staff' && (await adminCount()) === 1);
+  await expectError(db, s, 'the remaining admin is now protected',
+    `set role service_role; update ${T} set role = 'staff' where email = 'role-admin2@example.org'; reset role;`, 'P0001');
+}
+
 async function main() {
   const v = await (await PGlite.create()).query('select version() v');
   console.log(`# ${v.rows[0].v}\n`);
@@ -342,6 +398,7 @@ async function main() {
   compare(A, freshSnap, await snapshot(a), 'schema.sql before migrations (chain is a no-op)');
   await assertLimiter(a, A);
   await assertStaff(a, A);
+  await assertStaffRoles(a, A);
 
   // B/C. June schema (with and without its patch block), each file twice in order, then the chain again.
   for (const [label, june] of [['B June schema', juneFull], ['C June schema without patch', juneNoPatch]]) {
@@ -355,6 +412,7 @@ async function main() {
     compare(label, freshSnap, await snapshot(db), 'fresh schema.sql');
     await assertLimiter(db, label);
     await assertStaff(db, label);
+    await assertStaffRoles(db, label);
   }
 
   console.log(`\n${results.length - failures}/${results.length} checks passed, ${failures} failed`);

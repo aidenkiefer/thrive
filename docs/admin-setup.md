@@ -19,19 +19,33 @@ RATE_LIMIT_HASH_SECRET=<dedicated random secret, 32+ chars, server only>
 
 ## Provision staff and email codes
 
-1. Apply `supabase/migrations/20261118000000_admin_staff_accounts.sql` and `supabase/migrations/20261118010000_shared_rate_limit.sql` to the production project, before launch. Confirm RLS is enabled, no anon/authenticated policy exists, and the service role can read the staff table. The limiter migration is safe to run twice. Run its checks under [Release gate](#release-gate-shared-rate-limiting).
+1. Apply `supabase/migrations/20261118000000_admin_staff_accounts.sql` and `supabase/migrations/20261118010000_shared_rate_limit.sql` to the production project, before launch. Confirm RLS is enabled, no anon/authenticated policy exists, and the service role can read the staff table. The limiter migration is safe to run twice. Run its checks under [Release gate](#release-gate-shared-rate-limiting). Then apply `supabase/migrations/20261119020000_admin_staff_roles.sql` (roles, below) **before** deploying the code that reads `role`: without the column every staff lookup fails closed.
 2. Disable public email signups in Supabase Auth. Configure its email OTP template to contain the code (`{{ .Token }}`), without a sign-in link. Confirm the configured code length is 6–10 digits and record its expiry. Configure a dedicated Resend SMTP credential for Supabase Auth; this is separate from the website forms API key.
 3. Create each staff user in Supabase Auth through an owner-controlled enrollment path. Copy that user's Auth UUID into a membership row. For example, in the SQL editor after creating the Auth user:
 
    ```sql
+   -- The owner, first (the only admin for now):
+   insert into admin_staff_accounts (email, auth_user_id, role)
+   values ('owner@example.org', '<Auth user UUID>', 'admin');
+
+   -- Every other staff member (role defaults to 'staff'):
    insert into admin_staff_accounts (email, auth_user_id)
    values ('person@example.org', '<Auth user UUID>');
    ```
 
-   Use the staff member's actual normalized email and UUID. The insert is active by default. Disable a person with `update admin_staff_accounts set status = 'disabled' where actor_id = '<actor UUID>';`. A status change or Auth UUID rebind increments `auth_version` and revokes existing website sessions.
+   Use the staff member's actual normalized email and UUID. The insert is active by default. Disable a person with `update admin_staff_accounts set status = 'disabled' where actor_id = '<actor UUID>';`. A status change, Auth UUID rebind, or role change increments `auth_version` and revokes existing website sessions.
 4. In Preview, verify one successful sign-in and the denial paths: unknown or disabled email, wrong/expired/replayed code, changed Auth UUID, changed auth version, and missing service-role configuration. Confirm requests and verification do not expose staff membership, codes, or Supabase tokens.
 
 `/admin/login` requests the code, then verifies it. Middleware checks for a NextAuth token, and every protected server page or action rechecks active staff membership and version. Rotating `NEXTAUTH_SECRET` during the production cutover invalidates old shared-login cookies.
+
+## Roles
+
+Each account is `admin` or `staff` (default). Staff account control (create, disable, re-enable, rebind, change a role) is **admin-only**; for now the owner is the only admin (decision 2026-11-19, #102). Every active account can edit content. The website interprets roles only in `src/lib/admin-permissions.ts`, reading the role from the account row on every request, so a change applies at once; an unknown role is treated like a disabled account.
+
+- Make someone an admin: `update admin_staff_accounts set role = 'admin' where actor_id = '<actor UUID>';`
+- Back to staff: `update admin_staff_accounts set role = 'staff' where actor_id = '<actor UUID>';`
+- The database refuses to demote or disable the **last active admin**. Promote a second admin first.
+- Account control is SQL in the editor for the MVP; there is no account-management screen yet.
 
 ## Sessions and revocation
 

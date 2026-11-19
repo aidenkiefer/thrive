@@ -5,7 +5,8 @@
 ## Status
 Done: D0 checkpoints; D1 part 1 built on #101 (dba1926, 6308529, eab8fd3); PR body drafted.
 Blocked: #101 write steps wait on owner decision card answers, backup confirmation, and two named "go" comments. Nothing written to the live database.
-D2 #102 PR open (draft), awaiting Cursor QA
+D2 #102 PR #114: Cursor QA MERGE (21:29Z), stays draft until the owner says go on #102
+D1 #108: QA delta should-fixes fixed, re-review pending
 
 ## Entries
 <!-- Append-only, oldest first. Types: decision · change · blocker · request · note -->
@@ -27,3 +28,5 @@ D2 #102 PR open (draft), awaiting Cursor QA
 - `14:37` **decision** #102: last-admin rule in the guard trigger, serialized with pg_advisory_xact_lock; inserts never checked so bootstrapping works. (T2, opus)
 - `14:37` **decision** #102: stacked on claude/data-pg-rehearsal (#95, the tip of the #23 chain) instead of #23 itself, so the real-Postgres harness the issue requires is on the branch.
 - `14:37` **change** #102 (T1, opus) [289f646, f4d59d3]: migration 20261119020000_admin_staff_roles.sql, schema.sql mirror, src/lib/admin-permissions.ts (`can`, `parseStaffRole`), `requirePermission` + `PermissionDeniedError` in admin-auth.ts, role SQL in docs/admin-setup.md, rehearsals PGlite 448/448 and real Postgres 641/641 incl. two-connection race; last-admin mutant 430/448 exit 1; gate PASS 262 tests.
+- `15:45` **change** #108 QA delta FIX-FIRST (Gemini re-check, 21:14Z): all three should-fixes and three nits. Fingerprint binds planned rows (new `d4eadaaef3a98045`, replaces `3af3b89a403b72ac`), `writeRefusal` helper, confirmations CLI-only, parity + multi-column tests, single-writer doc. Mutants: 4/4 killed. Gate PASS, 135 tests. (T1, opus) [7cb0ab4]
+- `15:45` **note** #101: the earlier go named no commit; the go now has to name the new commit and fingerprint `d4eadaaef3a98045`. Batch A SQL is unchanged since 9ba802e. Pagination nit (PostgREST 1000-row cap) left as is: largest table is 120 rows.

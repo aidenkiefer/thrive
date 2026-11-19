@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { MinistryScheduleSignup } from '@/components/ministries'
 import { BackLink, Container, PageHeader, Section } from '@/components/ui'
 import { getMinistryBySlug } from '@/lib/queries/ministries'
 
@@ -16,6 +17,13 @@ export default async function MinistryPage({ params }: Props) {
   const { slug } = await params
   const ministry = await getMinistryBySlug(slug)
   if (!ministry) notFound()
+
+  // C2 fields: typed on main; select('*') returns them once migrated.
+  const { schedule_description = null, churchsuite_form_url = null } = ministry as typeof ministry & {
+    schedule_description?: string | null
+    churchsuite_form_url?: string | null
+  }
+
   return (
     <Section background="light">
       <Container>
@@ -71,16 +79,11 @@ export default async function MinistryPage({ params }: Props) {
                 Contact details are coming soon.
               </p>
             )}
-            {ministry.slug === 'youth-alpha' && (
-              <div className="mt-6 border-t border-neutral-200 pt-5">
-                <h3 className="font-display text-lg font-semibold text-neutral-950">
-                  Schedule &amp; signup
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-                  Schedule and signup details are coming soon.
-                </p>
-              </div>
-            )}
+            <MinistryScheduleSignup
+              name={ministry.name}
+              schedule_description={schedule_description}
+              churchsuite_form_url={churchsuite_form_url}
+            />
           </aside>
         </div>
       </Container>

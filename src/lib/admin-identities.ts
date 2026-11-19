@@ -153,6 +153,8 @@ interface TimingDeps {
   minDurationMs?: number
   sleep?: (ms: number) => Promise<void>
   now?: () => number
+  /** Receives one fixed, PII-free line when a send or verify throws. Defaults to console.error. */
+  log?: (line: string) => void
 }
 
 export interface RequestCodeDeps extends TimingDeps {
@@ -218,7 +220,8 @@ export async function requestStaffCode(rawEmail: unknown, deps: RequestCodeDeps)
       const row = await store.findByEmail(email)
       if (isActive(row)) await otp.requestCode(email)
     } catch {
-      // Swallowed on purpose: a failure must look the same as success.
+      // The caller still sees success; only a fixed code is logged.
+      (deps.log ?? console.error)('[staff-code] send_failed')
     }
   }
   if (deps.defer) deps.defer(send)
@@ -268,6 +271,7 @@ async function verifyUnpadded(rawEmail: unknown, rawCode: unknown, deps: VerifyC
     if (!authUserId || authUserId.toLowerCase() !== row.auth_user_id.toLowerCase()) return null
     return toActor(row)
   } catch {
+    (deps.log ?? console.error)('[staff-code] verify_error')
     return null
   }
 }

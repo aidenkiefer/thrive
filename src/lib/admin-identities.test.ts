@@ -120,6 +120,13 @@ describe('requestStaffCode', () => {
     const r = await requestStaffCode('pat@example.org', { store: memoryStore([row()]), otp, limiter: open(), clientKey: 'a' })
     expect(r).toEqual({ status: 'accepted' })
   })
+  it('logs a fixed, PII-free line when the send throws', async () => {
+    const lines: string[] = []
+    const otp = fakeOtp({ requestCode: vi.fn(async () => { throw new Error('smtp down for pat@example.org') }) })
+    const r = await requestStaffCode('pat@example.org', { store: memoryStore([row()]), otp, limiter: open(), clientKey: 'a', log: l => { lines.push(l) } })
+    expect(r).toEqual({ status: 'accepted' })
+    expect(lines).toEqual(['[staff-code] send_failed'])
+  })
   it('is unavailable-safe when Supabase is not configured', async () => {
     expect(await requestStaffCode('pat@example.org', { store: null, otp: null, limiter: open(), clientKey: 'a' })).toEqual({ status: 'accepted' })
   })
@@ -358,6 +365,15 @@ describe('verifyStaffCode', () => {
     const good = fakeOtp()
     expect(await verifyStaffCode('pat@example.org', '123456', { ...d, otp: good })).toBeNull()
     expect(good.verifyCode).not.toHaveBeenCalled()
+  })
+  it('logs a fixed, PII-free line on verify errors, and nothing for a wrong code', async () => {
+    const lines: string[] = []
+    const log = (l: string) => { lines.push(l) }
+    const boom = fakeOtp({ verifyCode: vi.fn(async () => { throw new Error('network for pat@example.org') }) })
+    expect(await verifyStaffCode('pat@example.org', '123456', { ...deps([row()], boom), log })).toBeNull()
+    const wrong = fakeOtp({ verifyCode: vi.fn(async () => null) })
+    expect(await verifyStaffCode('pat@example.org', '111111', { ...deps([row()], wrong), log })).toBeNull()
+    expect(lines).toEqual(['[staff-code] verify_error'])
   })
 })
 

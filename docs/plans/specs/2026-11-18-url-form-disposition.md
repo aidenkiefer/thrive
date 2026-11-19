@@ -1,6 +1,6 @@
 # Launch URL and form disposition (working matrix)
 
-**Status:** Prepared for owner and QA review, 2026-11-18. This matrix reconciles the live-site inventory in `docs/01-current-site-audit.md` with `docs/04-seo-url-migration-map.md` and the MVP architecture. It records intended destinations; it does not authorize a redirect until the destination is published and returns 200. Search Console and active Ads destinations are still needed for final priority and per-slug rules.
+**Status:** Prepared for owner and QA review, 2026-11-18. This matrix reconciles the live-site inventory in `docs/01-current-site-audit.md`, PR #5's November `docs/audit/2026-11/integrations.md`, `docs/04-seo-url-migration-map.md`, and the MVP architecture. It records intended destinations; it does not authorize a redirect until the destination is published and returns 200. Search Console and active Ads destinations are still needed for final priority and per-slug rules.
 
 ## Routes
 
@@ -24,6 +24,9 @@
 | `/speaker/[slug]/`, `/topics/[slug]/`, `/book/[slug]/`, `/service-type/[slug]/` | Per-taxonomy decision pending | Map to working filtered archives or individual destinations after content export; do not bulk-redirect to nonexistent filters. |
 | `/joydrop/`, `/pantry/`, `/plug/`, `/la-vina/`, `/prayer-walk/`, `/greenthumbs/`, `/sokm/` | Published ministry or campaign page, per slug | Confirm whether each campaign remains active and its canonical record, CTA, and target. |
 | `/feel-the-power/`, `/fuelthefire/`, `/fasting/`, `/easter/`, `/christmas-guide/` | Campaign-specific published page or approved retired-campaign disposition | Check active Ads links and Search Console before any redirect. |
+| `/thrive-flames/`, `/the_chosen/`, `/updated-contact-info/` | Owner decision pending for each page | These have live forms in the November audit. Confirm purpose, audience, and replacement before retiring or redirecting. |
+| `/goldengoose/`, `/free-movie-night/` | Campaign-specific published event page or approved retired-campaign disposition | Live pages embed ChurchSuite events; confirm activity and target before moving their links. |
+| `/upcoming-events/` | `/events` after filter parity review | Live event-search form appears here; confirm whether people use its search URL or parameters before redirect. |
 | `/communications/` | Staff-only workflow; no public migration | Record the staff destination separately; do not expose the old internal form publicly. |
 | `/news/`, WordPress admin/API paths, stale staging domains | No public migration | Preserve the site 404/retirement behavior as appropriate. |
 
@@ -42,6 +45,13 @@
 | Group interest (`/groups/`, `/group-form-sign-up/`) | Approved hosted ChurchSuite/Google form per group, or a defined native interest form | Inventory the extended checkbox options and obtain each published signup URL. No dead CTA. |
 | Youth Alpha interest (`/youth-alpha/`) | Approved hosted registration if active, otherwise no signup CTA | Confirm current program, dates, URL, and the route destination together. |
 | Joy Drop / Pantry program signup | Approved hosted registration per active program | Confirm current program and URL; keep page and form publication coupled. |
+| Thrive Flames (`/thrive-flames/`) | Owner-confirmed Kids/ministry destination and native contact or approved hosted form | November audit records Gravity Form `gform_1`; purpose and recipient need confirmation. |
+| The Chosen (`/the_chosen/`), Fuel the Fire (`/fuelthefire/`), Fasting (`/fasting/`), Feel the Power (`/feel-the-power/`) | Campaign-specific page plus approved hosted registration or native email handoff, if still active | November audit records Gravity Form `gform_4` on each; confirm each campaign's current purpose and form need. |
+| P.L.U.G. (`/plug/`) | Published program page and approved hosted registration, if active | November audit records Gravity Form `gform_9`; confirm current program and URL. |
+| SOKM (`/sokm/`) | Published ministry/program page and approved hosted registration, if active | November audit records Gravity Form `gform_3`; confirm current intake and URL. |
+| Updated contact information (`/updated-contact-info/`) | Restricted or owner-approved contact update workflow | November audit records Gravity Form `gform_10`; establish audience, data owner, and privacy requirements before migration. |
+| Event search (`/events/`, `/upcoming-events/`) | Native event filtering/search, if needed | November audit records MEC search forms, which are navigation controls rather than email submissions; validate search parity separately. |
+| ChurchSuite event registration embeds (`/goldengoose/`, `/free-movie-night/`, and audited `/upcoming-events/[slug]/` pages) | Approved hosted registration link on each active canonical event | November audit records ChurchSuite iframes on these pages. Confirm active events and current URLs; keep registration tied to each event record and do not copy stale iframe URLs blindly. |
 | Staff communications request (`/communications/`) | Restricted staff workflow, later admin ticket | Do not expose as a public form. |
 | Public and admin website feedback (new) | Native feedback email form, with page at `/feedback` and an admin entry point | Accept bug/feature feedback with useful context; default admin inbox and optional extra recipients. Confirm delivery in sandbox. |
 | Homepage and contact newsletter signup | Existing Mailchimp embed or approved outbound signup | Confirm live list and copy; separate from native email forms. |

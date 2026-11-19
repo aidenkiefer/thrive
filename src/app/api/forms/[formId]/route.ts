@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getForm } from '@/lib/forms/registry'
-import { submitWebsiteForm } from '@/lib/forms/submit'
+import { getForm } from '../../../../lib/forms/registry'
+import { submitWebsiteForm } from '../../../../lib/forms/submit'
 
 const MAX_BODY_BYTES = 16_000
 const WINDOW_MS = 10 * 60_000

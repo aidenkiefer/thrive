@@ -4,7 +4,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import {
   SESSION_MAX_AGE_SECONDS, clientKeyFrom, createOtpAuth, createStaffStore, parseSessionIdentity,
   resolveActor, verifyStaffCode, type SessionIdentity, type StaffActor,
-} from '@/lib/admin-identities'
+} from './admin-identities'
 
 /**
  * Staff sign-in is a one-time email code (Supabase Auth OTP, preprovisioned

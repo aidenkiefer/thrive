@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { clientKeyFrom, createOtpAuth, createStaffStore, requestStaffCode } from '@/lib/admin-identities'
+import { clientKeyFrom, createOtpAuth, createStaffStore, requestStaffCode } from '../../../../lib/admin-identities'
 
 /** Pads every response so known and unknown emails take similar time. */
 const MIN_DURATION_MS = 700

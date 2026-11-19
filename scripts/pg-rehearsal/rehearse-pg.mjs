@@ -8,6 +8,7 @@
 // stopped and deleted in `finally`.
 import EmbeddedPostgres from 'embedded-postgres';
 import pg from 'pg';
+import { assertRlsMatrix } from '../../src/lib/security/rls-matrix.mjs';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -28,6 +29,7 @@ const juneFull = execFileSync('git', ['-C', here, 'show', `${JUNE_SCHEMA_COMMIT}
 const juneNoPatch = juneFull.split('\n').slice(0, 304).join('\n');
 
 const results = [];
+const rlsNotes = []; // #45 known-risk observations, printed at the end
 let failures = 0;
 const record = (scenario, item, ok, detail = '') => {
   results.push({ scenario, item, ok, detail });
@@ -665,6 +667,7 @@ async function main() {
     await assertStaff(a, 'scn_a', A);
     await assertStaffRoles(a, 'scn_a', A);
     await assertAdminRace(a, 'scn_a', A);
+    rlsNotes.push(...await assertRlsMatrix(a, A, record));
     await assertConcurrency(a, 'scn_a', A);
     await mutationProof(a, 'scn_a', A);
 
@@ -682,6 +685,7 @@ async function main() {
       await assertStaff(db, name, label);
       await assertStaffRoles(db, name, label);
       await assertAdminRace(db, name, label);
+      rlsNotes.push(...await assertRlsMatrix(db, label, record));
       await assertConcurrency(db, name, label);
     }
     await close(root);
@@ -695,6 +699,7 @@ async function main() {
   for (const r of results) { perScenario[r.scenario] ??= { n: 0, bad: 0 }; perScenario[r.scenario].n++; if (!r.ok) perScenario[r.scenario].bad++; }
   console.log('\nPer scenario:');
   for (const [k, v] of Object.entries(perScenario)) console.log(`  ${k}: ${v.n - v.bad}/${v.n}`);
+  for (const n of new Set(rlsNotes)) console.log(`NOTE  ${n}`);
   console.log(`\n${results.length - failures}/${results.length} checks passed, ${failures} failed`);
   process.exitCode = failures ? 1 : 0;
 }

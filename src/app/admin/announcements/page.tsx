@@ -1,10 +1,10 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
-import { publicationRolledBack, publishIntent, setPublished } from '@/lib/cms'
+import { publishIntent, saveWithPublication } from '@/lib/cms'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import {
-  AdminInputError, announcementPublishProblems, assertPublishable, httpsUrl, parseInstant, requireText, siteOrHttpsUrl,
+  announcementPublishProblems, assertPublishable, httpsUrl, parseInstant, requireText, siteOrHttpsUrl,
 } from '@/lib/admin-validation'
 import { AdminForm } from '../_components/admin-form'
 import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
@@ -20,7 +20,7 @@ async function saveAnnouncement(formData: FormData) {
     const ctaUrl = siteOrHttpsUrl(String(formData.get('cta_url') || ''), 'Button URL')
     const expiresAt = parseInstant(String(formData.get('expires_at') || ''), 'Expiry')
     const publish = publishIntent(formData)
-    // Content writes never touch published_at; setPublished below is the only
+    // Content writes never touch published_at; saveWithPublication below is the only
     // path that changes it, and it records which staff actor did.
     const row = {
       title,
@@ -32,34 +32,16 @@ async function saveAnnouncement(formData: FormData) {
       expires_at: expiresAt,
     }
     if (publish) assertPublishable('announcement', announcementPublishProblems(row, new Date()))
-    if (id) {
-      // Unpublish before the content write and publish after it, so a failure
-      // part way never leaves the item more public than staff asked for.
-      if (!publish) await setPublished(db, { entityType: 'announcement', entityId: id, publish, actorId })
-      const { error } = await db.from('announcements').update(row).eq('id', id)
-      if (error) throw new Error(error.message)
-      if (publish) await setPublished(db, { entityType: 'announcement', entityId: id, publish, actorId })
-    } else {
-      const { data, error } = await db.from('announcements').insert(row).select('id').single()
-      if (error) throw new Error(error.message)
-      if (publish) {
-        try {
-          await setPublished(db, { entityType: 'announcement', entityId: data.id, publish, actorId })
-        } catch (publishError) {
-          if (!publicationRolledBack(publishError)) {
-            throw new AdminInputError('The announcement was saved, but publishing could not be confirmed. Check the list below before trying again.')
-          }
-          // The publish rolled back: drop the new draft so a retry can't duplicate it.
-          const { error: cleanupError } = await db.from('announcements').delete().eq('id', data.id)
-          if (cleanupError) {
-            throw new AdminInputError('The announcement was saved as a draft but could not be published. Open it from the list below instead of creating it again.')
-          }
-          throw publishError
-        }
-      }
+    try {
+      await saveWithPublication(db, {
+        table: 'announcements', entityType: 'announcement', label: 'announcement',
+        id: id || null, row, publish, actorId,
+      })
+    } finally {
+      // Also on failure: an unpublish may have committed before a later step threw.
+      revalidatePath('/admin/announcements')
+      revalidatePath('/')
     }
-    revalidatePath('/admin/announcements')
-    revalidatePath('/')
   })
 }
 

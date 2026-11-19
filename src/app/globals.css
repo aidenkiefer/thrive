@@ -21,7 +21,12 @@
   }
 
   .prose-content {
-    @apply max-w-prose text-neutral-600;
+    @apply text-neutral-600;
+  }
+
+  /* Keep running text readable; wide blocks (grids, splits, maps) use the full band. */
+  .prose-content > :is(p, ul, ol, h2, h3, h4, blockquote) {
+    max-width: 65ch;
   }
 
   .prose-content > * + * {
@@ -42,7 +47,8 @@
     @apply text-2xl;
   }
 
-  .prose-content a {
+  /* Only plain Markdown links; links with their own classes (cards, buttons) keep their styling. */
+  .prose-content a:not([class]) {
     @apply font-medium text-brand-800 underline decoration-brand-600/40 underline-offset-4 hover:text-brand-600;
   }
 
@@ -72,7 +78,7 @@
     @apply text-white/85;
   }
 
-  .prose-invert-content a {
+  .prose-invert-content a:not([class]) {
     @apply text-accent-400 decoration-accent-400/50 hover:text-white;
   }
 

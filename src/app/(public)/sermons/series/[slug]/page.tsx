@@ -1,20 +1,28 @@
-import { getSermonsBySeriesSlug, getSermonSeries } from '@/lib/queries'
-import { SermonCard } from '@/components/sermons/SermonCard'
-import { Section, Container, Heading } from '@/components/ui'
-import Link from 'next/link'
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { getSermonsBySeriesSlug, getSermonSeries } from '@/lib/queries'
+import type { Sermon, SermonSeries } from '@/lib/queries/sermons'
+import { SermonCard } from '@/components/sermons/SermonCard'
+import { BackLink } from '@/components/ui'
+import { Band, PageHero, PendingNote, safely } from '@/components/content'
 
 export const revalidate = 60
 
 interface Props { params: Promise<{ slug: string }> }
 
+const loadAllSeries = cache(() => safely<SermonSeries[]>('sermons:series-all', () => getSermonSeries(), []))
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const allSeries = await getSermonSeries()
+  const allSeries = await loadAllSeries()
   const series = allSeries.find(s => s.slug === slug)
   if (!series) return {}
-  return { title: series.title, description: series.description ?? undefined }
+  return {
+    title: series.title,
+    description: series.description ?? undefined,
+    alternates: { canonical: `/sermons/series/${slug}` },
+  }
 }
 
 export default async function SeriesDetailPage({ params }: Props) {
@@ -22,40 +30,35 @@ export default async function SeriesDetailPage({ params }: Props) {
 
   // Fetch both in parallel
   const [sermons, allSeries] = await Promise.all([
-    getSermonsBySeriesSlug(slug),
-    getSermonSeries(),
+    safely<Sermon[]>(`sermons:series:${slug}`, () => getSermonsBySeriesSlug(slug), []),
+    loadAllSeries(),
   ])
 
   const series = allSeries.find(s => s.slug === slug)
   if (!series) notFound()
 
   return (
-    <Section background="light">
-      <Container>
-        <div className="mb-4">
-          <Link href="/sermons/series" className="text-sm text-brand-600 hover:text-brand-800 transition-colors">
-            ← All series
-          </Link>
-        </div>
-
-        <Heading level="h1" className="mb-2">{series.title}</Heading>
-        {series.description && (
-          <p className="text-neutral-600 max-w-prose mb-8">{series.description}</p>
-        )}
+    <>
+      <PageHero eyebrow="Sermon series" title={series.title} lead={series.description ?? undefined} />
+      <Band tone="light" prose={false}>
+        <BackLink href="/sermons/series" className="mb-8 min-h-11">All series</BackLink>
+        <h2 className="sr-only">Messages in this series</h2>
 
         {sermons.length === 0 ? (
-          <p className="text-neutral-600">No sermons in this series yet.</p>
+          <PendingNote title="Messages are being added" className="max-w-2xl">
+            <p>No messages have been published in this series yet.</p>
+          </PendingNote>
         ) : (
           <>
-            <p className="text-sm text-neutral-600 mb-6">{sermons.length} message{sermons.length !== 1 ? 's' : ''}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <p className="mb-6 text-sm text-neutral-600">{sermons.length} message{sermons.length !== 1 ? 's' : ''}</p>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {sermons.map(sermon => (
                 <SermonCard key={sermon.id} sermon={sermon} />
               ))}
             </div>
           </>
         )}
-      </Container>
-    </Section>
+      </Band>
+    </>
   )
 }

@@ -1,53 +1,81 @@
 ---
 title: Give
-description: Give - Thrive Vineyard Church
+description: "Ways to give to Thrive Vineyard Church: time, talent, and treasure."
 ---
 
-{/* Source: docs/audit/2026-11/pages/give.md — Page-order text and CTAs */}
+{/* Source: docs/audit/2026-11/pages/give.md. No amounts or tax claims are stated. */}
 
-# Give
+{/* Source: audit give.md, "Ways to Give" (Time / Talent / Treasure) and CTA table (Serve, Share, Give mailto/anchor targets) */}
+<Band tone="white" prose={false} id="ways-to-give">
+  <SectionIntro eyebrow="Give" title="Ways to give" />
 
-## Ways to Give
+  <CardGrid columns={3}>
+    <InfoCard title="Time" icon={<ClockIcon className="h-5 w-5" />} href="mailto:info@thrivevineyard.com?subject=I%20want%20to%20serve!" linkLabel="Serve">
+      <ul className="list-disc space-y-1 pl-5">
+        <li>Joy Drop</li>
+        <li>Coffee Bar / Service After Party</li>
+        <li>Kids ministries</li>
+        <li>Teaching</li>
+        <li>Ushers/ Greeter</li>
+        <li>Hospitality</li>
+      </ul>
+    </InfoCard>
 
-### Time
+    <InfoCard title="Talent" icon={<GiftIcon className="h-5 w-5" />} href="mailto:info@thrivevineyard.com?subject=I've%20got%20talents%20to%20share!" linkLabel="Share">
+      <p>What passions and hobbies can you offer? What are your spiritual gifts?</p>
+      <p>God gives each one of us specific skills and characteristics to strengthen and build into the body of Christ.</p>
+    </InfoCard>
 
-- Joy Drop
-- Coffee Bar / Service After Party
-- Kids ministries
-- Teaching
-- Ushers/ Greeter
-- Hospitality
+    <InfoCard title="Treasure" icon={<HeartIcon className="h-5 w-5" />} href="#give-now" linkLabel="Give">
+      <p>After all, who really owns it all… The One who created it all.</p>
+    </InfoCard>
+  </CardGrid>
 
-[Serve](mailto:info@thrivevineyard.com?subject=I%20want%20to%20serve!)
+  <div className="mx-auto mt-4 max-w-3xl">
+    <PullQuote attribution="Psalm 50:10-12">
+      “…for every animal of the forest is mine, and the cattle on a thousand hills. I know every bird in the mountains, and the creatures of the field are mine…for the world is mine, and all that is in it.”
+    </PullQuote>
+  </div>
+</Band>
 
-### Talent
+{/* Source: audit give.md, "Give Now". Links from the audit CTA table; receiving email from audit text. */}
+<Band tone="light" prose={false} id="give-now">
+  <SectionIntro eyebrow="Give now" title="Choose how you’d like to give" />
 
-What passions and hobbies can you offer? What are your spiritual gifts?
+  {/* Give Online: primary action. Source: audit give.md + SITE.giveOnlineUrl */}
+  <div className="mt-10 flex flex-col gap-6 rounded-2xl bg-brand-800 p-8 text-white md:flex-row md:items-center md:justify-between md:p-10">
+    <div className="max-w-xl">
+      <h3 className="font-display text-2xl font-semibold text-white">Give online</h3>
+      <p className="mt-2 leading-relaxed text-white/85">Use our safe, secure online giving platform, ChurchSuite. Login to get started.</p>
+    </div>
+    <a
+      href={SITE.giveOnlineUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-accent-400 px-6 py-2.5 text-sm font-medium text-neutral-950 transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-800"
+    >
+      Give online
+    </a>
+  </div>
 
-God gives each one of us specific skills and characteristics to strengthen and build into the body of Christ.
+  <CardGrid columns={2}>
+    <InfoCard title="Chase QuickPay" href="https://www.chase.com/personal-banking/login-quickpay" linkLabel="Open Chase QuickPay">
+      <p>Use give@thrivevineyard.com as the receiving email address for the church.</p>
+    </InfoCard>
 
-[Share](mailto:info@thrivevineyard.com?subject=I've%20got%20talents%20to%20share!)
+    <InfoCard title="Give with Zelle" href="https://www.zellepay.com/" linkLabel="Go to Zelle">
+      <p>Use give@thrivevineyard.com as the receiving email address and designate on the ‘REASON’ line which fund you are giving to (i.e. GENERAL FUND). You can even set it up for recurring giving!</p>
+    </InfoCard>
 
-### Treasure
+    <InfoCard title="Give by mail">
+      <address className="not-italic">
+        Thrive Vineyard Church<br />
+        1273 N Jack Pine Ct<br />
+        Palatine, IL 60067
+      </address>
+    </InfoCard>
 
-After all, who really owns it all… The One who created it all. “…for every animal of the forest is mine, and the cattle on a thousand hills. I know every bird in the mountains, and the creatures of the field are mine…for the world is mine, and all that is in it.” Psalm 50:10-12
-
-## Give Now
-
-### Chase Quickpay
-
-Use give@thrivevineyard.com as the receiving email address for the church.
-
-### Give with Zelle
-
-Use give@thrivevineyard.com as the receiving email address and designate on the ‘REASON’ line which fund you are giving to (i.e. GENERAL FUND). You can even set it up for recurring giving!
-
-### Give Online
-
-Use our safe, secure online giving platform, ChurchSuite. Login to get started.
-
-[Give Online](https://thrivevineyard.churchsuite.com/donate/)
-
-### Give By Mail
-
-Thrive Vineyard Church 1273 N Jack Pine Ct Palatine, IL 60067
+    {/* Source: audit give.md lists the "Give on Sunday" heading but captured no text. */}
+    <PendingNote title="Give on Sunday">Details coming soon.</PendingNote>
+  </CardGrid>
+</Band>

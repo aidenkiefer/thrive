@@ -1,24 +1,30 @@
+// Kids & Youth: MDX-driven page (copy lives in content/pages/kids-youth.mdx).
+// Source: docs/audit/2026-11/pages/kids-youth.md
 import type { Metadata } from 'next'
-import { compileMDX } from 'next-mdx-remote/rsc'
-import { Container, Section } from '@/components/ui'
+import { compilePageMdx } from '@/components/content/compile-page'
 import { getMdxContent } from '@/lib/mdx'
+import { PageHero } from '@/components/content/PageHero'
 
 export const metadata: Metadata = {
-  title: 'Kids',
-  description: 'Kids are the Future!',
+  title: 'Kids & Youth',
+  description: 'Kids are the Future! Safe places where kids can grow in their faith and encounter Jesus.',
 }
 
 export default async function KidsYouthPage() {
-  const { content } = await compileMDX({
+  const { content } = await compilePageMdx({
     source: getMdxContent('kids-youth.mdx'),
-    options: { parseFrontmatter: true },
   })
 
   return (
-    <Section background="white">
-      <Container>
-        <article className="prose-content mx-auto">{content}</article>
-      </Container>
-    </Section>
+    <>
+      {/* Source: audit kids-youth.md ("Kids", "We partner with parents...") */}
+      <PageHero
+        photo="familyWorship"
+        photoPosition="object-top"
+        title="Kids & youth"
+        lead="We partner with parents, creating safe places where kids can grow in their faith and encounter Jesus."
+      />
+      {content}
+    </>
   )
 }

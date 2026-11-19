@@ -22,7 +22,7 @@ export function Step({ title, children }: StepProps) {
           aria-hidden="true"
           className="step-badge relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-800 font-display text-lg font-semibold text-white ring-4 ring-neutral-0"
         />
-        <div className="pb-2">
+        <div className="max-w-2xl pb-2">
           <h3 className="font-display text-xl font-semibold uppercase tracking-wide text-neutral-950 md:text-2xl">
             {title}
           </h3>

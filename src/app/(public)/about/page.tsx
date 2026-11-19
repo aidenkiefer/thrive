@@ -1,24 +1,31 @@
 import type { Metadata } from 'next'
-import { compileMDX } from 'next-mdx-remote/rsc'
-import { Container, Section } from '@/components/ui'
+import { compilePageMdx } from '@/components/content/compile-page'
+import { PageHero } from '@/components/content/PageHero'
 import { getMdxContent } from '@/lib/mdx'
+import { ContactDetails, EmailLink } from './ContactDetails'
 
 export const metadata: Metadata = {
   title: 'About Us',
-  description: 'About Thrive Vineyard Church',
+  description:
+    'The story of Thrive Vineyard Church, a Vineyard church plant that began in Palatine, IL in August 2009.',
 }
 
 export default async function AboutPage() {
-  const { content } = await compileMDX({
+  const { content } = await compilePageMdx({
     source: getMdxContent('about.mdx'),
-    options: { parseFrontmatter: true },
+    components: { ContactDetails, EmailLink },
   })
 
   return (
-    <Section background="white">
-      <Container>
-        <article className="prose-content mx-auto">{content}</article>
-      </Container>
-    </Section>
+    <>
+      {/* Source: docs/audit/2026-11/pages/about.md ("Our History") */}
+      <PageHero
+        eyebrow="About us"
+        title="Our story"
+        lead="Thrive Vineyard Church began in August of 2009, in the living room of Kevin and Molly Kiefer’s home in Palatine, IL."
+        photo="worship"
+      />
+      {content}
+    </>
   )
 }

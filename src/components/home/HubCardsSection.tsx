@@ -1,4 +1,6 @@
-import { Section, Container, Heading, Card } from '@/components/ui'
+import { Band } from '@/components/content/Band'
+import { CardGrid, InfoCard } from '@/components/content/CardGrid'
+import { SectionIntro } from '@/components/content/SectionIntro'
 
 interface Group {
   slug: string
@@ -12,6 +14,15 @@ interface Outreach {
   short_summary: string | null
 }
 
+/**
+ * Get involved hub.
+ * Sources:
+ *  - Kids: docs/audit/2026-11/pages/kids-youth.md ("We partner with parents, creating safe places...")
+ *  - Groups / Outreach: short_summary of the highlighted canonical record when present,
+ *    otherwise neutral navigational copy (no invented facts).
+ *  - Give: docs/audit/2026-11/pages/give.md ("Time, Talent, Treasure")
+ * Photos: audited catalog keys kidsReading, prayer, water, worship.
+ */
 export function HubCardsSection({
   groups,
   outreach,
@@ -19,50 +30,25 @@ export function HubCardsSection({
   groups: Group[]
   outreach: Outreach[]
 }) {
-  const hubs = [
-    {
-      title: 'Kids & Youth',
-      description: 'More information is being prepared.',
-      href: '/kids-youth',
-    },
-    {
-      title: 'Groups',
-      description:
-        groups[0]?.short_summary ??
-        'Group information is being prepared.',
-      href: '/groups',
-    },
-    {
-      title: 'Outreach',
-      description:
-        outreach[0]?.short_summary ??
-        'Outreach information is being prepared.',
-      href: '/outreach',
-    },
-  ]
-
   return (
-    <Section background="light">
-      <Container>
-        <Heading level="h2" className="text-center mb-8">
-          Get Involved
-        </Heading>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {hubs.map((hub) => (
-            <Card
-              key={hub.href}
-              title={hub.title}
-              description={hub.description}
-              href={hub.href}
-              footer={
-                <span className="inline-flex w-full items-center justify-center rounded-md border border-brand-800 px-5 py-2.5 text-sm font-medium text-brand-800">
-                  Learn More
-                </span>
-              }
-            />
-          ))}
-        </div>
-      </Container>
-    </Section>
+    <Band tone="light" prose={false}>
+      <SectionIntro eyebrow="Get involved" title="Find your place at Thrive" align="center" />
+      <CardGrid columns={4}>
+        <InfoCard title="Kids & Youth" photo="kidsReading" href="/kids-youth" linkLabel="Explore Kids & Youth">
+          <p>
+            We partner with parents, creating safe places where kids can grow in their faith and encounter Jesus.
+          </p>
+        </InfoCard>
+        <InfoCard title="Groups" photo="prayer" href="/groups" linkLabel="Find a group">
+          <p>{groups[0]?.short_summary ?? 'Find a group at Thrive Vineyard.'}</p>
+        </InfoCard>
+        <InfoCard title="Outreach" photo="water" href="/outreach" linkLabel="See outreach">
+          <p>{outreach[0]?.short_summary ?? 'Learn about outreach at Thrive Vineyard.'}</p>
+        </InfoCard>
+        <InfoCard title="Give" photo="worship" href="/give" linkLabel="Ways to give">
+          <p>Time, Talent, Treasure</p>
+        </InfoCard>
+      </CardGrid>
+    </Band>
   )
 }

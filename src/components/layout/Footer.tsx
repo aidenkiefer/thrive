@@ -1,89 +1,128 @@
 import Link from 'next/link'
 import { SERVICE_TIMES } from '@/lib/constants/service-times'
+import { SITE } from '@/components/content/site-info'
+
+const exploreLinks = [
+  { label: 'Plan a Visit', href: '/plan-a-visit' },
+  { label: 'Watch & Listen', href: '/sermons' },
+  { label: 'Events', href: '/events' },
+  { label: 'Groups', href: '/groups' },
+  { label: 'Kids & Youth', href: '/kids-youth' },
+  { label: 'Outreach', href: '/outreach' },
+  { label: 'About', href: '/about' },
+  { label: 'Give', href: '/give' },
+]
+
+const socialLinks = [
+  { label: 'YouTube', href: SITE.social.youtube },
+  { label: 'Facebook', href: SITE.social.facebook },
+  { label: 'Instagram', href: SITE.social.instagram },
+]
+
+const headingClass = 'text-sm font-semibold tracking-wide text-accent-400'
+const linkClass = 'transition-colors hover:text-white'
 
 export function Footer() {
   return (
     <footer className="bg-brand-900 text-white">
-      <div className="mx-auto max-w-content px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-          {/* Column 1: Logo + tagline */}
+      <div className="mx-auto max-w-content px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Brand */}
           <div>
-            <Link href="/" className="font-display text-lg font-semibold text-white hover:text-accent-400 transition-colors">
-              Thrive Vineyard
+            <Link href="/" className="font-display text-2xl font-semibold text-white">
+              {SITE.shortName}
             </Link>
-            <p className="mt-2 text-sm text-white/70">Spirit Filled. Down to Earth.</p>
-          </div>
-
-          {/* Column 2: Service times */}
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-accent-400">Sunday Services</h3>
-            <ul className="mt-3 space-y-1 text-sm text-white/80">
-              {/* Single source of truth: src/lib/constants/service-times.ts (owner-confirmed schedule + pause state). */}
-              {SERVICE_TIMES.map((service) => (
-                <li key={service.name}>
-                  {service.time} — {service.name}
-                  {service.isPaused && service.pauseNote && (
-                    <span className="text-white/50"> ({service.pauseNote.replace(/\.$/, '').toLowerCase()})</span>
-                  )}
+            <p className="mt-2 text-sm text-accent-400">{SITE.tagline}</p>
+            <p className="mt-4 text-sm leading-relaxed text-white/70">
+              A Vineyard church in Palatine, IL.
+            </p>
+            <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/70">
+              {socialLinks.map((link) => (
+                <li key={link.label}>
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={linkClass}
+                  >
+                    {link.label}
+                  </a>
                 </li>
               ))}
-              <li className="mt-2 text-white/50 text-xs">845 E Glencoe St, Palatine, IL 60074</li>
             </ul>
           </div>
 
-          {/* Column 3: Contact + social */}
+          {/* Services + location */}
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-accent-400">Connect</h3>
-            <ul className="mt-3 space-y-1 text-sm text-white/80">
+            <h2 className={headingClass}>Sunday Services</h2>
+            <ul className="mt-4 space-y-2 text-sm text-white/80">
+              {/* Single source of truth: src/lib/constants/service-times.ts (owner-confirmed schedule + pause state). */}
+              {SERVICE_TIMES.map((service) => (
+                <li key={service.name}>
+                  <span className="font-medium text-white">{service.time}</span> — {service.name}
+                  {service.isPaused && service.pauseNote && (
+                    <span className="block text-xs text-white/60">
+                      {service.pauseNote}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 text-sm leading-relaxed text-white/70">{SITE.addressLine}</p>
+            <a
+              href={SITE.mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`mt-1 inline-block text-sm text-white/80 underline decoration-white/30 underline-offset-4 ${linkClass}`}
+            >
+              Get directions
+            </a>
+          </div>
+
+          {/* Explore */}
+          <div>
+            <h2 className={headingClass}>Explore</h2>
+            <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-white/80 lg:grid-cols-1">
+              {exploreLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className={linkClass}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h2 className={headingClass}>Connect</h2>
+            <ul className="mt-4 space-y-2 text-sm text-white/80">
               <li>
-                <a href="tel:+18476685622" className="hover:text-white transition-colors">
-                  (847) 668-5622
+                <a href={SITE.phoneHref} className={linkClass}>
+                  {SITE.phone}
                 </a>
               </li>
               <li>
-                <a href="mailto:info@thrivevineyard.com" className="hover:text-white transition-colors">
-                  info@thrivevineyard.com
+                <a href={`mailto:${SITE.email}`} className={linkClass}>
+                  {SITE.email}
                 </a>
               </li>
               <li>
-                <Link href="/feedback" className="hover:text-white transition-colors">
+                <Link href="/get-connected" className={linkClass}>
+                  Get connected
+                </Link>
+              </li>
+              <li>
+                <Link href="/feedback" className={linkClass}>
                   Website feedback
                 </Link>
               </li>
             </ul>
-            <div className="mt-4 flex gap-4">
-              <a
-                href="https://www.youtube.com/@thrivevineyardchurchus"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-white/70 hover:text-white transition-colors"
-              >
-                YouTube
-              </a>
-              <a
-                href="https://www.facebook.com/thrivevineyardchurch"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-white/70 hover:text-white transition-colors"
-              >
-                Facebook
-              </a>
-              <a
-                href="https://www.instagram.com/thrivevineyard/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-white/70 hover:text-white transition-colors"
-              >
-                Instagram
-              </a>
-            </div>
           </div>
-
         </div>
 
-        <div className="mt-8 border-t border-white/10 pt-6 text-center text-xs text-white/40">
-          © {new Date().getFullYear()} Thrive Vineyard. All rights reserved.
+        <div className="mt-12 border-t border-white/10 pt-6 text-center text-xs text-white/50">
+          © {new Date().getFullYear()} {SITE.shortName}. All rights reserved.
         </div>
       </div>
     </footer>

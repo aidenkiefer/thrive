@@ -27,7 +27,6 @@ describe('buildEventJsonLd', () => {
       url: URL_FIXTURE,
       image: 'https://example.test/fixture.jpg',
       eventStatus: 'https://schema.org/EventScheduled',
-      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
       location: { '@type': 'Place', name: 'Fixture Hall, Fixture City' },
       organizer: { '@type': 'Organization', name: SITE.name, url: 'https://thrivevineyard.com' },
     })

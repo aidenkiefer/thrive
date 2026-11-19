@@ -46,7 +46,8 @@ export default async function EventDetailPage({ params }: Props) {
       description: event.description,
       featuredImageUrl: event.featured_image_url,
       venue: event.venue,
-      location: event.location,
+      // An occurrence's own location overrides the series location (supabase/schema.sql).
+      location: isRecurring ? (nextOccurrence?.location ?? event.location) : event.location,
     },
     `${SITE_URL}/events/${slug}`,
   )

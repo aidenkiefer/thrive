@@ -65,7 +65,7 @@ export function buildEventJsonLd(
   if (image && isHttpUrl(image)) data.image = image
 
   data.eventStatus = 'https://schema.org/EventScheduled'
-  data.eventAttendanceMode = 'https://schema.org/OfflineEventAttendanceMode'
+  // eventAttendanceMode is intentionally omitted: no record field says whether an event is in person or online.
 
   const placeName = [clean(event.venue), clean(event.location)].filter(Boolean).join(', ')
   if (placeName) data.location = { '@type': 'Place', name: placeName }

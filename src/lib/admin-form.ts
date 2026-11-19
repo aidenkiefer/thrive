@@ -1,6 +1,5 @@
-import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { formInstanceFromReferer, newFormInstance, parseFormInstance } from '@/lib/admin-form-instance'
+import { newFormInstance, parseFormInstance } from '@/lib/admin-form-instance'
 import { isAdminInputError } from '@/lib/admin-validation'
 
 export type AdminFeedback = { error?: string; saved?: string; form?: string; instance?: string }
@@ -16,15 +15,12 @@ export async function saveWithFeedback(path: string, formKey: string, save: () =
     await save()
   } catch (error) {
     if (isAdminInputError(error)) {
-      // Carry the current instance token so the form keeps its React key (and typed input).
-      const instance = formInstanceFromReferer((await headers()).get('referer'))
-      const params = new URLSearchParams({ error: error.message, form: formKey })
-      if (instance) params.set('fi', instance)
-      redirect(`${path}?${params}#form-${formKey}`)
+      // No token: the form is not remounted, so the browser keeps what was typed.
+      redirect(`${path}?${new URLSearchParams({ error: error.message, form: formKey })}#form-${formKey}`)
     }
     throw error
   }
-  // A fresh token remounts the form with the saved values (or blank for "new").
+  // A fresh token remounts only this form with the saved values (or blank for "new").
   redirect(`${path}?${new URLSearchParams({ saved: formKey, fi: newFormInstance() })}#form-${formKey}`)
 }
 
@@ -34,5 +30,5 @@ export async function readFeedback(searchParams: Promise<Record<string, string |
   const one = (key: string) => (typeof params[key] === 'string' ? (params[key] as string).slice(0, 500) : undefined)
   const error = one('error')
   const saved = one('saved')
-  return { error, saved, form: error ? one('form') : saved, instance: parseFormInstance(params.fi) }
+  return { error, saved, form: error ? one('form') : saved, instance: saved ? parseFormInstance(params.fi) : undefined }
 }

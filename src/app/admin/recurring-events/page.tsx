@@ -7,7 +7,7 @@ import {
   requireInstant, requireSlug, requireText,
 } from '@/lib/admin-validation'
 import { AdminForm } from '../_components/admin-form'
-import { FormFeedback, feedbackTargets, formInstanceKey } from '../_components/form-feedback'
+import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
 
 async function saveRecurring(form: FormData) {
   'use server'
@@ -97,7 +97,7 @@ type Occurrence = {
 
 function RecurringForm({ item, feedback }: { item?: Recurring; feedback?: AdminFeedback }) {
   const formKey = item?.id || 'rec-new'
-  return <AdminForm key={formInstanceKey(feedback, formKey)} id={`form-${formKey}`} action={saveRecurring} className="space-y-3 rounded border bg-white p-5">
+  return <AdminForm resetToken={formResetToken(feedback, formKey)} id={`form-${formKey}`} action={saveRecurring} className="space-y-3 rounded border bg-white p-5">
     <FormFeedback feedback={feedback} formKey={formKey} />
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Name<input name="name" defaultValue={item?.name} required className="mt-1 block w-full rounded border p-2" /></label>
@@ -119,7 +119,7 @@ function RecurringForm({ item, feedback }: { item?: Recurring; feedback?: AdminF
 
 function OccurrenceForm({ item, events, feedback }: { item?: Occurrence; events: Recurring[]; feedback?: AdminFeedback }) {
   const formKey = item?.id || 'occ-new'
-  return <AdminForm key={formInstanceKey(feedback, formKey)} id={`form-${formKey}`} action={saveOccurrence} className="grid gap-3 rounded border bg-white p-4 md:grid-cols-2">
+  return <AdminForm resetToken={formResetToken(feedback, formKey)} id={`form-${formKey}`} action={saveOccurrence} className="grid gap-3 rounded border bg-white p-4 md:grid-cols-2">
     <div className="md:col-span-2"><FormFeedback feedback={feedback} formKey={formKey} /></div>
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Recurring event<select name="recurring_event_id" defaultValue={item?.recurring_event_id || ''} required className="mt-1 block w-full rounded border p-2"><option value="">Select event</option>{events.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select></label>

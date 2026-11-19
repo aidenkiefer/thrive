@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/admin-auth'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import { assertPublishable, fail, formUrlPublishProblems, httpsUrl, requireSlug, requireText } from '@/lib/admin-validation'
 import { AdminForm } from '../_components/admin-form'
-import { FormFeedback, feedbackTargets, formInstanceKey } from '../_components/form-feedback'
+import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
 
 async function saveOutreach(form: FormData) {
   'use server'
@@ -59,7 +59,7 @@ type Outreach = {
 
 function OutreachForm({ item, feedback }: { item?: Outreach; feedback?: AdminFeedback }) {
   const formKey = item?.id || 'new'
-  return <AdminForm key={formInstanceKey(feedback, formKey)} id={`form-${formKey}`} action={saveOutreach} className="space-y-3 rounded border bg-white p-5">
+  return <AdminForm resetToken={formResetToken(feedback, formKey)} id={`form-${formKey}`} action={saveOutreach} className="space-y-3 rounded border bg-white p-5">
     <FormFeedback feedback={feedback} formKey={formKey} />
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Name<input name="name" defaultValue={item?.name} required className="mt-1 block w-full rounded border p-2" /></label>

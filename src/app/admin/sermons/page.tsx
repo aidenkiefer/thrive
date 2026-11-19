@@ -6,7 +6,7 @@ import {
   assertPublishable, fail, httpsUrl, parseDateOnly, requireSlug, requireText, sermonPublishProblems,
 } from '@/lib/admin-validation'
 import { AdminForm } from '../_components/admin-form'
-import { FormFeedback, feedbackTargets, formInstanceKey } from '../_components/form-feedback'
+import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
 
 const list = (value: FormDataEntryValue | null) =>
   String(value || '').split(',').map(item => item.trim()).filter(Boolean)
@@ -82,7 +82,7 @@ type Sermon = {
 
 function SermonForm({ item, speakers, series, feedback }: { item?: Sermon; speakers: Speaker[]; series: Series[]; feedback?: AdminFeedback }) {
   const formKey = item?.id || 'new'
-  return <AdminForm key={formInstanceKey(feedback, formKey)} id={`form-${formKey}`} action={saveSermon} className="space-y-3 rounded border bg-white p-5">
+  return <AdminForm resetToken={formResetToken(feedback, formKey)} id={`form-${formKey}`} action={saveSermon} className="space-y-3 rounded border bg-white p-5">
     <FormFeedback feedback={feedback} formKey={formKey} />
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Title<input name="title" defaultValue={item?.title} required className="mt-1 block w-full rounded border p-2" /></label>

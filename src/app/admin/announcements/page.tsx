@@ -6,7 +6,7 @@ import {
   announcementPublishProblems, assertPublishable, httpsUrl, parseInstant, requireText, siteOrHttpsUrl,
 } from '@/lib/admin-validation'
 import { AdminForm } from '../_components/admin-form'
-import { FormFeedback, feedbackTargets, formInstanceKey } from '../_components/form-feedback'
+import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
 
 async function saveAnnouncement(formData: FormData) {
   'use server'
@@ -54,7 +54,7 @@ type Announcement = {
 function AnnouncementForm({ item, feedback }: { item?: Announcement; feedback?: AdminFeedback }) {
   const formKey = item?.id || 'new'
   return (
-    <AdminForm key={formInstanceKey(feedback, formKey)} id={`form-${formKey}`} action={saveAnnouncement} className="space-y-3 rounded border bg-white p-5">
+    <AdminForm resetToken={formResetToken(feedback, formKey)} id={`form-${formKey}`} action={saveAnnouncement} className="space-y-3 rounded border bg-white p-5">
       <FormFeedback feedback={feedback} formKey={formKey} />
       {item && <input type="hidden" name="id" value={item.id} />}
       <label className="block text-sm">Title<input name="title" defaultValue={item?.title} required className="mt-1 block w-full rounded border p-2" /></label>

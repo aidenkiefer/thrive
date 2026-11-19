@@ -56,3 +56,12 @@ The owner decides these (decision card on #101). Agents do not touch them.
 ## Verification after the seed
 
 `npm run seed` re-reads every planned row and exits non-zero unless all of them match: 12 speakers, 22 series, 120 sermons, 25 recurring + 55 one-time events, 56 occurrences, and Express(o) published as Sundays 8:30 AM with every occurrence on a Sunday at 08:30 America/Chicago. The result goes into [the change ledger](supabase-change-ledger.md).
+
+## Owner answers (2026-11-19)
+
+1. Express(o) "pause" announcement: **unpublish** (outdated).
+2. Groups: the source is the "Find A Group" cards on https://thrivevineyard.com/groups/. Contend Prayer Group and Married's Small Group get that page's text; Youth Group, Spiritual Warfare and Discovery! Women's Bible Study are added; Alpha (not a card there) is unpublished. Contacts are copied as that page publishes them. Outreach `joy-drop` and `pack-the-pantry`: **unpublish**.
+3. Youth meets the 2nd and 4th Thursdays (recurring). The one-time row is **unpublished**; the seed labels the recurring event "2nd and 4th Thursdays" and keeps ChurchSuite's dates, which skip holidays (Thanksgiving, Christmas Eve).
+4. Family Worship Service is every Sunday at 9:30 AM, as the export already says. The 8 past occurrences stay.
+
+The writes are [`supabase/ops/2026-11-19-batch-a.sql`](../../supabase/ops/2026-11-19-batch-a.sql) (rehearsed on PGlite: idempotent, nothing deleted), then the seed. The dry-run fingerprint is unchanged, `3af3b89a403b72ac`: it covers live rows the seed overwrites, and the youth label is on a row the seed inserts.

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
-  buildSeedPlan, checkExpresso, chicagoWeekdayTime, EXPECTED_COUNTS, SEED_TABLES,
+  buildSeedPlan, checkExpresso, chicagoWeekdayTime, EXPECTED_COUNTS, SEED_TABLES, YOUTH,
   type Row, type SeedExports,
 } from './plan'
 
@@ -44,6 +44,15 @@ describe('buildSeedPlan', () => {
     const times = withDates.filter(s => s.series_slug === slug).map(s => Date.parse(s.published_at as string))
     const series = plan.sermon_series.find(s => s.slug === slug)
     expect(Date.parse(series?.published_at as string)).toBe(Math.min(...times))
+  })
+
+  it('youth is labelled 2nd and 4th Thursdays and keeps the exported dates', () => {
+    const plan = buildSeedPlan(copy())
+    expect(plan.recurring_events.find(e => e.slug === YOUTH.slug)?.recurrence_description).toBe('2nd and 4th Thursdays')
+    const dates = plan.event_occurrences.filter(o => o.recurring_slug === YOUTH.slug).map(o => o.start_datetime)
+    expect(dates).toEqual(real.occurrences.filter(o => o.recurring_slug === YOUTH.slug).map(o => o.start_datetime))
+    expect(plan.recurring_events.find(e => e.slug === 'family-worship-service'))
+      .toMatchObject({ recurrence_description: 'Sundays', typical_time: '9:30 am' })
   })
 
   it('cleanUrl turns &amp; into &', () => {

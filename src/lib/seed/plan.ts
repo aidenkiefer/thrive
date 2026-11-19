@@ -45,6 +45,13 @@ export const EXPECTED_COUNTS: Record<SeedTable, number> = {
 /** Express(o): every Sunday at 8:30 AM America/Chicago (owner, #54). */
 export const EXPRESSO = { slug: 'expresso-service', recurrence: 'Sundays', time: '8:30 AM' } as const
 
+/**
+ * Youth group: the 2nd and 4th Thursdays (owner, #101). The export says "Selected
+ * dates"; only the label changes. Occurrences stay ChurchSuite's dates, which skip
+ * holidays (owner, #101).
+ */
+export const YOUTH = { slug: 'thrive-youth-thursday-nights', recurrence: '2nd and 4th Thursdays' } as const
+
 const cleanUrl = (value: unknown) => (typeof value === 'string' ? value.replace(/&amp;/g, '&') : null)
 const str = (value: unknown) => (typeof value === 'string' ? value : null)
 
@@ -109,7 +116,8 @@ export function buildSeedPlan(x: SeedExports): SeedPlan {
     })),
     recurring_events: x.recurring.map(e => ({
       slug: e.slug, name: e.name, description: e.description, short_summary: e.short_summary,
-      category: e.category, recurrence_description: e.recurrence_description,
+      category: e.category,
+      recurrence_description: e.slug === YOUTH.slug ? YOUTH.recurrence : e.recurrence_description,
       typical_time: e.typical_time, location: e.location, venue: e.venue,
       featured_image_url: cleanUrl(e.featured_image_url),
       churchsuite_form_url: cleanUrl(e.churchsuite_form_url), external_url: cleanUrl(e.external_url),

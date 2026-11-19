@@ -1,10 +1,16 @@
 # Email DNS and sender setup
 
-**Owner decision, 2026-11-19.** Use the owner-selected root info mailbox as the From address for staff sign-in codes and website forms. The same mailbox is the default production form recipient. Verify `thrivevineyard.com` in Resend to authorize this sender. Using `updates.thrivevineyard.com` would require a From address on that subdomain. Its existing sending records can continue to serve it independently.
+**Owner decision, 2026-11-19.** Use the owner-selected root info mailbox as the From address for staff sign-in codes and website forms. The same mailbox is the default production form recipient. Verify `thrivevineyard.com` in Resend to authorize this sender. An alternative is to use the info mailbox on the updates subdomain as From and the root info inbox as Reply-To. This uses existing subdomain records, avoids root DNS changes and helps isolate sending reputation. The owner selected the root sender because three new DNS labels preserve Google Workspace MX and require no apex SPF merge.
 
-**Status, 2026-11-19 at approximately 14:03 CST.** The public table in the owner-authorized Chrome page showed the root domain on Resend Forge in `us-east-1`, overall **Pending**. The owner began entering the DKIM TXT record manually. Saving and public propagation remain unconfirmed. No test has been sent.
+**Status, 2026-11-19 at approximately 14:12 CST.** The owner-authorized Resend page showed the root domain on Forge in `us-east-1` as **Verified**, including DKIM and both sending CNAMEs. Queries against authoritative DNS (`ns09.domaincontrol.com`) and recursive DNS (`1.1.1.1`) matched all three required rows. The complete DKIM TXT matched the displayed public key. The five Google Workspace apex MX hosts and priorities also matched the baseline.
 
-## Public DNS baseline
+The owner reported successfully saving the three records using Resend's automatic GoDaddy setup. GoDaddy displayed a TTL of **1 Hour** for all three. The table below retains the TTL requested by Resend.
+
+The owner authorized Browser Control in chat: "you can use Browser Control to check on the configuration and see what we have to do next". The read-only check used already-open Chrome pages for public Resend DNS/domain settings and GoDaddy DNS. The agent made no login or configuration changes, requested no keys or passwords, and opened no API-key or SMTP-credential pages. An attempted navigation to Configuration failed because the browser control could not locate its clickable area.
+
+At 14:11 CST the optional root DMARC name still returned NXDOMAIN. The owner was offered the monitoring-policy row below. Manual publication remains unconfirmed. Before advancing to quarantine or reject, verify Google Workspace outbound authentication and DMARC alignment using authorized message headers. Other DKIM selectors may exist beyond those queried. Supabase SMTP and website forms configuration remain unverified, and sandbox delivery tests have not run.
+
+## Pre-change public DNS baseline
 
 Read-only `nslookup` observations on 2026-11-19 at 13:57 CST (`dig` unavailable). Names in the table are relative to `thrivevineyard.com`.
 
@@ -26,20 +32,20 @@ TXT and CNAME checks covered the selectors google, resend, selector1, selector2 
 1. In Resend, open **Domains**, add or select the exact root domain, and open its sending records. Keep receiving disabled. Copy only the public record type, name, value, priority (MX) and TTL from that screen. Keep credentials in the owner-managed dashboards. [Domain verification](https://resend.com/docs/dashboard/domains/introduction)
 2. Enter the three required rows below. The owner may also publish the recommended DMARC row. Names are ready for GoDaddy. For DKIM, copy the entire public value from the root-domain dashboard.
 
-| Type | GoDaddy Name | Value | TTL | Resend status at observation |
+| Type | GoDaddy Name | Value | TTL | Status at 14:12 CST |
 | --- | --- | --- | --- | --- |
-| TXT | `resend._domainkey` | Copy the complete DKIM value beginning with `p=` directly from Resend | Auto | Pending |
-| CNAME | `rsend` | `rsend.forge.rmta.net` | Auto | Pending |
-| CNAME | `send` | `send.forge.rmta.net` | Auto | Not Started |
+| TXT | `resend._domainkey` | Copy the complete DKIM value beginning with `p=` directly from Resend | Auto | Verified |
+| CNAME | `rsend` | `rsend.forge.rmta.net` | Auto | Verified |
+| CNAME | `send` | `send.forge.rmta.net` | Auto | Verified |
 | TXT (optional) | `_dmarc` | `v=DMARC1; p=none;` | Auto | Recommended |
 
 3. In GoDaddy, open the domain's DNS records. For each dashboard row, use its exact type. Convert a fully qualified name to a GoDaddy **Name** by removing the trailing dot if present and stripping the final `.thrivevineyard.com` once. Use `@` for the apex. Keep an already-relative label as supplied. Preserve the dashboard **Value**, TTL and MX priority. Compare existing rows at that exact name before saving. [GoDaddy DNS entry](https://www.godaddy.com/help/add-a-txt-record-19232)
-4. Both CNAME names must be free of conflicting data, including TXT or MX records. The Forge dashboard requests no MX or SPF TXT rows. Preserve the Google Workspace apex MX set, apex SPF state and existing updates records. The default return-path name is `send`. [Custom return path](https://resend.com/docs/dashboard/domains/custom-return-path)
+4. Both CNAME names must be free of conflicting data, including TXT or MX records. The Forge dashboard requests no MX or SPF TXT rows. Preserve the Google Workspace apex MX set, apex SPF state and existing updates records. The default return-path name is `send`. Resend documents the r-prefixed sibling as a required member of the sending CNAME pair. Retain `rsend` even if an A lookup of its target returns no address. [Custom return path](https://resend.com/docs/dashboard/domains/custom-return-path)
 5. SPF permits one policy per exact DNS name. The baseline found no apex SPF. The return-path CNAME requires no apex SPF merge. [SPF specification](https://www.rfc-editor.org/info/rfc7208/)
 
 ## Verify before enabling either sender
 
-Query the authoritative server first. Repeat the four new-record checks with `1.1.1.1` in place of `ns09.domaincontrol.com` to check recursive visibility. Compare each answer with the Value column above. Join quoted TXT chunks before comparing DKIM. Check DMARC if the owner publishes the optional row.
+Query the authoritative server first. Repeat the four new-record checks with `1.1.1.1` in place of `ns09.domaincontrol.com` to check recursive visibility. Compare each answer with the Value column above. Join quoted TXT chunks before comparing DKIM. Check DMARC if the owner publishes the optional row. The nslookup commands work independently. The optional dig examples require dig to be installed.
 
 ```text
 nslookup -type=TXT resend._domainkey.thrivevineyard.com ns09.domaincontrol.com
@@ -67,9 +73,9 @@ Expect each public record to match Resend and the apex MX and updates alias to m
 
 - [x] Owner selected the root sender on 2026-11-19.
 - [x] Public Resend DNS table observed in the owner-authorized Chrome page.
-- [ ] Owner added the required records in GoDaddy.
-- [ ] Public DNS answers verified against Resend.
-- [ ] Resend shows Verified for the root domain.
+- [x] All three required records are published in the GoDaddy-hosted zone.
+- [x] Authoritative and recursive DNS answers verified against Resend.
+- [x] Resend shows Verified for the root domain, DKIM and both sending CNAMEs.
 - [ ] Owner configured Supabase SMTP and the Auth template.
 - [ ] Owner configured website forms.
 - [ ] Owner confirmed sandbox delivery for staff Auth and forms.

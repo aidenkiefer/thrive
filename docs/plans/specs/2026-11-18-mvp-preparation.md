@@ -12,6 +12,8 @@ Work in this order. The target is the week of November 23, 2026. Confirm release
 
 ## Current handoff
 
+The [development architecture](2026-11-18-mvp-development-architecture.md) and [kickoff assignment](../../agents/assignments/2026-11-18-development-kickoff.md) hold the current build contracts and first batch. Local configuration and test execution are parked at the owner's request. The private board records the resulting dependencies.
+
 See the [laptop review](2026-11-18-laptop-handoff.md) for PR #9 and the new Cursor branch. PR #8 has mobile and keyboard evidence. Youth Alpha still needs a published destination before the redirect ships. Ops owns the E4 fixtures, and Experience owns the renderer. The [private GitHub Project](https://github.com/users/aidenkiefer/projects/3) tracks carry-over and new tickets.
 
 ## Modular backlog

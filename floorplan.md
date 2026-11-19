@@ -406,7 +406,7 @@ ChurchSuite → External Integration
 - Provide a built-in feedback form for visitors and signed-in staff to report bugs and suggest improvements. Use the same email routing.
 - Preserve search visibility through canonical URLs, redirects and sitemap. Use YouTube for sermon video, ChurchSuite for approved external signup and giving flows, and Basecamp for church coordination and approvals. GitHub Issues and Projects track development work.
 
-See the [preparation and ticket plan](docs/plans/specs/2026-11-18-mvp-preparation.md) for dependencies and acceptance checks.
+See the [MVP development architecture](docs/plans/specs/2026-11-18-mvp-development-architecture.md) for build contracts and the [preparation plan](docs/plans/specs/2026-11-18-mvp-preparation.md) for release dependencies.
 
 ---
 

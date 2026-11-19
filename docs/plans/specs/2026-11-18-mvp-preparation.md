@@ -10,6 +10,10 @@ Work in this order. The target is the week of November 23, 2026. Confirm release
 6. Update the shared skills and references based on gaps found during onboarding and ticket drafting.
 7. Inventory connected services and verify them in local or Preview environments. Use the release checklist for live configuration and changes.
 
+## Current handoff
+
+See the [laptop review](2026-11-18-laptop-handoff.md) for PR #9 and the new Cursor branch. PR #8 has mobile and keyboard evidence. Youth Alpha still needs a published destination before the redirect ships. Ops owns the E4 fixtures, and Experience owns the renderer. The [private GitHub Project](https://github.com/users/aidenkiefer/projects/3) tracks carry-over and new tickets.
+
 ## Modular backlog
 
 These entries are the initial ticket map. Existing pull requests are carry-over. The Product Manager should link them and file only missing work.

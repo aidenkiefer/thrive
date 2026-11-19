@@ -1,3 +1,4 @@
+import { resendFromEnv, type ResendOptions } from './resend'
 import type { FormEnv, MailMessage, MailTransport } from './types'
 
 /** In-memory transport for tests and local development. Never delivers anything. */
@@ -18,12 +19,17 @@ export function sharedFakeTransport(): FakeMailTransport {
 }
 
 /**
- * Pick the transport from configuration. No deployment transport exists yet
- * (the mail provider is an owner decision), so production resolves to null and
- * submissions report 'unavailable'. The fake is refused in production even if
- * requested, so a stray variable cannot silently swallow visitor messages.
+ * Pick the transport from configuration. FORMS_MAIL_TRANSPORT=resend with a
+ * nonempty RESEND_API_KEY selects the Resend adapter; anything else in
+ * production resolves to null and submissions report 'unavailable'. The fake
+ * is refused in production even if requested, so a stray variable cannot
+ * silently swallow visitor messages.
  */
-export function transportFromEnv(env: FormEnv & { NODE_ENV?: string }): MailTransport | null {
+export function transportFromEnv(
+  env: FormEnv & { NODE_ENV?: string },
+  options?: ResendOptions,
+): MailTransport | null {
+  if (env.FORMS_MAIL_TRANSPORT === 'resend') return resendFromEnv(env, options)
   if (env.FORMS_MAIL_TRANSPORT === 'fake' && env.NODE_ENV !== 'production') return sharedFakeTransport()
   return null
 }

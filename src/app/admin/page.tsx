@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import { requireAdmin } from '@/lib/admin-auth'
 
-export default function AdminDashboard() {
+export default async function AdminDashboard() {
+  await requireAdmin()
   return (
     <div>
       <h1 className="text-2xl font-bold">Dashboard</h1>

@@ -44,7 +44,7 @@ vi.mock('@supabase/supabase-js', () => ({
 
 const ACTOR = '11111111-1111-4111-8111-111111111111'
 const AUTH = '22222222-2222-4222-8222-222222222222'
-const baseRow = { actor_id: ACTOR, email: 'pat@example.org', auth_user_id: AUTH, status: 'active', auth_version: 4 }
+const baseRow = { actor_id: ACTOR, email: 'pat@example.org', auth_user_id: AUTH, status: 'active', auth_version: 4, role: 'staff' }
 
 beforeEach(() => {
   process.env.NEXTAUTH_SECRET = 'test-secret'
@@ -167,6 +167,35 @@ describe('NextAuth staff-code provider', () => {
   })
 })
 
+describe('requirePermission', () => {
+  const session = { identity: { actorId: ACTOR, authUserId: AUTH, authVersion: 4 } }
+
+  it('denies staff account control to a staff-role session and allows content editing', async () => {
+    h.session = session
+    const m = await load()
+    await expect(m.requirePermission('staff_accounts.manage')).rejects.toBeInstanceOf(m.PermissionDeniedError)
+    expect((await m.requirePermission('content.edit')).actorId).toBe(ACTOR)
+  })
+
+  it('allows staff account control to an admin-role session', async () => {
+    h.session = session
+    h.rows = [{ ...baseRow, role: 'admin' }]
+    const m = await load()
+    expect((await m.requirePermission('staff_accounts.manage')).role).toBe('admin')
+  })
+
+  it('reads the role from the row on every call, and redirects without an actor', async () => {
+    h.session = session
+    h.rows = [{ ...baseRow, role: 'admin' }]
+    const m = await load()
+    expect((await m.requirePermission('staff_accounts.manage')).role).toBe('admin')
+    h.rows = [{ ...baseRow, role: 'staff' }]
+    await expect(m.requirePermission('staff_accounts.manage')).rejects.toBeInstanceOf(m.PermissionDeniedError)
+    h.session = null
+    await expect(m.requirePermission('content.edit')).rejects.toThrow('REDIRECT:/admin/login')
+  })
+})
+
 describe('requireAdmin / getStaffActor', () => {
   const sessionFor = (over: Record<string, unknown> = {}) => ({
     identity: { actorId: ACTOR, authUserId: AUTH, authVersion: 4, ...over },
@@ -175,7 +204,7 @@ describe('requireAdmin / getStaffActor', () => {
   it('returns the actor for a live matching session', async () => {
     h.session = sessionFor()
     const m = await load()
-    expect(await m.requireAdmin()).toEqual({ email: 'pat@example.org', actorId: ACTOR })
+    expect(await m.requireAdmin()).toEqual({ email: 'pat@example.org', actorId: ACTOR, role: 'staff' })
     expect((await m.getStaffActor())?.authVersion).toBe(4)
   })
 

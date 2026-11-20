@@ -134,10 +134,10 @@ Re-run it. The harness is committed in `scripts/pglite-rehearsal/`, a standalone
 cd scripts/pglite-rehearsal && npm ci && npm run rehearse   # exit 0 = all checks pass
 ```
 
-It reads the June baseline schema from this checkout's git history (`cd012bd`). Since the QA round on 2026-11-19 it also checks the D1R staff table: `service_role` has only select, insert, and update, and delete and truncate are refused, with the row surviving. That makes 398 checks on this branch (406 once #90's R2 block is stacked on top). To prove the harness can fail, build a mutated copy and rehearse it. It must exit 1:
+It reads the June baseline schema from this checkout's git history (`cd012bd`). Since the QA round on 2026-11-19 it also checks the D1R staff table: `service_role` has only select, insert, and update, and delete and truncate are refused, with the row surviving. That made 398 checks (406 once #90's R2 block is stacked on top). #102 adds the staff role checks (default `staff`, invalid role refused, role change bumps `auth_version`, last active admin cannot be demoted or disabled): **448 checks** on `claude/data-admin-role`; the `last-admin` mutant fails 18 of them and exits 1. To prove the harness can fail, build a mutated copy and rehearse it. It must exit 1:
 
 ```sh
-node mutate.mjs ../.. /tmp/mut staff-truncate && node rehearse.mjs /tmp/mut   # also: revoke, cap
+node mutate.mjs ../.. /tmp/mut staff-truncate && node rehearse.mjs /tmp/mut   # also: revoke, cap, last-admin
 ```
 
 ## Real Postgres rehearsal (#60, 2026-11-19)
@@ -150,7 +150,7 @@ cd scripts/pg-rehearsal && npm ci && node rehearse-pg.mjs   # exit 0 = pass, 1 =
 
 It is a standalone package with its own lockfile, not an app dependency. It reads the June baseline from git history (`cd012bd`), like the PGlite harness. It takes about 20 seconds and uses about 50 connections at a time.
 
-**What it proves (573 checks, 573 passed):**
+**What it proves (573 checks, 573 passed; 641/641 on `claude/data-admin-role` with #102: A 212, B 214, C 214, adding the role checks and a two-connection race where concurrent demotions of the last two admins leave exactly one):**
 
 - **Scenarios.** A: fresh `schema.sql`, then the chain twice (190 checks). B: June schema, each migration twice, then the chain again (191). C: June schema without its patch block (191). In B and C the catalog (columns, constraints, indexes, policies, RLS flags, table ACLs, function bodies and ACLs, triggers) is identical to the fresh schema.
 - **Grants and RLS.** `rate_limit_buckets` and `admin_staff_accounts` have RLS on and no policies. `anon` and `authenticated` have no table privilege and cannot execute `take_rate_limit` or `prune_rate_limit_buckets`, checked with `has_*_privilege` and by connecting and running `SET ROLE` (error 42501). `PUBLIC` has no grant. `service_role` can use the limiter, and on `admin_staff_accounts` it has select, insert, and update but not delete or truncate. A control role with the same grants but no `BYPASSRLS` is blocked, so `service_role` depends on `BYPASSRLS`.

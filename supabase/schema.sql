@@ -346,7 +346,8 @@ grant select (id, slug, name, title, bio, photo_url, display_order, created_at)
   on table staff to anon, authenticated;
 
 -- =============================================================================
--- D1R: admin_staff_accounts (mirror of migrations/20261118000000_admin_staff_accounts.sql)
+-- D1R: admin_staff_accounts (mirror of migrations/20261118000000_admin_staff_accounts.sql
+-- plus #102 roles, migrations/20261119020000_admin_staff_roles.sql)
 -- =============================================================================
 
 -- Staff accounts (D1R): service-role-only binding of a durable actor UUID to a
@@ -357,12 +358,14 @@ create table if not exists admin_staff_accounts (
   auth_user_id  uuid not null,
   status        text not null default 'active',
   auth_version  integer not null default 1,
+  role          text not null default 'staff',
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now(),
   disabled_at   timestamptz,
   constraint admin_staff_accounts_email_normalized check (email <> '' and email = lower(btrim(email))),
   constraint admin_staff_accounts_status_valid check (status in ('active', 'disabled')),
-  constraint admin_staff_accounts_version_positive check (auth_version >= 1)
+  constraint admin_staff_accounts_version_positive check (auth_version >= 1),
+  constraint admin_staff_accounts_role_valid check (role in ('admin', 'staff'))
 );
 create unique index if not exists admin_staff_accounts_email_key on admin_staff_accounts (email);
 create unique index if not exists admin_staff_accounts_auth_user_id_key on admin_staff_accounts (auth_user_id);
@@ -381,9 +384,20 @@ begin
   if new.auth_version < old.auth_version then
     raise exception 'admin_staff_accounts.auth_version never decreases';
   end if;
-  if new.status is distinct from old.status or new.auth_user_id is distinct from old.auth_user_id then
-    -- Disable, re-enable, or rebind: revoke every existing website session.
+  if new.status is distinct from old.status or new.auth_user_id is distinct from old.auth_user_id
+     or new.role is distinct from old.role then
+    -- Disable, re-enable, rebind, or role change: revoke every existing website session.
     new.auth_version := greatest(new.auth_version, old.auth_version) + 1;
+  end if;
+  if old.status = 'active' and old.role = 'admin' and (new.status <> 'active' or new.role <> 'admin') then
+    -- Serialize admin removals; each statement below takes a fresh snapshot.
+    perform pg_advisory_xact_lock(hashtext('admin_staff_accounts.last_admin'));
+    if not exists (
+      select 1 from public.admin_staff_accounts a
+      where a.role = 'admin' and a.status = 'active' and a.actor_id <> old.actor_id
+    ) then
+      raise exception 'admin_staff_accounts: cannot demote or disable the last active admin';
+    end if;
   end if;
   if new.status = 'disabled' and old.status <> 'disabled' then
     new.disabled_at := now();

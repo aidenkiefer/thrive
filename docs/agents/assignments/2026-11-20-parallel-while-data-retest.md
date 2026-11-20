@@ -12,7 +12,7 @@ Recorded on [#41](https://github.com/aidenkiefer/thrive/issues/41#issuecomment-7
 - `admin_staff_accounts` and `shared_rate_limit` were applied twice. Publishing migrations were not applied.
 - Sequential limiter check passed: limit 3, 3 allowed, 47 denied. The 50-at-once HTTP check was not run.
 - One staff code sign-in reached the admin dashboard on the `claude/data-shared-limiter` Preview. A reused code was rejected.
-- `updates.thrivevineyard.com` is verified in Resend. The first feedback submit failed because the Preview sending key was limited to the apex domain. The owner replaced that key and redeployed the branch. Delivery is not confirmed yet.
+- `updates.thrivevineyard.com` is verified in Resend. The first feedback submit failed because the Preview sending key was limited to the apex domain. The owner replaced that key, redeployed, and at 11:53 CT a sandbox message arrived from `website@updates.thrivevineyard.com`.
 
 Merged that night and marked Done on the board: #106, #107, #108, #109, #110, #115, #116, #125, #126, #127. #128 is docs-only, green, and still open. #124 is green and waiting. Neither is this session's build work.
 
@@ -20,7 +20,7 @@ Merged that night and marked Done on the board: #106, #107, #108, #109, #110, #1
 
 These stay in the existing Cursor chat. No new worktree. No commits on the Data branches.
 
-1. Confirm the redeployed `claude/data-shared-limiter` Preview sends one feedback message to the owner test inbox.
+1. Done 11:53 CT. One sandbox feedback message arrived from `website@updates.thrivevineyard.com`.
 2. Confirm `/feedback` keeps the typed text when the send is forced to 503.
 3. Confirm Sign out, then `/admin`, returns to the login page.
 4. Leave the 50-at-once HTTP check and the disabled/rebound cases for a private terminal and a second staff account. Do not disable the only staff row.

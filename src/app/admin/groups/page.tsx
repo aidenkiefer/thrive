@@ -1,6 +1,7 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
+import { publishIntent, saveWithPublication } from '@/lib/cms'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import { assertPublishable, fail, formUrlPublishProblems, httpsUrl, requireSlug, requireText } from '@/lib/admin-validation'
 import { AdminForm } from '../_components/admin-form'
@@ -8,25 +9,23 @@ import { FormFeedback, feedbackTargets, formResetToken } from '../_components/fo
 
 async function saveGroup(form: FormData) {
   'use server'
-  await requireAdmin()
+  const { actorId } = await requireAdmin()
   const id = String(form.get('id') || '')
   await saveWithFeedback('/admin/groups', id || 'new', async () => {
     const db = await adminDb()
     const text = (key: string) => String(form.get(key) || '').trim() || null
     const name = requireText(String(form.get('name') || ''), 'Name')
     const slug = requireSlug(String(form.get('slug') || ''))
-    let publishedAt: string | null = null
     if (id) {
-      const { data, error } = await db.from('groups').select('slug,published_at').eq('id', id).single()
+      const { data, error } = await db.from('groups').select('slug').eq('id', id).single()
       if (error) throw new Error(error.message)
       if (data.slug !== slug) fail('Changing a group URL requires a redirect plan')
-      publishedAt = data.published_at
     } else {
       const { data, error } = await db.from('groups').select('id').eq('slug', slug).maybeSingle()
       if (error) throw new Error(error.message)
       if (data) fail('That group URL already exists')
     }
-    const publish = form.get('published') === 'on'
+    const publish = publishIntent(form)
     const row = {
       slug, name,
       description: text('description'),
@@ -40,12 +39,20 @@ async function saveGroup(form: FormData) {
       featured_image_url: httpsUrl(String(form.get('featured_image_url') || ''), 'Image URL'),
       churchsuite_form_url: httpsUrl(String(form.get('churchsuite_form_url') || ''), 'Signup URL'),
       is_open: form.get('is_open') === 'on',
-      published_at: publish ? (publishedAt || new Date().toISOString()) : null,
     }
     if (publish) assertPublishable('group', formUrlPublishProblems(row.churchsuite_form_url, 'Signup URL'))
-    const result = id ? await db.from('groups').update(row).eq('id', id) : await db.from('groups').insert(row)
-    if (result.error) throw new Error(result.error.message)
-    revalidatePath('/admin/groups'); revalidatePath('/groups'); revalidatePath(`/groups/${slug}`); revalidatePath('/')
+    try {
+      await saveWithPublication(db, {
+        table: 'groups', entityType: 'group', label: 'group',
+        id: id || null, row, publish, actorId,
+      })
+    } finally {
+      // Also on failure: an unpublish may have committed before a later step threw.
+      revalidatePath('/admin/groups')
+      revalidatePath('/groups')
+      revalidatePath(`/groups/${slug}`)
+      revalidatePath('/')
+    }
   })
 }
 

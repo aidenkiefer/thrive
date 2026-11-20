@@ -1,6 +1,7 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
+import { publishIntent, saveWithPublication } from '@/lib/cms'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import {
   assertEndAfterStart, assertPublishable, fail, formUrlPublishProblems, httpsUrl, oneTimeEventPublishProblems,
@@ -12,7 +13,7 @@ import Link from 'next/link'
 
 async function saveEvent(formData: FormData) {
   'use server'
-  await requireAdmin()
+  const { actorId } = await requireAdmin()
   const id = String(formData.get('id') || '')
   await saveWithFeedback('/admin/events', id || 'new', async () => {
     const db = await adminDb()
@@ -23,12 +24,10 @@ async function saveEvent(formData: FormData) {
     const start = requireInstant(value('start_datetime'), 'Start')
     const end = parseInstant(value('end_datetime'), 'End')
     assertEndAfterStart(start, end, true)
-    let currentPublishedAt: string | null = null
     if (id) {
-      const { data, error } = await db.from('one_time_events').select('slug,published_at').eq('id', id).single()
+      const { data, error } = await db.from('one_time_events').select('slug').eq('id', id).single()
       if (error) throw new Error(error.message)
       if (data.slug !== slug) fail('Changing an event URL requires a redirect plan')
-      currentPublishedAt = data.published_at
     } else {
       const [recurring, existing] = await Promise.all([
         db.from('recurring_events').select('id').eq('slug', slug).maybeSingle(),
@@ -38,7 +37,7 @@ async function saveEvent(formData: FormData) {
       if (recurring.data) fail('This URL slug belongs to a recurring event')
       if (existing.data) fail('That event URL already exists')
     }
-    const publish = formData.get('published') === 'on'
+    const publish = publishIntent(formData)
     const row = {
       slug, name, start_datetime: start, end_datetime: end,
       description: text('description'),
@@ -49,17 +48,20 @@ async function saveEvent(formData: FormData) {
       featured_image_url: httpsUrl(value('featured_image_url'), 'Image URL'),
       churchsuite_form_url: httpsUrl(value('churchsuite_form_url'), 'ChurchSuite URL'),
       external_url: httpsUrl(value('external_url'), 'Other action URL'),
-      published_at: publish ? (currentPublishedAt || new Date().toISOString()) : null,
     }
     if (publish) assertPublishable('event', [...oneTimeEventPublishProblems(row), ...formUrlPublishProblems(row.churchsuite_form_url, 'ChurchSuite URL')])
-    const result = id
-      ? await db.from('one_time_events').update(row).eq('id', id)
-      : await db.from('one_time_events').insert(row)
-    if (result.error) throw new Error(result.error.message)
-    revalidatePath('/admin/events')
-    revalidatePath('/events')
-    revalidatePath(`/events/${slug}`)
-    revalidatePath('/')
+    try {
+      await saveWithPublication(db, {
+        table: 'one_time_events', entityType: 'one_time_event', label: 'event',
+        id: id || null, row, publish, actorId,
+      })
+    } finally {
+      // Also on failure: an unpublish may have committed before a later step threw.
+      revalidatePath('/admin/events')
+      revalidatePath('/events')
+      revalidatePath(`/events/${slug}`)
+      revalidatePath('/')
+    }
   })
 }
 

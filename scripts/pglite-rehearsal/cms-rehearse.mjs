@@ -1,5 +1,5 @@
-// R2 rehearsal: publication_events + cms_set_published on PGlite (disposable WASM Postgres).
-// Covers draft/published visibility to anon, actor attribution, and rejected actors.
+// R2/R2b rehearsal: publication_events + cms_set_published + published_at guard on PGlite (disposable WASM Postgres).
+// Covers draft/published visibility to anon, actor attribution, rejected actors, and direct published_at writes.
 // Usage (from this directory): npm ci && node cms-rehearse.mjs [repo-root]   # exit 0 = all pass
 // repo-root defaults to the repo this file is in. The June baseline schema comes
 // from this checkout's git history (commit cd012bd).
@@ -238,6 +238,125 @@ async function assertPublishing(db, s) {
   await db.exec('drop owned by rls_probe; drop role rls_probe;');
 }
 
+// R2b: published_at changes only through cms_set_published (trigger + transaction-local mark).
+const GUARDED = ['sermon_series', 'sermons', 'recurring_events', 'one_time_events', 'groups',
+  'ministries', 'announcements', 'landing_pages', 'outreach'];
+const GUARD_FN = 'public.published_at_guard()';
+
+async function assertGuard(db, s) {
+  await db.exec('reset role');
+  // Structure.
+  for (const t of GUARDED) {
+    const r = await one(db, `select pg_get_triggerdef(oid) d from pg_trigger
+      where tgrelid = 'public.${t}'::regclass and tgname = 'published_at_guard' and not tgisinternal`);
+    record(s, `guard trigger on ${t} is BEFORE UPDATE OF published_at FOR EACH ROW`,
+      !!r && /BEFORE UPDATE OF published_at ON public\.\S+ FOR EACH ROW EXECUTE FUNCTION published_at_guard\(\)/.test(r.d), r?.d ?? 'missing');
+  }
+  const n = await one(db, `select count(*)::int n from pg_trigger where tgname = 'published_at_guard' and not tgisinternal`);
+  record(s, 'guard trigger exists on exactly the 9 publishable tables', n.n === GUARDED.length, `${n.n}`);
+  const gf = await one(db, `select prosecdef, proconfig from pg_proc where oid = '${GUARD_FN}'::regprocedure`);
+  record(s, 'published_at_guard is security invoker with empty search_path',
+    gf.prosecdef === false && JSON.stringify(gf.proconfig) === JSON.stringify(['search_path=""']));
+  const gp = await one(db, `select count(*)::int n from pg_proc p, aclexplode(p.proacl) a where p.oid = '${GUARD_FN}'::regprocedure and a.grantee = 0`);
+  record(s, 'PUBLIC has no grant on published_at_guard', gp.n === 0);
+  for (const role of ['anon', 'authenticated']) {
+    const r = await one(db, `select has_function_privilege('${role}', '${GUARD_FN}', 'execute') v`);
+    record(s, `${role} cannot execute published_at_guard`, r.v === false);
+  }
+
+  // Seed drafts as service_role (INSERT is not guarded in R2b).
+  await db.exec('set role service_role');
+  const actor = (await one(db, `insert into admin_staff_accounts (email, auth_user_id) values ('guard@example.org', gen_random_uuid()) returning actor_id`)).actor_id;
+  const ann = (await one(db, `insert into announcements (title, body) values ('Guard announcement', 'body') returning id`)).id;
+  const grp = (await one(db, `insert into groups (slug, name) values ('guard-group', 'Guard group') returning id`)).id;
+  const ser = (await one(db, `insert into sermon_series (slug, title) values ('guard-series', 'Guard series') returning id`)).id;
+  const call = (type, id, publish) => one(db, 'select public.cms_set_published($1, $2, $3, $4) as ts', [type, id, publish, actor]);
+  const pubAt = async (t, id) => (await one(db, `select published_at from public.${t} where id = $1`, [id])).published_at;
+  const evCount = async () => (await one(db, `select count(*)::int n from ${PUB} where actor_id = $1`, [actor])).n;
+  const asService = () => db.exec('set role service_role');
+
+  await expectError(db, s, 'service_role direct publish of a draft (published_at = now()) raises P0001',
+    `update public.announcements set published_at = now() where id = '${ann}'`, 'P0001');
+  await asService();
+  try { await db.exec(`update public.announcements set published_at = now() where id = '${ann}'`); record(s, 'guard message', false); }
+  catch (e) { record(s, 'guard message is "published_at changes only through cms_set_published"', e.message.includes('published_at changes only through cms_set_published')); }
+  record(s, 'blocked direct publish left the draft unpublished', (await pubAt('announcements', ann)) === null);
+
+  // cms_set_published still publishes and records the event.
+  const r1 = await call('announcement', ann, true);
+  record(s, 'cms_set_published still publishes under the guard', r1.ts !== null && (await pubAt('announcements', ann)) !== null);
+  record(s, 'publish under the guard recorded one event', (await evCount()) === 1);
+  const mark = await one(db, `select coalesce(current_setting('thrive.cms_set_published', true), '') v`);
+  record(s, 'mark is not left on after cms_set_published returns', mark.v !== 'on', `'${mark.v}'`);
+
+  await expectError(db, s, 'service_role direct unpublish (published_at = null) raises P0001',
+    `update public.announcements set published_at = null where id = '${ann}'`, 'P0001');
+  await asService();
+  await expectError(db, s, 'service_role direct re-date of a published row raises P0001',
+    `update public.announcements set published_at = published_at - interval '1 day' where id = '${ann}'`, 'P0001');
+  await asService();
+  await expectError(db, s, 'service_role bulk direct update without WHERE raises P0001',
+    `update public.announcements set published_at = now()`, 'P0001');
+  await asService();
+  const keep = await pubAt('announcements', ann);
+  record(s, 'blocked direct changes left published_at intact', keep !== null && new Date(keep).getTime() === new Date(r1.ts).getTime());
+
+  // Unchanged published_at passes.
+  try {
+    await db.exec(`update public.announcements set title = 'Guard announcement (edited)' where id = '${ann}'`);
+    await db.exec(`update public.announcements set title = 'Guard announcement', published_at = published_at where id = '${ann}'`);
+    const after = await pubAt('announcements', ann);
+    record(s, 'content edits and same-value published_at writes pass', new Date(after).getTime() === new Date(r1.ts).getTime());
+  } catch (e) { await asService().catch(() => {}); record(s, 'content edits and same-value published_at writes pass', false, e.message.split('\n')[0]); }
+
+  // Seed-shaped upsert: same timestamp passes, a different one raises.
+  const g1 = await call('group', grp, true);
+  const gTs = new Date(g1.ts).toISOString();
+  try {
+    await db.query(`insert into public.groups (slug, name, published_at) values ('guard-group', 'Guard group', $1)
+      on conflict (slug) do update set name = excluded.name, published_at = excluded.published_at`, [gTs]);
+    record(s, 'seed-style upsert re-writing the same published_at passes', new Date(await pubAt('groups', grp)).getTime() === new Date(g1.ts).getTime());
+  } catch (e) { await asService().catch(() => {}); record(s, 'seed-style upsert re-writing the same published_at passes', false, e.message.split('\n')[0]); }
+  await expectError(db, s, 'seed-style upsert with a different published_at raises P0001',
+    `insert into public.groups (slug, name, published_at) values ('guard-group', 'Guard group', now() + interval '1 hour')
+      on conflict (slug) do update set published_at = excluded.published_at`, 'P0001');
+  await asService();
+
+  // No leak: inside one transaction, a direct change after cms_set_published still raises.
+  for (const [type, table, id] of [['announcement', 'announcements', ann], ['group', 'groups', grp], ['sermon_series', 'sermon_series', ser]]) {
+    const item = `no mark leak: direct ${table} change after cms_set_published in the same transaction raises P0001`;
+    await db.exec('begin');
+    try {
+      const target = (await pubAt(table, id)) === null;
+      await call(type, id, target);
+      await db.exec(`update public.${table} set published_at = ${target ? 'null' : 'now()'} where id = '${id}'`);
+      record(s, item, false, 'no error raised');
+    } catch (e) {
+      record(s, item, e.code === 'P0001', `${e.code} ${e.message.split('\n')[0]}`);
+    } finally {
+      await db.exec('rollback');
+      await asService();
+    }
+  }
+  record(s, 'rolled-back transactions left no events', (await evCount()) === 2);
+
+  // Owner is guarded too (trigger, not privileges).
+  await db.exec('reset role');
+  await expectError(db, s, 'owner direct change also raises P0001',
+    `update public.sermon_series set published_at = now() where id = '${ser}'`, 'P0001');
+  await asService();
+
+  // Unpublish through the function still works on the guarded tables.
+  const u1 = await call('announcement', ann, false);
+  const u2 = await call('group', grp, false);
+  const s1 = await call('sermon_series', ser, true);
+  record(s, 'cms_set_published still unpublishes and publishes under the guard',
+    u1.ts === null && u2.ts === null && s1.ts !== null
+    && (await pubAt('announcements', ann)) === null && (await pubAt('groups', grp)) === null && (await pubAt('sermon_series', ser)) !== null);
+  record(s, 'each function change recorded exactly one event', (await evCount()) === 5);
+  await db.exec('reset role');
+}
+
 async function main() {
   console.log(`# ${(await (await PGlite.create()).query('select version() v')).rows[0].v}\n`);
 
@@ -248,6 +367,7 @@ async function main() {
   for (const pass of [1, 2]) for (const m of migrations) await apply(a, A, `${m.name} (chain pass ${pass})`, m.sql);
   compare(A, freshSnap, await snapshot(a), 'schema.sql before migrations (chain is a no-op)');
   await assertPublishing(a, A);
+  await assertGuard(a, A);
 
   for (const [label, june] of [['B June schema', juneFull], ['C June schema without patch', juneNoPatch]]) {
     const db = await freshDb();
@@ -258,6 +378,7 @@ async function main() {
     }
     compare(label, freshSnap, await snapshot(db), 'fresh schema.sql');
     await assertPublishing(db, label);
+    await assertGuard(db, label);
   }
 
   console.log(`\n${total - failures}/${total} checks passed, ${failures} failed`);

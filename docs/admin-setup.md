@@ -47,6 +47,10 @@ Each account is `admin` or `staff` (default). Staff account control (create, dis
 - The database refuses to demote or disable the **last active admin**. Promote a second admin first.
 - Account control is SQL in the editor for the MVP; there is no account-management screen yet.
 
+## Seeding
+
+Seed once, before staff start editing. **Never re-seed a database with staff edits:** once the `published_at` guard (`20261119010000`) is applied, the seed aborts with `P0001` at the first row whose `published_at` a staff member changed, and rows staff edited would otherwise be overwritten. Reconcile with a reviewed, row-by-row change instead (#101).
+
 ## Sessions and revocation
 
 A website session lasts 4 hours from sign-in. Using the admin does not extend it; after 4 hours the person signs in again with a new code. To end a person's sessions sooner, revoke them in the SQL editor in one of two ways:

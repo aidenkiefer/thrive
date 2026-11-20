@@ -1,6 +1,7 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
+import { publishIntent, saveWithPublication } from '@/lib/cms'
 
 const reserved = new Set(['plan-a-visit', 'sermons', 'events', 'groups', 'kids-youth', 'outreach', 'about', 'give', 'ministries', 'admin'])
 function secureUrl(value: FormDataEntryValue | null) {
@@ -12,7 +13,7 @@ function secureUrl(value: FormDataEntryValue | null) {
 
 async function saveLanding(form: FormData) {
   'use server'
-  await requireAdmin()
+  const { actorId } = await requireAdmin()
   const db = await adminDb()
   const id = String(form.get('id') || '')
   const slug = String(form.get('slug') || '').trim().toLowerCase()
@@ -20,12 +21,10 @@ async function saveLanding(form: FormData) {
   if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || reserved.has(slug)) {
     throw new Error('Enter a title and a valid, available root URL slug')
   }
-  let publishedAt: string | null = null
   if (id) {
-    const { data, error } = await db.from('landing_pages').select('slug,published_at').eq('id', id).single()
+    const { data, error } = await db.from('landing_pages').select('slug').eq('id', id).single()
     if (error) throw new Error(error.message)
     if (data.slug !== slug) throw new Error('Changing a campaign URL requires a redirect plan')
-    publishedAt = data.published_at
   } else {
     const { data, error } = await db.from('landing_pages').select('id').eq('slug', slug).maybeSingle()
     if (error) throw new Error(error.message)
@@ -35,7 +34,7 @@ async function saveLanding(form: FormData) {
   const [entityType = '', entityId = ''] = linked.split('|')
   const allowed = new Set(['recurring_event', 'one_time_event', 'group', 'ministry'])
   if (entityType && (!allowed.has(entityType) || !entityId)) throw new Error('Select a valid canonical record')
-  const publish = form.get('published') === 'on'
+  const publish = publishIntent(form)
   const row = {
     slug, title,
     hero_heading: String(form.get('hero_heading') || '').trim() || null,
@@ -49,13 +48,18 @@ async function saveLanding(form: FormData) {
     seo_title: String(form.get('seo_title') || '').trim() || null,
     seo_description: String(form.get('seo_description') || '').trim() || null,
     og_image_url: secureUrl(form.get('og_image_url')),
-    published_at: publish ? (publishedAt || new Date().toISOString()) : null,
   }
-  const result = id ? await db.from('landing_pages').update(row).eq('id', id) : await db.from('landing_pages').insert(row)
-  if (result.error) throw new Error(result.error.message)
-  revalidatePath('/admin/landing-pages')
-  revalidatePath(`/${slug}`)
-  revalidatePath('/sitemap.xml')
+  try {
+    await saveWithPublication(db, {
+      table: 'landing_pages', entityType: 'landing_page', label: 'landing page',
+      id: id || null, row, publish, actorId,
+    })
+  } finally {
+    // Also on failure: an unpublish may have committed before a later step threw.
+    revalidatePath('/admin/landing-pages')
+    revalidatePath(`/${slug}`)
+    revalidatePath('/sitemap.xml')
+  }
 }
 
 type EntityChoice = { id: string; name: string; type: string }

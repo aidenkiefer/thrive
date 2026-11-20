@@ -11,6 +11,6 @@ Canonical project brief and hard constraints: **`AGENTS.md`**. Workflow: **`docs
 - **Own worktree + `cursor/<lane>-<slug>` branch.** Open the worktree folder from `scripts/agents/worktree.sh new cursor …` in its own window. Never edit the main checkout. Check `git branch --show-current` before the first edit.
 - **Stay in your lane** (`docs/workflow/roles-and-lanes.md`). Other files → cross-lane request via the `scribe` skill.
 - **Skills** in `.agents/skills/`: `lane-builder` to execute an assignment, `scribe` for logs and PR bodies (use a fast model), `product-manager` / `senior-qa` when asked.
-- **Model per ticket** (`docs/workflow/model-routing.md`): fast model for docs and grunt work, standard for implementation, heavy for planning and unknown bugs. Use best-of-N across model families for hard UI choices.
+- **Cursor Pro, legacy.** Composer 2.5 for a small patterned change. Grok 4.7 for multi-file work and the browser. Fast mode off. New chat per ticket. Claude, GPT, and Gemini inside Cursor spend the Other Models pool, so leave them for Claude Code and Codex. Tiers: `docs/workflow/model-routing.md`.
 - **Plan mode** (Shift+Tab) for M tickets. Start a new chat when switching tickets or when the agent repeats mistakes.
 - **`scripts/agents/gate.sh` must pass before every push.** Open the PR with the template; never merge your own PR.

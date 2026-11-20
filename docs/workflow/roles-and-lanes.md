@@ -98,7 +98,11 @@ The PM may override these. They come from each tool's strengths, not from a hard
 | Tool | Best-fit lane | Why |
 |---|---|---|
 | **Claude Code** | `data` | Strongest at multi-step reasoning over schema, auth, and migrations. Native subagents, skills with per-skill model routing, worktree-isolated subagents. |
-| **Cursor** | `experience` | IDE with live diff review, browser tool for visual checks, best-of-N across models for UI variants, plan mode saved to `.cursor/plans/`. |
+| **Cursor** | `experience` | IDE with live diff review, browser tool for visual checks, plan mode saved to `.cursor/plans/`. On legacy Pro, stay on Composer 2.5 or Grok 4.7. A second model family is a Claude Code or Codex session. |
 | **Codex** | `ops` | Good at long autonomous well-specified runs (redirect tables, CI, tests, scripts). Built-in `/review` makes it a cheap second-opinion reviewer. |
+
+The default tool is also the billing boundary on legacy Cursor Pro. Experience work in Cursor stays on Composer 2.5 or Grok 4.7. Data implementation stays in Claude Code. Ops implementation stays in Codex. A third-party model inside Cursor draws the Other Models pool, so a Cursor session does not take over another lane to reach Claude or GPT.
+
+Admin UI stays with data end to end: `src/app/admin/**` and `src/components/admin/**`, including the login form. Experience does not edit those paths in parallel.
 
 **Rotate when it helps:** for a UI-heavy sprint with no ops work, give Codex a second, cleanly separated experience sub-area (for example `src/app/(public)/sermons/**`) and split the experience lane's paths in the assignment.

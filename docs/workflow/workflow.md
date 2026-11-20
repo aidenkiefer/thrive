@@ -37,7 +37,7 @@
 1. **Lanes don't overlap.** Each lane owns a set of paths. No two agents edit the same file in one session. Shared "hot files" have exactly one owner per session. See [roles-and-lanes.md](./roles-and-lanes.md).
 2. **One agent = one worktree = one branch, named by tool.** `claude/*`, `cursor/*`, `codex/*`. See [git-and-worktrees.md](./git-and-worktrees.md).
 3. **Communication goes through files, never shared edits.** Assignments, per-branch session logs, PR bodies, and QA reports are each owned by one writer. Nothing like `PROGRESS.md` is edited by three agents at once.
-4. **Right model for the job.** Heavy models plan, review, and debug. Standard models implement. Fast models do docs and grunt work. See [model-routing.md](./model-routing.md).
+4. **Right model for the job.** Heavy models plan, review, and debug. Standard models implement. Fast models do docs and grunt work. On legacy Cursor Pro, a Cursor chat stays on Composer 2.5 or Grok 4.7. A pass that needs Claude or GPT happens in that product's own app. See [model-routing.md](./model-routing.md).
 
 ---
 

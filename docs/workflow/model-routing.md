@@ -2,7 +2,7 @@
 
 **Purpose:** Heavy models for heavy thinking, cheap models for grunt work. Every agent picks a **tier** per ticket and switches when the work changes.
 
-> **Model names go stale fast.** The tiers are stable; the names in §2 were checked on 2026-11-07. If a name isn't in your picker, use the closest model in the same tier and update this table (an ops-lane docs ticket).
+> **Model names go stale fast.** The tiers are stable. The Claude and Codex columns were checked on 2026-11-07. The Cursor column was checked on 2026-11-20 for **legacy Cursor Pro** ($20/mo, two monthly pools). If a name isn't in your picker, use the closest model in the same tier and update this table (an ops-lane docs ticket).
 
 ---
 
@@ -17,20 +17,20 @@
 
 ---
 
-## 2. Tool mapping (checked 2026-11-07)
+## 2. Tool mapping (Claude and Codex 2026-11-07, Cursor 2026-11-20)
 
-| Tier | Claude Code | Codex | Cursor |
+| Tier | Claude Code | Codex | Cursor (legacy Pro) |
 |---|---|---|---|
-| T0 | `haiku`, effort `low` | GPT-6 Astra, effort Light (`low`) | A fast model: Auto or Cursor's in-house fast model, or Haiku / Astra if listed |
-| T1 | `sonnet`, effort `medium` | GPT-6 Luna, effort High (official starting point) | Sonnet or GPT-6 Luna |
-| T2 | `opus`, effort `high`, or `opusplan` (Opus plans, Sonnet executes) | GPT-6.1 Sol, default effort | Opus or GPT-6.1 Sol |
-| T3 | `fable` / `best` if your plan has it, else `opus` at `xhigh` | GPT-6.1 Sol, Extra High | Opus / Sol at max thinking |
+| T0 | `haiku`, effort `low` | GPT-6 Astra, effort Light (`low`) | Composer 2.5. Fast mode off. |
+| T1 | `sonnet`, effort `medium` | GPT-6 Luna, effort High (official starting point) | Composer 2.5 for a patterned change. Grok 4.7 for several files or the browser. Fast mode off. |
+| T2 | `opus`, effort `high`, or `opusplan` (Opus plans, Sonnet executes) | GPT-6.1 Sol, default effort | Grok 4.7 if this chat is already debugging. A fresh PM, QA, schema, or auth session runs in Claude Code or Codex. |
+| T3 | `fable` / `best` if your plan has it, else `opus` at `xhigh` | GPT-6.1 Sol, Extra High | Not in Cursor. Claude Code or Codex, after the owner agrees. |
 
 **How to switch**
 
 - **Claude Code:** `/model <alias>` and `/effort <level>`. Press `s` in the `/model` picker to apply the choice to this session only. Skills and subagents can pin their own `model` and `effort` in frontmatter; the `scribe` skill pins `haiku`/`low`.
 - **Codex:** use the model picker or `/model`, with effort set beside it. Personal defaults go in `~/.codex/config.toml`.
-- **Cursor:** use the model dropdown in the agent panel. For hard UI choices, run **best-of-N** across two model families and pick a winner.
+- **Cursor (legacy Pro):** use the model dropdown. Composer 2.5 and Grok 4.7 draw the Cursor Models pool. Claude, GPT, and Gemini draw the Other Models pool at API price, including when a subagent names one. Fast mode is 2x. Grok 4.7 over 256k input is 2x. Leave Fast off, and start a new chat per ticket. One layout bug that Grok 4.7 already missed may use Gemini 3.1 Pro. Log that spend. A second model family for everything else is a Claude Code or Codex session.
 
 ---
 
@@ -42,7 +42,8 @@
 4. **Never run T0 work on T2/T3.** Docs, logs, PR bodies, and formatting always go to the scribe or a T0 subagent.
 5. **Exploration goes to subagents.** Broad "find where X happens" searches go to a T0/T1 read-only subagent that returns paths and 3–6 bullets. Your main context, and your heavy model, stay clean.
 6. **Cross-family second opinion for high-risk changes.** For auth, schema, migrations, or redirects, QA may ask a different model family to review (for example Codex `/review` on a Claude-written PR). Different families miss different things.
-7. **Plan limits are a budget.** Claude Pro has a limited heavy-model allowance. Spend T2/T3 on PM, QA, and the hardest lane ticket, not on routine implementation. Each tool has its own quota, which is one reason the three lanes run on three different tools.
+7. **Plan limits are a budget.** Claude Pro has a limited heavy-model allowance. Legacy Cursor Pro has two monthly pools, Cursor Models and Other Models, and they reset with the billing cycle. Spend Cursor's Other Models pool on a rare visual miss, not on Sonnet or Opus while Claude Code is already paid for. Spend T2/T3 on PM, QA, and the hardest lane ticket, not on routine implementation. Each tool has its own quota, which is one reason the three lanes run on three different tools.
+8. **Cursor subagents inherit the bill.** A subagent launched from Cursor on a named Claude, GPT, or Gemini model draws Other Models even if the parent chat is Grok or Composer. Use Composer 2.5 or Grok 4.7 for those subagents.
 
 ---
 

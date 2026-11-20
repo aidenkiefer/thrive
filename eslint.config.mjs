@@ -16,4 +16,15 @@ const recommended = compat.extends('next/core-web-vitals', 'next/typescript').ma
 export default [
   { ignores: ['.next/**', 'node_modules/**', 'out/**', 'build/**', 'next-env.d.ts'] },
   ...recommended,
+  {
+    files: ['src/app/**', 'src/components/**'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        paths: [
+          { name: '@supabase/supabase-js', message: 'Import the approved server or client wrapper from src/lib/supabase instead.' },
+          { name: '@supabase/ssr', message: 'Import the approved server or client wrapper from src/lib/supabase instead.' },
+        ],
+      }],
+    },
+  },
 ]

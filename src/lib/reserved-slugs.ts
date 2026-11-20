@@ -7,6 +7,7 @@
 export const RESERVED_SLUGS: readonly string[] = [
   'about', 'admin', 'api', 'events', 'feedback', 'get-connected', 'give', 'groups',
   'kids-youth', 'ministries', 'og', 'outreach', 'plan-a-visit', 'sermons',
+  'thrive-flames',
 ]
 
 const reserved = new Set(RESERVED_SLUGS)

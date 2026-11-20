@@ -1,6 +1,7 @@
 import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
+import { publishIntent, saveWithPublication } from '@/lib/cms'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import {
   announcementPublishProblems, assertPublishable, httpsUrl, parseInstant, requireText, siteOrHttpsUrl,
@@ -10,7 +11,7 @@ import { FormFeedback, feedbackTargets, formResetToken } from '../_components/fo
 
 async function saveAnnouncement(formData: FormData) {
   'use server'
-  await requireAdmin()
+  const { actorId } = await requireAdmin()
   const id = String(formData.get('id') || '')
   await saveWithFeedback('/admin/announcements', id || 'new', async () => {
     const db = await adminDb()
@@ -18,13 +19,9 @@ async function saveAnnouncement(formData: FormData) {
     const title = requireText(String(formData.get('title') || ''), 'Title')
     const ctaUrl = siteOrHttpsUrl(String(formData.get('cta_url') || ''), 'Button URL')
     const expiresAt = parseInstant(String(formData.get('expires_at') || ''), 'Expiry')
-    let currentPublishedAt: string | null = null
-    if (id) {
-      const { data, error } = await db.from('announcements').select('published_at').eq('id', id).single()
-      if (error) throw new Error(error.message)
-      currentPublishedAt = data.published_at
-    }
-    const publish = formData.get('published') === 'on'
+    const publish = publishIntent(formData)
+    // Content writes never touch published_at; saveWithPublication below is the only
+    // path that changes it, and it records which staff actor did.
     const row = {
       title,
       body: text('body'),
@@ -33,15 +30,18 @@ async function saveAnnouncement(formData: FormData) {
       featured_image_url: httpsUrl(String(formData.get('featured_image_url') || ''), 'Image URL'),
       is_homepage_feature: formData.get('is_homepage_feature') === 'on',
       expires_at: expiresAt,
-      published_at: publish ? (currentPublishedAt || new Date().toISOString()) : null,
     }
     if (publish) assertPublishable('announcement', announcementPublishProblems(row, new Date()))
-    const result = id
-      ? await db.from('announcements').update(row).eq('id', id)
-      : await db.from('announcements').insert(row)
-    if (result.error) throw new Error(result.error.message)
-    revalidatePath('/admin/announcements')
-    revalidatePath('/')
+    try {
+      await saveWithPublication(db, {
+        table: 'announcements', entityType: 'announcement', label: 'announcement',
+        id: id || null, row, publish, actorId,
+      })
+    } finally {
+      // Also on failure: an unpublish may have committed before a later step threw.
+      revalidatePath('/admin/announcements')
+      revalidatePath('/')
+    }
   })
 }
 

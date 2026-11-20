@@ -29,7 +29,7 @@ const nextConfig: NextConfig = {
       { source: '/teaching', destination: '/sermons', permanent: true },
       { source: '/upcoming-events/:slug', destination: '/events/:slug', permanent: true },
       { source: '/kids', destination: '/kids-youth', permanent: true },
-      { source: '/prayer', destination: '/get-connected', statusCode: 302 },
+      { source: '/prayer', destination: '/get-connected#prayer', statusCode: 302 },
       { source: '/expresso', destination: '/plan-a-visit#services', statusCode: 301 },
       { source: '/volunteering', destination: '/get-connected', statusCode: 302 },
       { source: '/series/:slug', destination: '/sermons/series/:slug', permanent: true },

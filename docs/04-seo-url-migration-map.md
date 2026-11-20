@@ -22,7 +22,7 @@ Redirects are configured in `next.config.ts` → `redirects()`.
 | `/about/` | `/about` | same-path | — | Same path |
 | `/give/` | `/give` | same-path | — | Same path |
 | `/get-connected/` | `/get-connected` | same-path | — | Same path as the legacy WordPress page, so no redirect is needed (see `docs/audit/2026-11/pages/get-connected.md`) |
-| `/prayer/` | `/get-connected` | implemented, temporary (owner decision 2026-11-07) | Medium | 302; confidential prayer handoff on destination still needs verification |
+| `/prayer/` | `/get-connected#prayer` | implemented, temporary (owner decision 2026-11-07) | Medium | 302; prayer section on the Get Connected page; delivery waits for the prayer form registry |
 | `/expresso/` | `/plan-a-visit#services` | implemented (owner decision 2026-11-07) | Medium | 301; services fragment exists on the Plan a Visit page |
 | `/volunteering/` | `/get-connected` | implemented, temporary (owner decision 2026-11-07) | Low | 302; keep volunteering intent clear on destination |
 

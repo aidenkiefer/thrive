@@ -2,6 +2,8 @@
 
 **Decision (owner, 2026-11-19, #54):** there is no separate Preview database. The existing production Supabase project is used for verification until launch. The public still sees WordPress until cutover, but this database is real: treat every write as irreversible.
 
+**Current state (2026-11-20):** `scripts/seed-sql.ts` generates `supabase/ops/2026-11-20-seed.sql`, which has not been applied to the live project. `scripts/seed-from-parsed.ts` has been deleted. The November 19 baseline below is a historical snapshot; its references to the old script remain accurate for that audit.
+
 The Supabase MCP server is connected in Claude Code, Cursor and Codex. It is **project-wide and can do anything** the connected account can (apply migrations, run DML/DDL, create or delete branches, deploy functions). These rules apply to every agent and every session.
 
 ## Rules
@@ -16,7 +18,7 @@ The Supabase MCP server is connected in Claude Code, Cursor and Codex. It is **p
 4. **Repo equals database.** Schema changes are committed as `supabase/migrations/*.sql` and `supabase/schema.sql` first, QA-reviewed, then applied with `apply_migration` using the same SQL. No ad hoc DDL through `execute_sql`. Record the version Supabase assigns (it may differ from the filename timestamp) in the ledger.
 5. **Order matters** for the CMS pair (see `docs/agents/qa/2026-11-19-delta-data-stack.md`): `20261119000000` before #90's code is deployed; `20261119010000` only after #96's code is live. Migrations in the Data stack chain are additive and idempotent, but apply them only after the QA verdict says MERGE or for a Preview-candidate rehearsal the owner approved.
 6. **Never:** create or delete development branches (they cost money), deploy or edit Edge Functions, change Auth settings, create auth users, change RLS/policies outside a reviewed migration, run `TRUNCATE`/`DELETE`/`DROP`, or touch rows that staff edited. The owner configures Auth and enrolls staff.
-7. **Seed once, early.** Once the guard (#96) is live, re-seeding aborts at the first row whose `published_at` staff changed. No staff accounts exist yet, which is why reconciliation and seeding happen now (#101).
+7. **Seed only under rule 3.** The current `2026-11-20-seed.sql` artifact is generated but not applied live. Before any seed, verify prerequisites, protect staff-edited rows, coordinate one executor, and record the result in the ledger. The `published_at` guard (#96) prevents the earlier script path from overwriting rows staff changed.
 
 ## Baseline: read-only audit, 2026-11-19
 

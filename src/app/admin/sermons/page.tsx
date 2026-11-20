@@ -1,8 +1,8 @@
-import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
 import { publishIntent, saveWithPublication } from '@/lib/cms'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
+import { revalidateEntity } from '@/lib/revalidate'
 import {
   assertPublishable, fail, httpsUrl, parseDateOnly, requireSlug, requireText, sermonPublishProblems,
 } from '@/lib/admin-validation'
@@ -65,10 +65,7 @@ async function saveSermon(form: FormData) {
       })
     } finally {
       // Also on failure: an unpublish may have committed before a later step threw.
-      revalidatePath('/admin/sermons')
-      revalidatePath('/sermons')
-      revalidatePath(`/sermons/${slug}`)
-      revalidatePath('/')
+      revalidateEntity('sermon', slug)
     }
   })
 }

@@ -1,8 +1,8 @@
-import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
 import { publishIntent, saveWithPublication } from '@/lib/cms'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
+import { revalidateEntity } from '@/lib/revalidate'
 import {
   announcementPublishProblems, assertPublishable, httpsUrl, parseInstant, requireText, siteOrHttpsUrl,
 } from '@/lib/admin-validation'
@@ -39,8 +39,7 @@ async function saveAnnouncement(formData: FormData) {
       })
     } finally {
       // Also on failure: an unpublish may have committed before a later step threw.
-      revalidatePath('/admin/announcements')
-      revalidatePath('/')
+      revalidateEntity('announcement')
     }
   })
 }

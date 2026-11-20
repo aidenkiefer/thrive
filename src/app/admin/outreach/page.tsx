@@ -1,9 +1,9 @@
-import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
 import { publishIntent, saveWithPublication } from '@/lib/cms'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import { assertPublishable, fail, formUrlPublishProblems, httpsUrl, requireSlug, requireText } from '@/lib/admin-validation'
+import { revalidateEntity } from '@/lib/revalidate'
 import { AdminForm } from '../_components/admin-form'
 import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
 
@@ -49,10 +49,7 @@ async function saveOutreach(form: FormData) {
       })
     } finally {
       // Also on failure: an unpublish may have committed before a later step threw.
-      revalidatePath('/admin/outreach')
-      revalidatePath('/outreach')
-      revalidatePath(`/outreach/${slug}`)
-      revalidatePath('/')
+      revalidateEntity('outreach', slug)
     }
   })
 }

@@ -1,8 +1,8 @@
-import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
 import { publishIntent, saveWithPublication } from '@/lib/cms'
 import { isReservedSlug } from '@/lib/reserved-slugs'
+import { revalidateEntity } from '@/lib/revalidate'
 
 function secureUrl(value: FormDataEntryValue | null) {
   const url = String(value || '').trim()
@@ -57,9 +57,7 @@ async function saveLanding(form: FormData) {
     })
   } finally {
     // Also on failure: an unpublish may have committed before a later step threw.
-    revalidatePath('/admin/landing-pages')
-    revalidatePath(`/${slug}`)
-    revalidatePath('/sitemap.xml')
+    revalidateEntity('landing_page', slug)
   }
 }
 

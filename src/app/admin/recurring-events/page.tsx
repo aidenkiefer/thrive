@@ -1,8 +1,8 @@
-import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
 import { publishIntent, saveWithPublication } from '@/lib/cms'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
+import { revalidateEntity } from '@/lib/revalidate'
 import {
   assertEndAfterStart, assertPublishable, fail, formUrlPublishProblems, httpsUrl, parseInstant, recurringEventPublishProblems,
   requireInstant, requireSlug, requireText,
@@ -55,11 +55,7 @@ async function saveRecurring(form: FormData) {
       })
     } finally {
       // Also on failure: an unpublish may have committed before a later step threw.
-      revalidatePath('/admin/recurring-events')
-      revalidatePath('/admin/events')
-      revalidatePath('/events')
-      revalidatePath(`/events/${slug}`)
-      revalidatePath('/')
+      revalidateEntity('recurring_event', slug)
     }
   })
 }
@@ -88,7 +84,7 @@ async function saveOccurrence(form: FormData) {
       ? await db.from('event_occurrences').update(row).eq('id', id)
       : await db.from('event_occurrences').upsert(row, { onConflict: 'recurring_event_id,start_datetime' })
     if (result.error) throw new Error(result.error.message)
-    revalidatePath('/admin/recurring-events'); revalidatePath('/admin/events'); revalidatePath('/events'); revalidatePath(`/events/${parent.slug}`); revalidatePath('/')
+    revalidateEntity('recurring_event', parent.slug)
   })
 }
 

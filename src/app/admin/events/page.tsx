@@ -1,8 +1,8 @@
-import { revalidatePath } from 'next/cache'
 import { adminDb } from '@/lib/admin-db'
 import { requireAdmin } from '@/lib/admin-auth'
 import { publishIntent, saveWithPublication } from '@/lib/cms'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
+import { revalidateEntity } from '@/lib/revalidate'
 import {
   assertEndAfterStart, assertPublishable, fail, formUrlPublishProblems, httpsUrl, oneTimeEventPublishProblems,
   parseInstant, requireInstant, requireSlug, requireText,
@@ -57,10 +57,7 @@ async function saveEvent(formData: FormData) {
       })
     } finally {
       // Also on failure: an unpublish may have committed before a later step threw.
-      revalidatePath('/admin/events')
-      revalidatePath('/events')
-      revalidatePath(`/events/${slug}`)
-      revalidatePath('/')
+      revalidateEntity('one_time_event', slug)
     }
   })
 }

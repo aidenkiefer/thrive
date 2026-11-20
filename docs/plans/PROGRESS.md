@@ -6,7 +6,7 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 
 ## Current status (2026-11-20)
 
-**Phase:** **Draft site and the Data stack are on `main`.** Staff sign-in, native forms, Resend transport, the shared limiter, attributed publishing, the publish guard, reserved slugs, and the revalidation helper merged on 2026-11-20 (#15, #18, #23, #95, #114, #90, #96, #120, #122). The role and publishing migrations were applied to the live project before that code deployed. Launch date: **owner to confirm** (see `docs/10-launch-checklist.md`).
+**Phase:** **Draft site, the Data stack, dependency triage, and system actors are on `main`.** #132 cleared the moderate dev-only audit findings. #133 added system actors and the `published_at` INSERT guard; that migration was applied to the live project before the code deployed. `scripts/seed-from-parsed.ts` and `src/lib/seed/sql.ts` still insert published rows and will be refused until they publish through `cms_set_published`. Launch date: **owner to confirm** (see `docs/10-launch-checklist.md`).
 
 **Active plan:** [`docs/agents/assignments/2026-11-19-batch-3.md`](../agents/assignments/2026-11-19-batch-3.md) (Batches 3-6 order: [`batches.md`](./batches.md); milestones M1-M5: [`roadmap-milestones.md`](./roadmap-milestones.md); lane backlogs: [`backlog/`](./backlog/)).
 **Status sources:** GitHub Project 3 (Batch, Delivery stage, Milestone fields) · [`docs/08-mvp-status-roadmap.md`](../08-mvp-status-roadmap.md) · QA reports in [`docs/agents/qa/`](../agents/qa/).
@@ -123,6 +123,7 @@ Shared abuse limiter = Postgres. Announcements: newest featured wins, no priorit
 | **v0.8.3** | Session 2 Experience and Ops docs | 2026-11-19 | Experience, Ops | Squash-merged #115, #110, #107, #106, #109, #116 after MERGE verdicts and green gates. Issues #34, #36, #38 and #68 closed. #30 and #70 stay open. Data stack, #101 seed, #103 DNS draft, and Ops #41/#62/#73 stay unmerged. |
 | **v0.8.4** | Live database reconciliation and seed rails (#108; #101, absorbs #39) | 2026-11-19 | Data | `npm run seed -- --dry-run` reconciliation, host and fingerprint confirmations, post-write verification, generated seed SQL for the MCP. Seed and batch A were applied to live under the owner's go before merge; ledger row added. Three rounds of QA (GPT, Gemini, Claude). Gate PASS on `main` at `a8d8be0`. |
 | **v0.8.5** | Data stack through the revalidation helper | 2026-11-20 | Data | Squash-merged #15, #18, #23, #95, #114, #90, #96, #120, #122 after rebases and full gates. Role, publication-event, and publish-guard migrations were already on the live project. |
+| **v0.8.6** | Dependency triage and system actors (#132, #133) | 2026-11-20 | Ops, Data | Lockfile audit reports no vulnerabilities. Dependabot stays a written proposal. System actors and the INSERT guard are on `main`; the live migration `system_actors` was applied first. |
 
 ---
 

@@ -12,6 +12,11 @@
  * the other event table, and when the live rows no longer match the approved
  * dry run (fingerprint), so nothing changed since approval is overwritten. Exit 0 = applied (or dry run finished), 1 = verification
  * mismatch or write error, 2 = refused (configuration).
+ *
+ * Publishable rows go in as drafts (the database refuses an INSERT with
+ * published_at) and are then published through cms_set_published as the `seed`
+ * system actor, keeping their original publish time and recording a
+ * publication_events row (#94). A row that is already published is left as it is.
  */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import fs from 'node:fs'
@@ -71,11 +76,35 @@ async function fetchLive(db: SupabaseClient): Promise<Record<SeedTable, Row[]>> 
   return live
 }
 
+/** cms_set_published entity type for each publishable seed table. */
+const PUBLISH_AS: Partial<Record<string, string>> = {
+  sermon_series: 'sermon_series', sermons: 'sermon', recurring_events: 'recurring_event', one_time_events: 'one_time_event',
+}
+
+/** The reserved `seed` system actor (supabase/migrations/20261120000000_system_actors.sql). */
+async function seedActor(db: SupabaseClient): Promise<string> {
+  const { data, error } = await db.from('admin_staff_accounts').select('actor_id')
+    .eq('kind', 'system').eq('name', 'seed').eq('status', 'active').maybeSingle()
+  if (error) throw new Error(`seed actor lookup: ${error.message}`)
+  if (!data) refuse('no active `seed` system actor; apply supabase/migrations/20261120000000_system_actors.sql first')
+  return (data as Row).actor_id as string
+}
+
 async function write(db: SupabaseClient, plan: ReturnType<typeof buildSeedPlan>) {
+  const actor = await seedActor(db)
   async function upsert(table: string, row: Row, onConflict = 'slug'): Promise<string> {
-    const { data, error } = await db.from(table).upsert(row, { onConflict }).select('id').single()
+    const type = PUBLISH_AS[table]
+    const { published_at: publishedAt, ...draft } = row
+    const { data, error } = await db.from(table).upsert(type ? draft : row, { onConflict }).select('id').single()
     if (error) throw new Error(`${table} ${row.slug ?? row.start_datetime}: ${error.message}`)
-    return (data as Row).id as string
+    const id = (data as Row).id as string
+    if (type && publishedAt != null) {
+      const { error: publishError } = await db.rpc('cms_set_published', {
+        p_entity_type: type, p_entity_id: id, p_publish: true, p_actor_id: actor, p_published_at: publishedAt,
+      })
+      if (publishError) throw new Error(`publish ${table} ${row.slug}: ${publishError.message}`)
+    }
+    return id
   }
   const ids = { speakers: new Map<unknown, string>(), series: new Map<unknown, string>(), recurring: new Map<unknown, string>() }
   for (const s of plan.speakers) ids.speakers.set(s.slug, await upsert('speakers', s))

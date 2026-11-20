@@ -16,6 +16,7 @@ export { clientKeyFrom } from './rate-limit'
  * resolves to "no actor" (fail closed). Email is a login detail, never an
  * authorship key. The role also comes from the row on every request (never
  * from the JWT), and a row with an unknown role is treated like a disabled one.
+ * System actor rows (kind 'system', no email or auth user) are never matched.
  * Nothing here logs emails, codes, or tokens.
  */
 
@@ -301,7 +302,8 @@ export function createStaffStore(env: IdentityEnv = process.env): StaffStore | n
   })
   const columns = 'actor_id, email, auth_user_id, status, auth_version, role'
   const one = async (column: string, value: string): Promise<StaffAccountRow | null> => {
-    const { data, error } = await db.from('admin_staff_accounts').select(columns).eq(column, value).maybeSingle()
+    // kind = 'staff' only: system actor rows (seed, agents, jobs) publish but can never hold a session.
+    const { data, error } = await db.from('admin_staff_accounts').select(columns).eq('kind', 'staff').eq(column, value).maybeSingle()
     if (error) throw new Error('staff lookup failed')
     return (data as StaffAccountRow | null) ?? null
   }

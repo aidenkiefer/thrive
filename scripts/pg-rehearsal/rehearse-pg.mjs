@@ -104,6 +104,45 @@ async function expectError(dbName, scenario, item, sql, code, role) {
   }
 }
 
+// #94: reserved system actors and the published_at INSERT guard, with real service_role
+// connections and two concurrent seed publishes of one draft.
+async function assertSystemActors(db, dbName, s) {
+  const T = 'public.admin_staff_accounts';
+  const HIST = '2019-03-10T15:00:00.000Z';
+  const trig = await one(db, `select count(*)::int n from pg_trigger where tgname = 'published_at_insert_guard' and not tgisinternal`);
+  record(s, 'INSERT guard trigger on exactly the 9 publishable tables', trig.n === 9, `${trig.n}`);
+  const seed = await one(db, `select actor_id, kind, email, auth_user_id, role, status from ${T} where name = 'seed'`);
+  record(s, 'seed system actor exists: no email, no auth user, role staff, active',
+    !!seed && seed.kind === 'system' && seed.email === null && seed.auth_user_id === null && seed.role === 'staff' && seed.status === 'active');
+  const seen = await one(db, `select count(*)::int n from ${T} where kind = 'staff' and actor_id = $1`, [seed?.actor_id]);
+  record(s, "kind = 'staff' lookups never see the seed actor", seen.n === 0);
+  await expectError(dbName, s, 'service_role INSERT of a published row raises P0001',
+    `insert into public.announcements (title, body, published_at) values ('pg published insert', 'b', now())`, 'P0001', 'service_role');
+  await expectError(dbName, s, 'service_role system row with an email refused (23514)',
+    `insert into ${T} (kind, name, email) values ('system', 'pg-bad', 'x@example.org')`, '23514', 'service_role');
+  await expectError(dbName, s, 'anon cannot execute 5-argument cms_set_published',
+    `select public.cms_set_published('announcement', gen_random_uuid(), true, gen_random_uuid(), now())`, '42501', 'anon');
+
+  const sv = await connect(dbName, 'service_role');
+  const sv2 = await connect(dbName, 'service_role');
+  const series = (await one(sv, `insert into public.sermon_series (slug, title) values ('pg-sys-series', 'PG system series') returning id`)).id;
+  const q = 'select public.cms_set_published($1, $2, $3, $4, $5) ts';
+  const args = ['sermon_series', series, true, seed.actor_id, HIST];
+  const [r1, r2] = await Promise.all([one(sv, q, args), one(sv2, q, args)]);
+  const ev = await one(db, `select count(*)::int n from public.publication_events
+    where entity_id = $1 and actor_id = $2 and action = 'publish'`, [series, seed.actor_id]);
+  const at = await one(db, `select published_at from public.sermon_series where id = $1`, [series]);
+  record(s, 'concurrent seed publishes keep the original time and record exactly one event',
+    ev.n === 1 && new Date(at.published_at).toISOString() === HIST
+    && new Date(r1.ts).toISOString() === HIST && new Date(r2.ts).toISOString() === HIST, `${ev.n} events`);
+  const staff = (await one(sv, `insert into ${T} (email, auth_user_id) values ('pg-sys-staff@example.org', gen_random_uuid()) returning actor_id`)).actor_id;
+  const ann = (await one(sv, `insert into public.announcements (title, body) values ('pg system draft', 'b') returning id`)).id;
+  await close(sv);
+  await close(sv2);
+  await expectError(dbName, s, 'staff actor cannot set a publish time (42501)',
+    `select public.cms_set_published('announcement', '${ann}', true, '${staff}', now() - interval '1 day')`, '42501', 'service_role');
+}
+
 // Catalog snapshot of the public schema, for fresh-vs-migrated comparison.
 async function snapshot(db) {
   const q = async (sql) => (await db.query(sql)).rows.map((r) => JSON.stringify(r)).sort();
@@ -349,7 +388,8 @@ async function assertStaff(db, dbName, s) {
   }
   await db.query(`insert into ${T} (email, auth_user_id) values ('rehearsal@example.org', gen_random_uuid())`);
   const sc = await connect(dbName, 'service_role');
-  const sel = await sc.query(`select count(*)::int n from ${T}`).then((r) => r.rows[0].n, () => -1);
+  // kind = 'staff': the #94 migration also adds the reserved `seed` system actor row.
+  const sel = await sc.query(`select count(*)::int n from ${T} where kind = 'staff'`).then((r) => r.rows[0].n, () => -1);
   await close(sc);
   record(s, 'service_role can select from staff table', sel === 1, `${sel} rows`);
   await expectError(dbName, s, 'service_role truncate on staff table denied', `truncate ${T}`, '42501', 'service_role');
@@ -358,7 +398,7 @@ async function assertStaff(db, dbName, s) {
   await expectError(dbName, s, 'owner truncate on staff table refused', `truncate ${T}`, ['P0001', '0A000']);
   await expectError(dbName, s, 'owner truncate cascade on staff table raised by trigger', `truncate ${T} cascade`, 'P0001');
   await expectError(dbName, s, 'owner delete on staff table raised by trigger', `delete from ${T}`, 'P0001');
-  const n = await one(db, `select count(*)::int n from ${T}`);
+  const n = await one(db, `select count(*)::int n from ${T} where kind = 'staff'`);
   record(s, 'staff row survives truncate and delete attempts', n.n === 1, `${n.n} rows`);
 }
 
@@ -668,6 +708,7 @@ async function main() {
     await assertStaffRoles(a, 'scn_a', A);
     await assertAdminRace(a, 'scn_a', A);
     rlsNotes.push(...await assertRlsMatrix(a, A, record));
+    await assertSystemActors(a, 'scn_a', A);
     await assertConcurrency(a, 'scn_a', A);
     await mutationProof(a, 'scn_a', A);
 
@@ -686,6 +727,7 @@ async function main() {
       await assertStaffRoles(db, name, label);
       await assertAdminRace(db, name, label);
       rlsNotes.push(...await assertRlsMatrix(db, label, record));
+      await assertSystemActors(db, name, label);
       await assertConcurrency(db, name, label);
     }
     await close(root);

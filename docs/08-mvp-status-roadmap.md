@@ -4,6 +4,10 @@
 **MVP target:** November 13, 2026  
 **Evidence reviewed:** repository source and docs, current migration outputs, and the two refreshed exports supplied for this review. No build, test, seed, database, or browser run was performed; statuses below describe inspected implementation, not runtime validation.
 
+## Current checkpoint (2026-11-20)
+
+The sections below preserve the November 6–7 assessment. For the reconciled merged features, remaining draft PRs, deployment evidence and recommended next work, see [the November 20 PM review](agents/assignments/2026-11-20-pm-state-review.md) and [Project 3](https://github.com/users/aidenkiefer/projects/3). The Data stack, publishing, decided redirects and prayer form/API are now merged. The latest recorded main deployment succeeded on Vercel; church-domain cutover and production email verification remain separate gates. The November 19 seed was applied; regenerated November 20 SQL was not. Launch date remains owner to confirm; the old November 13 target below is historical.
+
 ## Executive status
 
 **Snapshot note:** The status table and roadmap below record the codebase as assessed on November 6, 2026. Implementation updates through November 7 are listed under [Progress since assessment](#progress-since-assessment).

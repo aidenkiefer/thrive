@@ -6,7 +6,7 @@ import nextConfig from '../../next.config'
 import { redirectManifest, type ManifestEntry } from './redirect-manifest'
 
 type MapRow = { liveUrls: string[]; destination: string; status: string; excluded: boolean }
-type Rule = { source: string; destination: string; permanent?: boolean }
+type Rule = { source: string; destination: string; permanent?: boolean; statusCode?: number }
 const root = fileURLToPath(new URL('../../', import.meta.url))
 const normalize = (path: string) => path.replace(/\[([^\]]+)\]/g, ':$1').replace(/\/$/, '') || '/'
 const rowKey = (urls: readonly string[]) => [...urls].sort().join(', ')
@@ -88,7 +88,7 @@ function routePaths(directory: string, segments: string[] = []): string[][] {
 }
 
 function hasDestinationRoute(destination: string, routes: string[][]) {
-  const first = normalize(destination).split('/')[1]
+  const first = normalize(destination.split(/[?#]/, 1)[0]).split('/')[1]
   // A literal destination must have a named route branch: the root [slug]
   // content route cannot establish that an arbitrary typo is published.
   return routes.some(route => first ? route[0] === first || (first.startsWith(':') && /^\[.+\]$/.test(route[0] ?? '')) : route.length === 0)
@@ -118,7 +118,7 @@ describe('SEO migration map contract', () => {
       expect(entry.destination).toBe(normalize(destination!))
       expect(entry.permanent).toBe(!row.status.includes('temporary'))
       expect(rules.filter(rule => rule.source === entry.source)).toEqual([{
-        source: entry.source, destination: entry.destination, permanent: entry.permanent,
+        source: entry.source, destination: entry.destination, ...(entry.statusCode ? { statusCode: entry.statusCode } : { permanent: entry.permanent }),
       }])
     } else if (row.status === 'same-path') {
       expect(entry.disposition).toBe('same-path')
@@ -163,6 +163,7 @@ describe('regression fixtures for the migration checks', () => {
   it('does not accept an arbitrary destination just because a root slug route exists', () => {
     expect(hasDestinationRoute('/typo', [['[slug]'], ['sermons']])).toBe(false)
     expect(hasDestinationRoute('/sermons/:slug', [['sermons', '[slug]']])).toBe(true)
+    expect(hasDestinationRoute('/plan-a-visit#services', [['plan-a-visit']])).toBe(true)
   })
 })
 

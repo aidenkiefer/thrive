@@ -6,14 +6,31 @@ const h = vi.hoisted(() => ({
   verifyOtp: vi.fn(),
   signOut: vi.fn(async () => ({ error: null })),
   signInWithOtp: vi.fn(),
+  // Shared limiter RPC (D1L): allow unless a test says otherwise.
+  rpc: vi.fn((): { abortSignal: () => Promise<unknown> } => ({
+    abortSignal: async () => ({ data: [{ allowed: true, retry_after_seconds: 0 }], error: null }),
+  })),
+  verifyPads: [] as Array<number | undefined>,
 }))
 
 vi.mock('next-auth', () => ({ getServerSession: vi.fn(async () => h.session) }))
 vi.mock('next-auth/providers/credentials', () => ({ default: (o: unknown) => o }))
 vi.mock('next/navigation', () => ({ redirect: (to: string) => { throw new Error(`REDIRECT:${to}`) } }))
+vi.mock('./admin-identities', async importOriginal => {
+  const actual = await importOriginal<typeof import('./admin-identities')>()
+  return {
+    ...actual,
+    // Record the padding the provider asks for, then skip the wait so tests stay fast.
+    verifyStaffCode: (email: unknown, code: unknown, deps: Parameters<typeof actual.verifyStaffCode>[2]) => {
+      h.verifyPads.push(deps.minDurationMs)
+      return actual.verifyStaffCode(email, code, { ...deps, minDurationMs: 0 })
+    },
+  }
+})
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn((_url: string, key: string) => key === 'service-key'
     ? {
+        rpc: h.rpc,
         from: () => ({
           select: () => ({
             eq: (col: string, val: string) => ({
@@ -34,10 +51,13 @@ beforeEach(() => {
   process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.test'
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key'
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-key'
+  process.env.RATE_LIMIT_HASH_SECRET = 'r'.repeat(32)
+  h.rpc.mockClear()
   h.session = null
   h.rows = [{ ...baseRow }]
   h.verifyOtp.mockReset()
   h.signOut.mockClear()
+  h.verifyPads = []
 })
 
 async function load() {
@@ -68,6 +88,18 @@ describe('NextAuth staff-code provider', () => {
     expect(h.signOut).toHaveBeenCalledWith({ scope: 'local' })
     expect(user).toEqual({ id: ACTOR, actorId: ACTOR, authUserId: AUTH, authVersion: 4 })
     expect(JSON.stringify(user)).not.toContain('sb-secret')
+    expect(h.rpc).toHaveBeenCalledWith('take_rate_limit', expect.objectContaining({ p_purpose: 'otp.verify.ip' }))
+    expect(JSON.stringify(h.rpc.mock.calls)).not.toContain('pat@example.org')
+  })
+
+  it('denies sign-in without asking Supabase when the shared limiter is unconfigured or failing', async () => {
+    h.verifyOtp.mockResolvedValue({ data: { user: { id: AUTH }, session: null }, error: null })
+    delete process.env.RATE_LIMIT_HASH_SECRET
+    expect(await provider(await load()).authorize({ email: 'pat@example.org', code: '123456' }, req())).toBeNull()
+    process.env.RATE_LIMIT_HASH_SECRET = 'r'.repeat(32)
+    h.rpc.mockReturnValueOnce({ abortSignal: async () => ({ data: null, error: { message: 'db down' } }) })
+    expect(await provider(await load()).authorize({ email: 'pat@example.org', code: '123456' }, req())).toBeNull()
+    expect(h.verifyOtp).not.toHaveBeenCalled()
   })
 
   it('JWT and session hold only actorId, authUserId and authVersion', async () => {
@@ -105,6 +137,14 @@ describe('NextAuth staff-code provider', () => {
     h.verifyOtp.mockResolvedValue(response)
     const m = await load()
     expect(await provider(m).authorize({ email: 'pat@example.org', code: '123456' }, req())).toBeNull()
+  })
+
+  it('pads every verification, known or unknown, to the same minimum time', async () => {
+    h.verifyOtp.mockResolvedValue({ data: { user: { id: AUTH }, session: null }, error: null })
+    const m = await load()
+    await provider(m).authorize({ email: 'pat@example.org', code: '123456' }, req())
+    await provider(m).authorize({ email: 'nobody@example.org', code: '123456' }, req())
+    expect(h.verifyPads).toEqual([700, 700])
   })
 
   it('rejects disabled or unknown staff before asking Supabase to verify', async () => {

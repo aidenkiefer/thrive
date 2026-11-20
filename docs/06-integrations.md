@@ -54,6 +54,8 @@ SUPABASE_SERVICE_ROLE_KEY=          # server only
 
 Supabase Auth needs a code-only email template and dedicated SMTP credentials. Public signup stays disabled. See [admin-setup.md](./admin-setup.md) for staff enrollment, Preview checks, and the shared rate-limit release gate.
 
+**Shared abuse limiter (fails closed).** Code requests, code verification, and native form submissions are rate limited through `public.take_rate_limit` in Supabase Postgres, called with the service role and `RATE_LIMIT_HASH_SECRET`. The limiter fails closed: if the secret or Supabase configuration is missing, or the RPC errors or times out, the request is refused rather than let through. Each refusal logs one fixed code and never the email or address. Client addresses come from the first `x-forwarded-for` hop, which is trusted because Vercel sets it. See [admin-setup.md](./admin-setup.md#release-gate-shared-rate-limiting).
+
 ---
 
 

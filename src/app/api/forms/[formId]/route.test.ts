@@ -165,3 +165,35 @@ describe('POST /api/forms/[formId] shared limiter', () => {
     expect(state.submit).not.toHaveBeenCalled()
   })
 })
+
+describe('POST /api/forms/prayer', () => {
+  const prayer = { name: 'Sam', contact: 'sam@test.invalid', request: 'secret-prayer-request-body-456' }
+
+  it('is registered: valid input reaches submit, invalid input is a 422 on the request field', async () => {
+    const ok = await send('5.6.7.8', prayer, 'prayer')
+    expect(ok.status).toBe(200)
+    expect(state.submit).toHaveBeenCalledWith('prayer', prayer)
+    const bad = await send('5.6.7.8', { ...prayer, request: 'short' }, 'prayer')
+    expect(bad.status).toBe(422)
+    expect(await bad.json()).toMatchObject({ status: 'invalid', fieldErrors: { request: expect.any(String) } })
+    expect(state.submit).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps the website honeypot: a filled one is a silent success that sends nothing', async () => {
+    const res = await send('5.6.7.8', { ...prayer, website: 'http://spam.example' }, 'prayer')
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ status: 'sent' })
+    expect(state.submit).not.toHaveBeenCalled()
+  })
+
+  it('does not log the request text', async () => {
+    const spies = (['log', 'info', 'warn', 'error'] as const).map(m => vi.spyOn(console, m).mockImplementation(() => {}))
+    state.submit.mockResolvedValueOnce({ status: 'unavailable' })
+    await send('5.6.7.8', prayer, 'prayer')
+    await send('5.6.7.8', { ...prayer, request: 'short' }, 'prayer')
+    const logged = JSON.stringify(spies.flatMap(s => s.mock.calls))
+    for (const s of spies) s.mockRestore()
+    expect(logged).not.toContain('secret-prayer-request-body')
+    expect(logged).not.toContain('sam@test.invalid')
+  })
+})

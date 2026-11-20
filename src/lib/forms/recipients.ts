@@ -30,3 +30,14 @@ export function resolveRecipients(env: FormEnv, extraKey?: string): string[] | n
   }
   return out
 }
+
+/**
+ * A form with its own inbox: exactly one address from that form's server-only
+ * env key, and nothing else (no global default, no extras). Null when the key
+ * is missing, malformed, or holds more than one address, so the form reports
+ * "unavailable" instead of delivering somewhere else.
+ */
+export function resolveOwnRecipient(env: FormEnv, key: string): string[] | null {
+  const address = env[key]?.trim()
+  return address && isEmail(address) ? [address] : null
+}

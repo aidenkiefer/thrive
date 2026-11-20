@@ -1,5 +1,5 @@
 import { getForm } from './registry'
-import { resolveRecipients } from './recipients'
+import { resolveOwnRecipient, resolveRecipients } from './recipients'
 import { senderFromEnv, transportFromEnv } from './transport'
 import type { FormEnv, FormFields, FormResult, MailTransport } from './types'
 
@@ -39,7 +39,9 @@ export async function submitWebsiteForm(
   }
 
   const env = deps.env ?? process.env
-  const recipients = resolveRecipients(env, form.extraRecipientsEnv)
+  const recipients = form.recipientEnv
+    ? resolveOwnRecipient(env, form.recipientEnv)
+    : resolveRecipients(env, form.extraRecipientsEnv)
   const from = senderFromEnv(env)
   const transport = deps.transport === undefined ? transportFromEnv(env) : deps.transport
   if (!recipients || !from || !transport) return unavailable('not_configured')

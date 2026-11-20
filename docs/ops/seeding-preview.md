@@ -1,6 +1,6 @@
 # Seeding the live project (before launch)
 
-`npm run seed` (`scripts/seed-current.ts`) imports the reviewed November exports in `migration-files/parsed/` into the project named by `NEXT_PUBLIC_SUPABASE_URL`. There is no separate Preview database: this is the production project, used for verification until launch ([rules](supabase-live-project.md)). **Seed once, early, before staff edit anything.**
+`npm run seed` (`scripts/seed-current.ts`) imports the reviewed November exports in `migration-files/parsed/` into the project named by `NEXT_PUBLIC_SUPABASE_URL`. There is no separate Preview database: this is the production project, used for verification until launch ([rules](supabase-live-project.md)). **Current state (2026-11-20):** `scripts/seed-sql.ts` generates `supabase/ops/2026-11-20-seed.sql`. That SQL file has **not** been applied to the live project. Do not treat a generated file as evidence of a database write.
 
 What it writes: speakers, sermon series, sermons, recurring and one-time events, and generated occurrences, as upserts keyed by `slug` (occurrences by recurring event and start time). It never deletes, never touches groups, outreach, announcements or staff tables, and never inserts placeholder rows.
 
@@ -45,11 +45,15 @@ To re-check later without writing, run the dry run: "already applied, nothing to
 
 **Not all-or-nothing.** Each upsert commits on its own. If a write fails part way (exit 1), the rows before the failure are already written. Re-running the dry run shows exactly what is left, and its new fingerprint needs a fresh approval. The backup taken before the write is the rollback.
 
-**One writer at a time.** The fingerprint check happens once, before writing. The script reads the six tables one after another, then sends about 290 separate upserts (roughly 15 to 45 seconds) with no transaction and no per-row check at write time. An edit made in that window, through `/admin` or SQL, can be overwritten without a refusal. Run the seed only when nobody else is writing to the content tables. That holds today, since no staff accounts exist yet. Once staff are editing, schedule the run and pause edits for it.
+**One writer at a time.** The fingerprint check happens once, before writing. The script reads the six tables one after another, then sends about 290 separate upserts (roughly 15 to 45 seconds) with no transaction and no per-row check at write time. An edit made in that window, through `/admin` or SQL, can be overwritten without a refusal. Run the seed only when nobody else is writing to the content tables. Schedule any future run with the owner and pause staff edits for the duration.
 
 ## Applying as SQL (no service-role key)
 
-For #101 the owner chose to apply the seed as SQL through the Supabase MCP, since agents never hold the service-role key. `npx tsx scripts/seed-sql.ts` writes [`supabase/ops/2026-11-19-seed.sql`](../../supabase/ops/2026-11-19-seed.sql) from the same plan (`src/lib/seed/sql.ts`), and a unit test fails if the committed file no longer matches the exports. The file is one transaction of upserts that never deletes. It refuses while a planned event slug is published in the other event table, so run batch A first. The fingerprint does not apply to this path: the go names the file at a commit instead. Afterwards, the dry run should report 0 to insert and 0 to update. Every planned row is published, so the publishable key sees all of them.
+For #101 the owner chose to apply the seed as SQL through the Supabase MCP, since agents never hold the service-role key. `npx tsx scripts/seed-sql.ts` now generates [`supabase/ops/2026-11-20-seed.sql`](../../supabase/ops/2026-11-20-seed.sql) from the reviewed exports. **This generated SQL has not been applied to the live project.** It must go through the owner go, backup, Data-lane execution, and ledger steps in [the live-project rules](supabase-live-project.md#rules) before anyone treats it as live.
+
+The current file runs in one transaction and follows the November 19 batch A and November 20 system-actor migration. It upserts planned content, publishes through `cms_set_published` as the seed actor, and guards against event-slug conflicts and overwriting content already published or unpublished by a person. The fingerprint used by `npm run seed` does not apply to this SQL path: the owner go names the exact file at a commit instead. Afterwards, verify the resulting rows and record the result in the ledger.
+
+The earlier [`2026-11-19-seed.sql`](../../supabase/ops/2026-11-19-seed.sql) is retained as a historical artifact; references to it in past ledger entries describe the artifact used at that time.
 
 ## Exit codes
 
@@ -59,4 +63,4 @@ For #101 the owner chose to apply the seed as SQL through the Supabase MCP, sinc
 | 1 | Write error or verification mismatch |
 | 2 | Refused: configuration or safety rail; nothing written |
 
-`scripts/seed-from-parsed.ts` is a legacy script with hand-written rows. Never run it against this project.
+`scripts/seed-from-parsed.ts` was a legacy script with hand-written rows and has been deleted. Historical ledger entries retain its name where it describes the earlier import.

@@ -23,7 +23,7 @@ export const redirectManifest: readonly ManifestEntry[] = [
   { liveUrls: ['/about/'], disposition: 'same-path' },
   { liveUrls: ['/give/'], disposition: 'same-path' },
   { liveUrls: ['/get-connected/'], disposition: 'same-path' },
-  { liveUrls: ['/prayer/'], disposition: 'redirect', source: '/prayer', destination: '/get-connected', permanent: false, statusCode: 302 },
+  { liveUrls: ['/prayer/'], disposition: 'redirect', source: '/prayer', destination: '/get-connected#prayer', permanent: false, statusCode: 302 },
   { liveUrls: ['/expresso/'], disposition: 'redirect', source: '/expresso', destination: '/plan-a-visit#services', permanent: true, statusCode: 301 },
   { liveUrls: ['/volunteering/'], disposition: 'redirect', source: '/volunteering', destination: '/get-connected', permanent: false, statusCode: 302 },
   { liveUrls: ['/series/[slug]/'], disposition: 'redirect', source: '/series/:slug', destination: '/sermons/series/:slug', permanent: true },

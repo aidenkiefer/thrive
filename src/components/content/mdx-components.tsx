@@ -14,6 +14,7 @@ import { SectionIntro } from './SectionIntro'
 import { Step, StepList } from './StepList'
 import * as Icons from './icons'
 import { NewsletterSignup } from '@/components/forms/NewsletterSignup'
+import { PrayerForm } from '@/components/forms/PrayerForm'
 
 function SmartLink({ href = '', children, ...rest }: ComponentProps<'a'>) {
   if (href.startsWith('/') || href.startsWith('#')) {
@@ -53,5 +54,6 @@ export const mdxComponents = {
   CtaBand,
   Button,
   NewsletterSignup,
+  PrayerForm,
   ...Icons,
 }

@@ -1,5 +1,5 @@
 /**
- * Writes supabase/ops/2026-11-19-seed.sql from the reviewed exports: the same
+ * Writes the seed SQL file (SEED_SQL in src/lib/seed/sql.ts) from the reviewed exports: the same
  * rows as `npm run seed`, as one SQL transaction for the Supabase MCP (#101).
  *
  *   npx tsx scripts/seed-sql.ts           write the file

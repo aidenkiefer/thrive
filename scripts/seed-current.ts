@@ -23,6 +23,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { buildSeedPlan, checkExpresso, SEED_TABLES, type Row, type SeedTable } from '../src/lib/seed/plan'
 import { crossTableCollisions, diffFingerprint, diffPlan, formatDiff, fromLive, isApplied, LIVE_SELECT, writeRefusal } from '../src/lib/seed/diff'
+import { PUBLISH_AS } from '../src/lib/seed/sql'
 
 const root = process.cwd()
 const envFile = path.join(root, '.env.local')
@@ -76,11 +77,6 @@ async function fetchLive(db: SupabaseClient): Promise<Record<SeedTable, Row[]>> 
   return live
 }
 
-/** cms_set_published entity type for each publishable seed table. */
-const PUBLISH_AS: Partial<Record<string, string>> = {
-  sermon_series: 'sermon_series', sermons: 'sermon', recurring_events: 'recurring_event', one_time_events: 'one_time_event',
-}
-
 /** The reserved `seed` system actor (supabase/migrations/20261120000000_system_actors.sql). */
 async function seedActor(db: SupabaseClient): Promise<string> {
   const { data, error } = await db.from('admin_staff_accounts').select('actor_id')
@@ -93,7 +89,7 @@ async function seedActor(db: SupabaseClient): Promise<string> {
 async function write(db: SupabaseClient, plan: ReturnType<typeof buildSeedPlan>) {
   const actor = await seedActor(db)
   async function upsert(table: string, row: Row, onConflict = 'slug'): Promise<string> {
-    const type = PUBLISH_AS[table]
+    const type = PUBLISH_AS[table as SeedTable]
     const { published_at: publishedAt, ...draft } = row
     const { data, error } = await db.from(table).upsert(type ? draft : row, { onConflict }).select('id').single()
     if (error) throw new Error(`${table} ${row.slug ?? row.start_datetime}: ${error.message}`)

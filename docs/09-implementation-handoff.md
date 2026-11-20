@@ -31,7 +31,7 @@ Feature history includes commits 5da5ab5, b36b2e8, bde27a9, 55a827f, d679a60, cd
 - Prior builds emitted an Edge Runtime warning involving Supabase process.version via middleware and npm audit reported 9 moderate, 7 high, and 2 critical dependency findings. These were not build failures and have not been represented as fixed.
 - The seed has not been run against Supabase. Remote schema application and database contents are unverified. A successful build does not validate database connectivity or imported data.
 - No admin login, browser acceptance, accessibility review, or production deployment has been verified in this checkpoint.
-- Vercel Preview requires its own environment values, including NEXTAUTH_SECRET, NEXTAUTH_URL, ADMIN_EMAIL, ADMIN_PASSWORD_SCRYPT, and the needed Supabase URL/key settings. Treat missing Preview configuration separately from compilation failures.
+- This November 7 checkpoint used `ADMIN_EMAIL` and `ADMIN_PASSWORD_SCRYPT`. The current D1R branch replaces them with owner-provisioned Supabase Auth email codes and a NextAuth website session. Preview now requires the Supabase URL, publishable/anon key, service role key, `NEXTAUTH_SECRET`, and `NEXTAUTH_URL`; see [admin-setup.md](./admin-setup.md). Treat missing Preview configuration separately from compilation failures.
 - AGENTS.md now mandates npm ci followed by npm run build before every push, a clean status review, and pushing only intended committed changes.
 
 ## Remaining work, prioritized

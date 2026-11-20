@@ -6,9 +6,9 @@ import { type NextRequest, NextResponse } from 'next/server'
  * Server pages and actions re-check the session with requireAdmin()
  * (src/lib/admin-auth.ts); this is the first layer, not the only one.
  *
- * No Supabase session refresh here: the site doesn't use Supabase Auth
- * (admin uses NextAuth; public pages read with the anon key), so there are no
- * Supabase auth cookies to refresh. Importing @supabase/ssr here also pulled
+ * No Supabase session refresh here: staff email codes use Supabase Auth, but
+ * the site retains only a NextAuth session, so there are no Supabase auth
+ * cookies to refresh. Importing @supabase/ssr here also pulled
  * supabase-js into the Edge bundle and caused the process.version warning.
  */
 export async function middleware(request: NextRequest) {

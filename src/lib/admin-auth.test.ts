@@ -32,11 +32,15 @@ vi.mock('@supabase/supabase-js', () => ({
     ? {
         rpc: h.rpc,
         from: () => ({
-          select: () => ({
-            eq: (col: string, val: string) => ({
-              maybeSingle: async () => ({ data: h.rows.find(r => r[col] === val) ?? null, error: null }),
-            }),
-          }),
+          select: () => {
+            // Chainable .eq() filters, applied together by maybeSingle().
+            const filters: Array<[string, unknown]> = []
+            const query = {
+              eq: (col: string, val: unknown) => { filters.push([col, val]); return query },
+              maybeSingle: async () => ({ data: h.rows.find(r => filters.every(([c, v]) => r[c] === v)) ?? null, error: null }),
+            }
+            return query
+          },
         }),
       }
     : { auth: { verifyOtp: h.verifyOtp, signOut: h.signOut, signInWithOtp: h.signInWithOtp } }),
@@ -44,7 +48,7 @@ vi.mock('@supabase/supabase-js', () => ({
 
 const ACTOR = '11111111-1111-4111-8111-111111111111'
 const AUTH = '22222222-2222-4222-8222-222222222222'
-const baseRow = { actor_id: ACTOR, email: 'pat@example.org', auth_user_id: AUTH, status: 'active', auth_version: 4, role: 'staff' }
+const baseRow = { actor_id: ACTOR, kind: 'staff', email: 'pat@example.org', auth_user_id: AUTH, status: 'active', auth_version: 4, role: 'staff' }
 
 beforeEach(() => {
   process.env.NEXTAUTH_SECRET = 'test-secret'
@@ -206,6 +210,14 @@ describe('requireAdmin / getStaffActor', () => {
     const m = await load()
     expect(await m.requireAdmin()).toEqual({ email: 'pat@example.org', actorId: ACTOR, role: 'staff' })
     expect((await m.getStaffActor())?.authVersion).toBe(4)
+  })
+
+  it('never resolves a system actor row, even one carrying the session claims (#94)', async () => {
+    h.rows = [{ ...baseRow, kind: 'system' }]
+    h.session = sessionFor()
+    const m = await load()
+    await expect(m.requireAdmin()).rejects.toThrow('REDIRECT:/admin/login')
+    expect(await m.getStaffActor()).toBeNull()
   })
 
   it('redirects with no session, with a legacy shared-login session, or without NEXTAUTH_SECRET', async () => {

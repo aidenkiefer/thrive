@@ -16,22 +16,34 @@ export const SERVICE_TABLES = ['admin_staff_accounts', 'rate_limit_buckets', 'pu
 /** No draft concept by design: every row is public, privacy comes from column grants. */
 const ALL_ROWS = { speakers: ['email'], staff: ['email', 'phone'] };
 const ROLES = ['anon', 'authenticated'];
-const PUBLISHED = `now() - interval '1 day'`;
+/** Draft inserts, then published through cms_set_published. The INSERT guard refuses a non-null published_at. */
+const PUBLISH = [
+  ['sermon_series', 'sermon_series', 'slug', 'rlsm-pub'],
+  ['sermons', 'sermon', 'slug', 'rlsm-pub'],
+  ['recurring_events', 'recurring_event', 'slug', 'rlsm-pub'],
+  ['one_time_events', 'one_time_event', 'slug', 'rlsm-pub'],
+  ['groups', 'group', 'slug', 'rlsm-pub'],
+  ['ministries', 'ministry', 'slug', 'rlsm-pub'],
+  ['landing_pages', 'landing_page', 'slug', 'rlsm-pub'],
+  ['outreach', 'outreach', 'slug', 'rlsm-pub'],
+  ['announcements', 'announcement', 'title', 'rlsm-pub'],
+  ['announcements', 'announcement', 'title', 'rlsm-expired'],
+];
 
 /** Seed rows, all tagged rlsm-*. Returns nothing; ids are looked up by slug/title. */
 const SEED = `
   insert into speakers (slug, name, email) values ('rlsm-speaker', 'S', 'private@example.com');
   insert into staff (slug, name, email, phone) values ('rlsm-staff', 'T', 'private@example.com', '555-0100');
-  insert into sermon_series (slug, title, published_at) values ('rlsm-pub', 'P', ${PUBLISHED}), ('rlsm-draft', 'D', null);
-  insert into sermons (slug, title, preached_at, published_at) values ('rlsm-pub', 'P', current_date, ${PUBLISHED}), ('rlsm-draft', 'D', current_date, null);
-  insert into recurring_events (slug, name, published_at) values ('rlsm-pub', 'P', ${PUBLISHED}), ('rlsm-draft', 'D', null);
-  insert into one_time_events (slug, name, start_datetime, published_at) values ('rlsm-pub', 'P', now(), ${PUBLISHED}), ('rlsm-draft', 'D', now(), null);
-  insert into groups (slug, name, published_at) values ('rlsm-pub', 'P', ${PUBLISHED}), ('rlsm-draft', 'D', null);
-  insert into ministries (slug, name, published_at) values ('rlsm-pub', 'P', ${PUBLISHED}), ('rlsm-draft', 'D', null);
-  insert into landing_pages (slug, title, published_at) values ('rlsm-pub', 'P', ${PUBLISHED}), ('rlsm-draft', 'D', null);
-  insert into outreach (slug, name, published_at) values ('rlsm-pub', 'P', ${PUBLISHED}), ('rlsm-draft', 'D', null);
-  insert into announcements (title, published_at, expires_at) values
-    ('rlsm-pub', ${PUBLISHED}, null), ('rlsm-draft', null, null), ('rlsm-expired', ${PUBLISHED}, now() - interval '1 hour');
+  insert into sermon_series (slug, title) values ('rlsm-pub', 'P'), ('rlsm-draft', 'D');
+  insert into sermons (slug, title, preached_at) values ('rlsm-pub', 'P', current_date), ('rlsm-draft', 'D', current_date);
+  insert into recurring_events (slug, name) values ('rlsm-pub', 'P'), ('rlsm-draft', 'D');
+  insert into one_time_events (slug, name, start_datetime) values ('rlsm-pub', 'P', now()), ('rlsm-draft', 'D', now());
+  insert into groups (slug, name) values ('rlsm-pub', 'P'), ('rlsm-draft', 'D');
+  insert into ministries (slug, name) values ('rlsm-pub', 'P'), ('rlsm-draft', 'D');
+  insert into landing_pages (slug, title) values ('rlsm-pub', 'P'), ('rlsm-draft', 'D');
+  insert into outreach (slug, name) values ('rlsm-pub', 'P'), ('rlsm-draft', 'D');
+  insert into announcements (title, expires_at) values
+    ('rlsm-pub', null), ('rlsm-draft', null), ('rlsm-expired', now() - interval '1 hour');
   insert into event_occurrences (recurring_event_id, start_datetime, cancelled)
     select id, now(), false from recurring_events where slug = 'rlsm-pub' union all
     select id, now() + interval '1 day', true from recurring_events where slug = 'rlsm-pub' union all
@@ -95,6 +107,14 @@ export async function assertRlsMatrix(db, s, record) {
   await db.query('begin');
   try {
     await db.query(SEED);
+    const { rows: [seedActor] } = await db.query(`select actor_id from public.admin_staff_accounts where name = 'seed'`);
+    for (const [table, entity, col, key] of PUBLISH) {
+      const { rows: [row] } = await db.query(`select id from public.${table} where ${col} = $1`, [key]);
+      await db.query(
+        `select public.cms_set_published($1, $2, true, $3, now() - interval '1 day')`,
+        [entity, row.id, seedActor.actor_id],
+      );
+    }
     for (const role of ROLES) {
       await db.query(`set local role ${role}`);
       for (const t of CONTENT_TABLES) {

@@ -1,5 +1,6 @@
-// R2/R2b rehearsal: publication_events + cms_set_published + published_at guard on PGlite (disposable WASM Postgres).
-// Covers draft/published visibility to anon, actor attribution, rejected actors, and direct published_at writes.
+// R2/R2b/#94 rehearsal: publication_events + cms_set_published + published_at guard + system actors on PGlite (disposable WASM Postgres).
+// Covers draft/published visibility to anon, actor attribution, rejected actors, direct published_at writes,
+// published INSERTs, and system actors (shape, sign-in exclusion, seed publish with its original time).
 // Usage (from this directory): npm ci && node cms-rehearse.mjs [repo-root]   # exit 0 = all pass
 // repo-root defaults to the repo this file is in. The June baseline schema comes
 // from this checkout's git history (commit cd012bd).
@@ -264,7 +265,7 @@ async function assertGuard(db, s) {
     record(s, `${role} cannot execute published_at_guard`, r.v === false);
   }
 
-  // Seed drafts as service_role (INSERT is not guarded in R2b).
+  // Seed drafts as service_role.
   await db.exec('set role service_role');
   const actor = (await one(db, `insert into admin_staff_accounts (email, auth_user_id) values ('guard@example.org', gen_random_uuid()) returning actor_id`)).actor_id;
   const ann = (await one(db, `insert into announcements (title, body) values ('Guard announcement', 'body') returning id`)).id;
@@ -309,14 +310,19 @@ async function assertGuard(db, s) {
     record(s, 'content edits and same-value published_at writes pass', new Date(after).getTime() === new Date(r1.ts).getTime());
   } catch (e) { await asService().catch(() => {}); record(s, 'content edits and same-value published_at writes pass', false, e.message.split('\n')[0]); }
 
-  // Seed-shaped upsert: same timestamp passes, a different one raises.
+  // Seed-shaped upsert: BEFORE INSERT fires before ON CONFLICT, so carrying published_at (even the same
+  // value) raises under the #94 INSERT guard; leaving it out passes and keeps the publish time.
   const g1 = await call('group', grp, true);
   const gTs = new Date(g1.ts).toISOString();
+  await expectError(db, s, 'seed-style upsert re-writing the same published_at raises P0001 (INSERT guard)',
+    `insert into public.groups (slug, name, published_at) values ('guard-group', 'Guard group', '${gTs}')
+      on conflict (slug) do update set name = excluded.name, published_at = excluded.published_at`, 'P0001');
+  await asService();
   try {
-    await db.query(`insert into public.groups (slug, name, published_at) values ('guard-group', 'Guard group', $1)
-      on conflict (slug) do update set name = excluded.name, published_at = excluded.published_at`, [gTs]);
-    record(s, 'seed-style upsert re-writing the same published_at passes', new Date(await pubAt('groups', grp)).getTime() === new Date(g1.ts).getTime());
-  } catch (e) { await asService().catch(() => {}); record(s, 'seed-style upsert re-writing the same published_at passes', false, e.message.split('\n')[0]); }
+    await db.exec(`insert into public.groups (slug, name) values ('guard-group', 'Guard group')
+      on conflict (slug) do update set name = excluded.name`);
+    record(s, 'seed-style upsert without published_at passes and keeps it', new Date(await pubAt('groups', grp)).getTime() === new Date(g1.ts).getTime());
+  } catch (e) { await asService().catch(() => {}); record(s, 'seed-style upsert without published_at passes and keeps it', false, e.message.split('\n')[0]); }
   await expectError(db, s, 'seed-style upsert with a different published_at raises P0001',
     `insert into public.groups (slug, name, published_at) values ('guard-group', 'Guard group', now() + interval '1 hour')
       on conflict (slug) do update set published_at = excluded.published_at`, 'P0001');
@@ -357,6 +363,132 @@ async function assertGuard(db, s) {
   await db.exec('reset role');
 }
 
+// #94: reserved system actors publish through cms_set_published; nothing inserts a published row.
+const FN5 = 'public.cms_set_published(text,uuid,boolean,uuid,timestamptz)';
+const HIST = '2019-03-10T15:00:00.000Z';
+
+async function assertSystemActors(db, s) {
+  await db.exec('reset role');
+  // Structure.
+  for (const t of GUARDED) {
+    const r = await one(db, `select pg_get_triggerdef(oid) d from pg_trigger
+      where tgrelid = 'public.${t}'::regclass and tgname = 'published_at_insert_guard' and not tgisinternal`);
+    record(s, `insert guard on ${t} is BEFORE INSERT FOR EACH ROW`,
+      !!r && /BEFORE INSERT ON public\.\S+ FOR EACH ROW EXECUTE FUNCTION published_at_guard\(\)/.test(r.d), r?.d ?? 'missing');
+  }
+  const fn = await one(db, `select prosecdef, proconfig from pg_proc where oid = '${FN5}'::regprocedure`);
+  record(s, '5-argument cms_set_published is security invoker with empty search_path',
+    fn.prosecdef === false && JSON.stringify(fn.proconfig) === JSON.stringify(['search_path=""']));
+  const pub = await one(db, `select count(*)::int n from pg_proc p, aclexplode(p.proacl) a where p.oid = '${FN5}'::regprocedure and a.grantee = 0`);
+  record(s, 'PUBLIC has no grant on 5-argument cms_set_published', pub.n === 0);
+  for (const role of ['anon', 'authenticated']) {
+    const r = await one(db, `select has_function_privilege('${role}', '${FN5}', 'execute') v`);
+    record(s, `${role} cannot execute 5-argument cms_set_published`, r.v === false);
+  }
+  const sx = await one(db, `select has_function_privilege('service_role', '${FN5}', 'execute') v`);
+  record(s, 'service_role can execute 5-argument cms_set_published', sx.v === true);
+
+  // The reserved seed actor, and the sign-in exclusion.
+  const seed = await one(db, `select actor_id, kind, email, auth_user_id, role, status from admin_staff_accounts where name = 'seed'`);
+  record(s, 'seed system actor exists: kind system, no email, no auth user, role staff, active',
+    !!seed && seed.kind === 'system' && seed.email === null && seed.auth_user_id === null && seed.role === 'staff' && seed.status === 'active');
+  const seen = await one(db, `select count(*)::int n from admin_staff_accounts
+    where kind = 'staff' and (actor_id = $1 or email is null or auth_user_id is null)`, [seed.actor_id]);
+  record(s, "staff lookups (kind = 'staff') never return a system actor or a row without email and auth user", seen.n === 0);
+
+  // Shape.
+  await db.exec('set role service_role');
+  const asService = () => db.exec('set role service_role');
+  const T = 'admin_staff_accounts';
+  for (const [what, cols] of [
+    ['system row with an email', `(kind, name, email) values ('system', 'bad-email', 'sys@example.org')`],
+    ['system row with an auth user', `(kind, name, auth_user_id) values ('system', 'bad-auth', gen_random_uuid())`],
+    ['system row with role admin', `(kind, name, role) values ('system', 'bad-admin', 'admin')`],
+    ['system row without a name', `(kind) values ('system')`],
+    ['system row with a malformed name', `(kind, name) values ('system', 'Bad Name')`],
+    ['staff row without an email', `(auth_user_id) values (gen_random_uuid())`],
+    ['staff row without an auth user', `(email) values ('noauth@example.org')`],
+    ['staff row with a name', `(email, auth_user_id, name) values ('named@example.org', gen_random_uuid(), 'named')`],
+    ['unknown kind', `(kind, name) values ('robot', 'robot')`],
+  ]) {
+    await expectError(db, s, `refuses ${what} (23514)`, `insert into ${T} ${cols}`, '23514');
+    await asService();
+  }
+  await expectError(db, s, 'duplicate system actor name refused (23505)', `insert into ${T} (kind, name) values ('system', 'seed')`, '23505');
+  await asService();
+  await expectError(db, s, 'kind is immutable', `update ${T} set kind = 'staff' where name = 'seed'`, 'P0001');
+  await asService();
+  await expectError(db, s, 'name is immutable', `update ${T} set name = 'seed-2' where name = 'seed'`, 'P0001');
+  await asService();
+  const job = (await one(db, `insert into ${T} (kind, name) values ('system', 'rehearsal-job') returning actor_id`)).actor_id;
+  const staff = (await one(db, `insert into ${T} (email, auth_user_id) values ('sys-staff@example.org', gen_random_uuid()) returning actor_id`)).actor_id;
+
+  // INSERT guard.
+  await expectError(db, s, 'service_role INSERT of a published row raises P0001',
+    `insert into public.announcements (title, body, published_at) values ('Published insert', 'body', now())`, 'P0001');
+  await asService();
+  try { await db.exec(`insert into public.announcements (title, body, published_at) values ('Published insert', 'body', now())`); record(s, 'insert guard message', false); }
+  catch (e) { record(s, 'insert guard message is "rows are inserted as drafts; publish through cms_set_published"', e.message.includes('rows are inserted as drafts; publish through cms_set_published')); }
+  await asService();
+  await expectError(db, s, 'multi-row INSERT with one published row raises P0001',
+    `insert into public.groups (slug, name, published_at) values ('sys-a', 'A', null), ('sys-b', 'B', now())`, 'P0001');
+  await asService();
+  const leaked = await one(db, `select count(*)::int n from public.groups where slug in ('sys-a', 'sys-b')`);
+  record(s, 'refused multi-row INSERT wrote no rows', leaked.n === 0);
+  await db.exec('begin');
+  try {
+    await db.exec(`select pg_catalog.set_config('thrive.cms_set_published', 'on', true)`);
+    await db.exec(`insert into public.groups (slug, name, published_at) values ('sys-mark', 'Mark', now())`);
+    record(s, 'the cms_set_published mark does not open INSERTs', false, 'no error raised');
+  } catch (e) { record(s, 'the cms_set_published mark does not open INSERTs', e.code === 'P0001', `${e.code}`); }
+  finally { await db.exec('rollback'); await asService(); }
+  await db.exec('reset role');
+  await expectError(db, s, 'owner INSERT of a published row also raises P0001',
+    `insert into public.sermon_series (slug, title, published_at) values ('sys-owner', 'Owner', now())`, 'P0001');
+  await asService();
+
+  // Seed publish: a draft, then cms_set_published as the seed actor with the original publish time.
+  const call5 = (type, id, publish, actor, at) => one(db, 'select public.cms_set_published($1, $2, $3, $4, $5) as ts', [type, id, publish, actor, at]);
+  const events = async (actor) => (await db.query(`select action, entity_id from ${PUB} where actor_id = $1`, [actor])).rows;
+  const pubAt = async (t, id) => (await one(db, `select published_at from public.${t} where id = $1`, [id])).published_at;
+  const series = (await one(db, `insert into public.sermon_series (slug, title) values ('sys-series', 'System series') returning id`)).id;
+  const r = await call5('sermon_series', series, true, seed.actor_id, HIST);
+  record(s, 'seed actor publishes with the original publish time',
+    new Date(r.ts).toISOString() === HIST && new Date(await pubAt('sermon_series', series)).toISOString() === HIST);
+  const ev = await events(seed.actor_id);
+  record(s, 'seed publish wrote one publication_events row for the seed actor',
+    ev.length === 1 && ev[0].action === 'publish' && ev[0].entity_id === series);
+  const again = await call5('sermon_series', series, true, seed.actor_id, '2020-01-01T00:00:00.000Z');
+  record(s, 're-publishing keeps the original time and records no event',
+    new Date(again.ts).toISOString() === HIST && (await events(seed.actor_id)).length === 1);
+
+  // Refusals.
+  const ann = (await one(db, `insert into public.announcements (title, body) values ('System announcement', 'body') returning id`)).id;
+  const fn5 = 'select public.cms_set_published($1, $2, $3, $4, $5)';
+  await expectError(db, s, 'staff actor cannot set a publish time (42501)', fn5, '42501', ['announcement', ann, true, staff, HIST]);
+  await asService();
+  await expectError(db, s, 'a publish time in the future is refused (22023)', fn5, '22023', ['announcement', ann, true, job, '2999-01-01T00:00:00Z']);
+  await asService();
+  await expectError(db, s, 'a publish time on unpublish is refused (22023)', fn5, '22023', ['announcement', ann, false, job, HIST]);
+  await asService();
+  record(s, 'refused calls left the draft unpublished and wrote no events',
+    (await pubAt('announcements', ann)) === null && (await events(job)).length === 0 && (await events(staff)).length === 0);
+
+  // A system actor without a publish time behaves like staff, through either form.
+  const r4 = await one(db, 'select public.cms_set_published($1, $2, $3, $4) as ts', ['announcement', ann, true, job]);
+  record(s, '4-argument call publishes as a system actor at now()',
+    r4.ts !== null && Math.abs(new Date(r4.ts).getTime() - Date.now()) < 60000 && (await events(job)).length === 1);
+  const u = await call5('announcement', ann, false, job, null);
+  record(s, 'system actor unpublishes and records the event', u.ts === null && (await events(job)).length === 2);
+  const st = await call5('announcement', ann, true, staff, null);
+  record(s, 'staff actor publishes through the 5-argument form with a null time', st.ts !== null && (await events(staff)).length === 1);
+
+  // Disabling a system actor stops it publishing.
+  await db.exec(`update ${T} set status = 'disabled' where actor_id = '${job}'`);
+  await expectError(db, s, 'disabled system actor cannot publish (42501)', fn5, '42501', ['sermon_series', series, false, job, null]);
+  await db.exec('reset role');
+}
+
 async function main() {
   console.log(`# ${(await (await PGlite.create()).query('select version() v')).rows[0].v}\n`);
 
@@ -368,6 +500,7 @@ async function main() {
   compare(A, freshSnap, await snapshot(a), 'schema.sql before migrations (chain is a no-op)');
   await assertPublishing(a, A);
   await assertGuard(a, A);
+  await assertSystemActors(a, A);
 
   for (const [label, june] of [['B June schema', juneFull], ['C June schema without patch', juneNoPatch]]) {
     const db = await freshDb();
@@ -379,6 +512,7 @@ async function main() {
     compare(label, freshSnap, await snapshot(db), 'fresh schema.sql');
     await assertPublishing(db, label);
     await assertGuard(db, label);
+    await assertSystemActors(db, label);
   }
 
   console.log(`\n${total - failures}/${total} checks passed, ${failures} failed`);

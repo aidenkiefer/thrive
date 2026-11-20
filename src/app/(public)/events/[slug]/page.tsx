@@ -8,6 +8,7 @@ import { Band, PageHero, safely } from '@/components/content'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { SITE_URL } from '@/components/seo/church'
 import { buildEventJsonLd } from '@/components/seo/event'
+import { pageMetadata } from '@/components/seo/metadata'
 
 export const revalidate = 60
 
@@ -20,11 +21,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const { event } = await loadEvent(slug)
   if (!event) return {}
-  return {
+  return pageMetadata({
     title: ('seo_title' in event ? event.seo_title : null) ?? event.name,
-    description: ('seo_description' in event ? event.seo_description : null) ?? undefined,
-    alternates: { canonical: `/events/${slug}` },
-  }
+    description: ('seo_description' in event ? event.seo_description : null) ?? event.short_summary,
+    path: `/events/${slug}`,
+    image: ('og_image_url' in event ? event.og_image_url : null) ?? event.featured_image_url,
+  })
 }
 
 export default async function EventDetailPage({ params }: Props) {

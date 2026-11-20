@@ -8,6 +8,7 @@ import { isApprovedFormUrl } from '@/lib/form-urls'
 import { CardImage } from '@/components/events/CardImage'
 import { LinkButton } from '@/components/events/LinkButton'
 import { Band, PageHero, safely } from '@/components/content'
+import { pageMetadata } from '@/components/seo/metadata'
 
 export const revalidate = 60
 type Props = { params: Promise<{ slug: string }> }
@@ -18,11 +19,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const group = await loadGroup(slug)
   return group
-    ? {
+    ? pageMetadata({
         title: group.seo_title || group.name,
-        description: group.seo_description || group.short_summary || undefined,
-        alternates: { canonical: `/groups/${slug}` },
-      }
+        description: group.seo_description || group.short_summary,
+        path: `/groups/${slug}`,
+        image: group.og_image_url ?? group.featured_image_url,
+      })
     : {}
 }
 

@@ -4,13 +4,14 @@ import { getUpcomingEvents } from '@/lib/queries'
 import { EventCard } from '@/components/events/EventCard'
 import { LinkButton } from '@/components/events/LinkButton'
 import { Band, PageHero, PendingNote, SITE, safely } from '@/components/content'
+import { pageMetadata } from '@/components/seo/metadata'
 
 export const revalidate = 60
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Events',
   description: 'Upcoming events at Thrive Vineyard Church.',
-  alternates: { canonical: '/events' },
-}
+  path: '/events',
+})
 
 type Props = { searchParams: Promise<{ month?: string; view?: string }> }
 

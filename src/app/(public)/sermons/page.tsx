@@ -4,14 +4,15 @@ import type { Sermon } from '@/lib/queries/sermons'
 import { SermonCard } from '@/components/sermons/SermonCard'
 import { LinkButton } from '@/components/events/LinkButton'
 import { Band, PageHero, PendingNote, SITE, safely } from '@/components/content'
+import { pageMetadata } from '@/components/seo/metadata'
 
 export const revalidate = 60
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Watch & Listen',
   description: 'Sermons and messages from Thrive Vineyard Church.',
-  alternates: { canonical: '/sermons' },
-}
+  path: '/sermons',
+})
 
 export default async function SermonsPage() {
   const sermons = await safely<Sermon[]>('sermons:list', () => getSermons(), [])

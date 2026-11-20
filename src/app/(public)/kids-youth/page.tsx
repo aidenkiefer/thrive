@@ -4,11 +4,13 @@ import type { Metadata } from 'next'
 import { compilePageMdx } from '@/components/content/compile-page'
 import { getMdxContent } from '@/lib/mdx'
 import { PageHero } from '@/components/content/PageHero'
+import { pageMetadata } from '@/components/seo/metadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Kids & Youth',
   description: 'Kids are the Future! Safe places where kids can grow in their faith and encounter Jesus.',
-}
+  path: '/kids-youth',
+})
 
 export default async function KidsYouthPage() {
   const { content } = await compilePageMdx({

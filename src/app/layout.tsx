@@ -20,7 +20,8 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://thrivevineyard.com'),
   title: { default: 'Thrive Vineyard', template: '%s | Thrive Vineyard' },
   description: 'Thrive Vineyard Church — Spirit Filled. Down to Earth.',
-  openGraph: { siteName: 'Thrive Vineyard', type: 'website' },
+  openGraph: { siteName: 'Thrive Vineyard', type: 'website', images: ['/og'] },
+  twitter: { card: 'summary_large_image', images: ['/og'] },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -5,11 +5,13 @@ import { compilePageMdx } from '@/components/content/compile-page'
 import { getMdxContent } from '@/lib/mdx'
 import { PageHero } from '@/components/content/PageHero'
 import { Button } from '@/components/ui'
+import { pageMetadata } from '@/components/seo/metadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Give',
   description: 'Ways to give to Thrive Vineyard Church: time, talent, and treasure.',
-}
+  path: '/give',
+})
 
 export default async function GivePage() {
   const { content } = await compilePageMdx({

@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { Container, PageHeader, Section } from '@/components/ui'
 import { safely } from '@/components/content/safe-data'
+import { pageMetadata } from '@/components/seo/metadata'
 
 export const revalidate = 60
 const RESERVED = new Set(['plan-a-visit', 'sermons', 'events', 'groups', 'kids-youth', 'outreach', 'about', 'give', 'ministries', 'admin', 'feedback', 'get-connected'])
@@ -34,12 +35,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const landing = await safely(`landing:${slug}`, () => getLanding(slug), null)
   if (!landing) return { robots: { index: false, follow: false } }
-  return {
+  return pageMetadata({
     title: landing.page.seo_title || landing.page.hero_heading || landing.page.title,
-    description: landing.page.seo_description || landing.page.hero_subheading || undefined,
-    alternates: { canonical: `/${slug}` },
-    openGraph: landing.page.og_image_url ? { images: [landing.page.og_image_url] } : undefined,
-  }
+    description: landing.page.seo_description || landing.page.hero_subheading,
+    path: `/${slug}`,
+    image: landing.page.og_image_url,
+  })
 }
 
 export default async function LandingPage({ params }: Props) {

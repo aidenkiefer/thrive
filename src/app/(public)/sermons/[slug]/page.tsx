@@ -7,6 +7,8 @@ import { SermonPlayer } from '@/components/sermons/SermonPlayer'
 import { SermonMeta } from '@/components/sermons/SermonMeta'
 import { BackLink } from '@/components/ui'
 import { Band, PageHero, safely } from '@/components/content'
+import { pageMetadata } from '@/components/seo/metadata'
+import { parseYouTubeId } from '@/components/sermons/media'
 
 export const revalidate = 60
 
@@ -19,11 +21,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const sermon = await loadSermon(slug)
   if (!sermon) return {}
-  return {
+  const videoId = parseYouTubeId(sermon.youtube_url)
+  const image =
+    sermon.og_image_url ??
+    sermon.thumbnail_url ??
+    (videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null)
+  return pageMetadata({
     title: sermon.seo_title ?? sermon.title,
-    description: sermon.seo_description ?? sermon.description ?? undefined,
-    alternates: { canonical: `/sermons/${slug}` },
-  }
+    description: sermon.seo_description ?? sermon.description,
+    path: `/sermons/${slug}`,
+    image,
+  })
 }
 
 export default async function SermonDetailPage({ params }: Props) {

@@ -6,7 +6,7 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 
 ## Current status (2026-11-20)
 
-**Phase:** **Draft site, the Data stack, dependency triage, and system actors are on `main`.** #132 cleared the moderate dev-only audit findings. #133 added system actors and the `published_at` INSERT guard; that migration was applied to the live project before the code deployed. `scripts/seed-from-parsed.ts` and `src/lib/seed/sql.ts` still insert published rows and will be refused until they publish through `cms_set_published`. Launch date: **owner to confirm** (see `docs/10-launch-checklist.md`).
+**Phase:** **Draft site, the Data stack, seed publishing, decided redirects, and the church mark are on `main`.** #137 makes generated seed SQL insert drafts and publish through `cms_set_published` as the seed actor. `supabase/ops/2026-11-20-seed.sql` is committed and has **not** been applied to the live database. `scripts/seed-current.ts` can still republish a row staff unpublished. #138 redirects `/expresso` (301) and `/prayer` and `/volunteering` (302). The prayer form is specified and not built. Launch date: **owner to confirm** (see `docs/10-launch-checklist.md`).
 
 **Active plan:** [`docs/agents/assignments/2026-11-19-batch-3.md`](../agents/assignments/2026-11-19-batch-3.md) (Batches 3-6 order: [`batches.md`](./batches.md); milestones M1-M5: [`roadmap-milestones.md`](./roadmap-milestones.md); lane backlogs: [`backlog/`](./backlog/)).
 **Status sources:** GitHub Project 3 (Batch, Delivery stage, Milestone fields) · [`docs/08-mvp-status-roadmap.md`](../08-mvp-status-roadmap.md) · QA reports in [`docs/agents/qa/`](../agents/qa/).
@@ -29,8 +29,6 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 
 | PR | What | Why it is still open |
 |----|------|----------------------|
-| #119 | API route inventory and limiter coverage (#48) | Draft. Rebase the test commit `478ee95` onto current `main`. Do not bring the old stack back. |
-| #123 | RLS matrix and admin-guard coverage (#45) | Draft. Rebase `00fbc73` then `4c1526c` onto current `main`. Add `publication_events` to the service-table list if the test still names only the older tables. |
 | #117 | Playwright smoke (#64) | Draft. Not this merge pass. |
 | #105 | Root sender DNS runbook (#103) | Draft. Owner DNS setup is still pending. |
 
@@ -38,7 +36,7 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 
 Full dated log: [owner-decisions.md](owner-decisions.md). 2026-11-19 additions: production Supabase used before launch (no Preview project; live data is an older import, reconcile and seed in #101); staff login sender `info@thrivevineyard.com` (DNS caveat in #103); staff-account control is admin-role only, owner the only admin (#102); Express(o) Sundays 8:30 AM. Current work plan: [session 2](../agents/assignments/2026-11-19-session-2.md).
 
-Shared abuse limiter = Postgres. Announcements: newest featured wins, no priority or scheduling (staff guide `docs/staff/announcements.md`). GTM container `GTM-PRJX6P9H`; no consent notice for now. Native email forms replace Google Forms (`AGENTS.md` forms constraint, approved 2026-11-19). Automated publishing uses reserved system actor rows in `admin_staff_accounts` (#94, decided 2026-11-19). Redirects `/expresso` to `/plan-a-visit#services` (301) and `/prayer`, `/volunteering` to `/get-connected` (302) are decided but **not yet implemented** (#63).
+Shared abuse limiter = Postgres. Announcements: newest featured wins, no priority or scheduling (staff guide `docs/staff/announcements.md`). GTM container `GTM-PRJX6P9H`; no consent notice for now. Native email forms replace Google Forms (`AGENTS.md` forms constraint, approved 2026-11-19). Automated publishing uses reserved system actor rows in `admin_staff_accounts` (#94, decided 2026-11-19). Redirects `/expresso` to `/plan-a-visit#services` (301) and `/prayer`, `/volunteering` to `/get-connected` (302) are on `main` (#138). Prayer requests will be a site form: optional name, optional email or phone, required "How can we be praying for you", delivered to info@thrivevineyard.com (owner, 2026-11-20). That form is not built yet.
 
 ### Still pending before launch
 
@@ -49,7 +47,7 @@ Shared abuse limiter = Postgres. Announcements: newest featured wins, no priorit
 | Domain, DNS, cutover, rollback, social URLs, Ads in container | Open decisions | Owner (#57); runbook Ops (#69) |
 | Photos still hot-link `thrivevineyard.com/wp-content/uploads` (P0) | Not re-hosted | Owner supplies or approves files; Experience (#59), Data (#49), guard Ops (#73) |
 | Logo, favicon | Needed from owner | Owner; Experience (#56) |
-| 301 redirect manifest and `/prayer`, `/expresso`, `/volunteering` rules | Not built | Ops (#62, #63) |
+| 301 redirect manifest and `/prayer`, `/expresso`, `/volunteering` rules | Decided rules are on `main` (#138). Remaining manifest rows stay pending (#55). | Ops (#62, #63) |
 | End-to-end smoke tests, accessibility and performance passes | Not built | Ops (#64), Experience (#61, #67) |
 | Dependency advisories | Re-triage needed: a lockfile `npm audit` on 2026-11-19 showed 6 moderate (dev-only), not the "2 critical / 7 high" recorded on 2026-11-07 | Ops (#71) |
 | Seed run against the pre-launch Supabase project using audited data only | Not run; owner approval still open | Data (#39), owner approval (#54) |
@@ -124,6 +122,7 @@ Shared abuse limiter = Postgres. Announcements: newest featured wins, no priorit
 | **v0.8.4** | Live database reconciliation and seed rails (#108; #101, absorbs #39) | 2026-11-19 | Data | `npm run seed -- --dry-run` reconciliation, host and fingerprint confirmations, post-write verification, generated seed SQL for the MCP. Seed and batch A were applied to live under the owner's go before merge; ledger row added. Three rounds of QA (GPT, Gemini, Claude). Gate PASS on `main` at `a8d8be0`. |
 | **v0.8.5** | Data stack through the revalidation helper | 2026-11-20 | Data | Squash-merged #15, #18, #23, #95, #114, #90, #96, #120, #122 after rebases and full gates. Role, publication-event, and publish-guard migrations were already on the live project. |
 | **v0.8.6** | Dependency triage and system actors (#132, #133) | 2026-11-20 | Ops, Data | Lockfile audit reports no vulnerabilities. Dependabot stays a written proposal. System actors and the INSERT guard are on `main`; the live migration `system_actors` was applied first. |
+| **v0.8.7** | Seed publishing, reserved slugs, redirects, church mark (#137, #136, #138, #134) | 2026-11-20 | Data, Experience, Ops | Seed SQL publishes as the seed actor; the new SQL file is not applied live. Public landing pages use the shared reserved-slug list. Decided redirects are active. Nav mark and both pastors are on the home and About pages. |
 
 ---
 

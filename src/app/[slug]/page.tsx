@@ -4,13 +4,13 @@ import { createClient } from '@/lib/supabase/server'
 import { Container, PageHeader, Section } from '@/components/ui'
 import { safely } from '@/components/content/safe-data'
 import { pageMetadata } from '@/components/seo/metadata'
+import { isReservedSlug } from '@/lib/reserved-slugs'
 
 export const revalidate = 60
-const RESERVED = new Set(['plan-a-visit', 'sermons', 'events', 'groups', 'kids-youth', 'outreach', 'about', 'give', 'ministries', 'admin', 'feedback', 'get-connected'])
 type Props = { params: Promise<{ slug: string }> }
 
 async function getLanding(slug: string) {
-  if (RESERVED.has(slug)) return null
+  if (isReservedSlug(slug)) return null
   const db = await createClient()
   const { data: rawPage } = await db.from('landing_pages').select('*').eq('slug', slug).not('published_at', 'is', null).maybeSingle()
   const data = rawPage as unknown as {

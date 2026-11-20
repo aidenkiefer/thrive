@@ -4,9 +4,9 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 
 ---
 
-## Current status (2026-11-19)
+## Current status (2026-11-20)
 
-**Phase:** **Draft site merged; session 2 Experience and Ops docs on `main`; Data stack still held.** The public site is on `main`. Helpful 404 and error pages (#106), the sermon audio player (#109) and the default `/og` image (#116) are merged. Ops docs for the Vercel env matrix (#107), Supabase readiness (#110) and worktree hygiene (#115) are merged. The staff sign-in, native forms, Resend transport, shared limiter and attributed publishing stay draft and must **not** merge until a protected Preview passes the checklist in issue #41. Launch date: **owner to confirm** (see `docs/10-launch-checklist.md`).
+**Phase:** **Draft site and the Data stack are on `main`.** Staff sign-in, native forms, Resend transport, the shared limiter, attributed publishing, the publish guard, reserved slugs, and the revalidation helper merged on 2026-11-20 (#15, #18, #23, #95, #114, #90, #96, #120, #122). The role and publishing migrations were applied to the live project before that code deployed. Launch date: **owner to confirm** (see `docs/10-launch-checklist.md`).
 
 **Active plan:** [`docs/agents/assignments/2026-11-19-batch-3.md`](../agents/assignments/2026-11-19-batch-3.md) (Batches 3-6 order: [`batches.md`](./batches.md); milestones M1-M5: [`roadmap-milestones.md`](./roadmap-milestones.md); lane backlogs: [`backlog/`](./backlog/)).
 **Status sources:** GitHub Project 3 (Batch, Delivery stage, Milestone fields) · [`docs/08-mvp-status-roadmap.md`](../08-mvp-status-roadmap.md) · QA reports in [`docs/agents/qa/`](../agents/qa/).
@@ -21,21 +21,18 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 | Data RC2 | Merged (#12) | Form-URL allowlist, contact privacy migration, Express(o) un-paused |
 | Tests and fixtures | Merged (#27, #85, #89) | 91 tests; colocated tests discovered; ministry fixtures and render tests |
 | Docs and planning | Merged (#26, #86, #87, #88, #92, #93) | Live URL inventory and launch checklist (`docs/10`), architecture and onboarding, milestones M1-M5, 36 shaped issues, batch order, QA reports |
-| Session 2 Experience | Merged (#106, #109, #116) | Helpful 404 and error pages; sermon audio with a host-allowlisted YouTube parser; `GET /og` 1200×630 PNG. Metadata wiring is still #43. `LatestSermonSection` still iframes `youtube_url` by string replace (E4) |
+| Session 2 Experience | Merged (#106, #109, #116, #124) | Helpful 404 and error pages; sermon audio with a host-allowlisted YouTube parser; `GET /og` 1200×630 PNG; public Open Graph and Twitter metadata. `LatestSermonSection` still iframes `youtube_url` by string replace (E4) |
+| Data stack | Merged 2026-11-20 (#15, #18, #23, #95, #114, #90, #96, #120, #122) | Staff code sign-in, form registry, Resend transport, shared limiter, admin role, attributed publishing, reserved slugs including `thrive-flames`, one revalidation helper. Live migrations applied first. |
 | Session 2 Ops docs | Merged (#107, #110, #115) | Vercel env matrix and Preview smoke checklist; Supabase readiness and backup drill (plan tier, backups and RPO/RTO still owner-owned; #70 stays open); worktree hygiene log (#30 stays open) |
 
-### In flight (draft PRs, not merged)
+### Still open
 
-| PR | What | Base | Held because |
-|----|------|------|--------------|
-| #15 | D1 staff identity (email one-time code) + D2 native form registry | `main` | Production deploy would lock out shared-password admins until staff are enrolled; needs Preview verification (#41) |
-| #18 | D3 Resend transport | #15 | Stack lands as a unit |
-| #23 | D1L shared Postgres abuse limiter | #18 | Needs `RATE_LIMIT_HASH_SECRET` + migration applied before deploy or sign-in and feedback return 503 |
-| #90 | R2 attributed publishing (announcements) + `publication_events` | #15 | Same stack |
-| #96 | R2b attributed publishing for the other editors + `published_at` update guard | #90 | Same stack |
-| #95 | Real-Postgres rehearsal of the migration chain (issue #60) | #23 | Evidence for #41 |
-
-Landing procedure and verified retarget commands for these (squash-merge breaks stacked bases): [`docs/agents/qa/2026-11-19-data-stack-and-cms-slice.md`](../agents/qa/2026-11-19-data-stack-and-cms-slice.md).
+| PR | What | Why it is still open |
+|----|------|----------------------|
+| #119 | API route inventory and limiter coverage (#48) | Draft. Rebase the test commit `478ee95` onto current `main`. Do not bring the old stack back. |
+| #123 | RLS matrix and admin-guard coverage (#45) | Draft. Rebase `00fbc73` then `4c1526c` onto current `main`. Add `publication_events` to the service-table list if the test still names only the older tables. |
+| #117 | Playwright smoke (#64) | Draft. Not this merge pass. |
+| #105 | Root sender DNS runbook (#103) | Draft. Owner DNS setup is still pending. |
 
 ### Owner decisions on record
 
@@ -124,6 +121,8 @@ Shared abuse limiter = Postgres. Announcements: newest featured wins, no priorit
 | **v0.8.2** | Multi-agent workflow v2 (PR #1, Claude) | 2026-11-07 | Workflow | `.agents/skills` (product-manager, lane-builder, scribe, senior-qa), lanes + worktree rules, model routing, `scripts/agents/{worktree,gate}.sh`, CI gate, PR template. Gate-before-push replaces "no verification runs". |
 | **v0.8.3** | Owner church photos and Thrive Flames (#125, #126) | 2026-11-19 | Experience | Local WebP set on the home hub, kids hero, and About gallery; `/thrive-flames` uses the live page's copy. Gate PASS at `ace6160`. |
 | **v0.8.3** | Session 2 Experience and Ops docs | 2026-11-19 | Experience, Ops | Squash-merged #115, #110, #107, #106, #109, #116 after MERGE verdicts and green gates. Issues #34, #36, #38 and #68 closed. #30 and #70 stay open. Data stack, #101 seed, #103 DNS draft, and Ops #41/#62/#73 stay unmerged. |
+| **v0.8.4** | Live database reconciliation and seed rails (#108; #101, absorbs #39) | 2026-11-19 | Data | `npm run seed -- --dry-run` reconciliation, host and fingerprint confirmations, post-write verification, generated seed SQL for the MCP. Seed and batch A were applied to live under the owner's go before merge; ledger row added. Three rounds of QA (GPT, Gemini, Claude). Gate PASS on `main` at `a8d8be0`. |
+| **v0.8.5** | Data stack through the revalidation helper | 2026-11-20 | Data | Squash-merged #15, #18, #23, #95, #114, #90, #96, #120, #122 after rebases and full gates. Role, publication-event, and publish-guard migrations were already on the live project. |
 
 ---
 

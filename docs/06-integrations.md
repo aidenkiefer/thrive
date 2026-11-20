@@ -56,6 +56,17 @@ Supabase Auth needs a code-only email template and dedicated SMTP credentials. P
 
 ---
 
+
+## Resend (website form delivery)
+
+The native website feedback form uses the server-side F1 form registry and the D3 Resend Email API transport. `FORMS_MAIL_TRANSPORT=resend` selects delivery only when `RESEND_API_KEY` is present; an unconfigured or failed send returns an unavailable result to the visitor. The fake transport is for local development and cannot be selected in production. The form registry resolves the sender and required default recipient on the server, with optional additional recipients per form. The visitor cannot set either.
+
+Configure `RESEND_API_KEY`, `FORMS_MAIL_FROM`, and `FORMS_DEFAULT_RECIPIENT` as server-only deployment variables. Use a scoped API key for website forms. Set the sender to an address on a verified Resend domain; `updates.thrivevineyard.com` is registered but its DNS verification is pending. `info@thrivevineyard.com` is the proposed default inbox until the owner confirms its delivery. Resend acceptance is not proof of inbox receipt: before enabling public submission, use an isolated Preview deployment and an approved test recipient to verify delivery, Reply-To, failure handling, and access to submissions. Do not send test content to the production inbox without the owner's direction.
+
+Supabase Auth may use Resend SMTP for staff one-time codes, with a separate key and code-only template. Keep authentication traffic and website feedback messages distinct.
+
+---
+
 ## ChurchSuite
 
 **Role on live site:** Online giving only (`thrivevineyard.churchsuite.com/donate/`).

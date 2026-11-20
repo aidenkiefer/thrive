@@ -1,5 +1,5 @@
 export type RedirectDisposition =
-  | { disposition: 'redirect'; source: string; destination: string; permanent: boolean }
+  | { disposition: 'redirect'; source: string; destination: string; permanent: boolean; statusCode?: 301 | 302 }
   | { disposition: 'same-path' }
   | { disposition: 'pending-owner'; reason: string }
   | { disposition: 'do-not-migrate'; reason: string }
@@ -7,7 +7,6 @@ export type RedirectDisposition =
 export type ManifestEntry = { liveUrls: readonly string[] } & RedirectDisposition
 
 const pendingCampaign = 'Search Console and active Ads audit; owner destinations: https://github.com/aidenkiefer/thrive/issues/55'
-const pendingActivation = 'Owner destination decided; activation remains gated by #63: https://github.com/aidenkiefer/thrive/issues/63'
 
 // Exactly one entry per migration-map table row. Keep multi-URL rows together.
 // This inventory records current behavior; it does not activate redirects.
@@ -24,9 +23,9 @@ export const redirectManifest: readonly ManifestEntry[] = [
   { liveUrls: ['/about/'], disposition: 'same-path' },
   { liveUrls: ['/give/'], disposition: 'same-path' },
   { liveUrls: ['/get-connected/'], disposition: 'same-path' },
-  { liveUrls: ['/prayer/'], disposition: 'pending-owner', reason: pendingActivation },
-  { liveUrls: ['/expresso/'], disposition: 'pending-owner', reason: pendingActivation },
-  { liveUrls: ['/volunteering/'], disposition: 'pending-owner', reason: pendingActivation },
+  { liveUrls: ['/prayer/'], disposition: 'redirect', source: '/prayer', destination: '/get-connected', permanent: false, statusCode: 302 },
+  { liveUrls: ['/expresso/'], disposition: 'redirect', source: '/expresso', destination: '/plan-a-visit#services', permanent: true, statusCode: 301 },
+  { liveUrls: ['/volunteering/'], disposition: 'redirect', source: '/volunteering', destination: '/get-connected', permanent: false, statusCode: 302 },
   { liveUrls: ['/series/[slug]/'], disposition: 'redirect', source: '/series/:slug', destination: '/sermons/series/:slug', permanent: true },
   { liveUrls: ['/speaker/[slug]/'], disposition: 'pending-owner', reason: 'Speaker taxonomy disposition needs owner audit: https://github.com/aidenkiefer/thrive/issues/55' },
   { liveUrls: ['/topics/[slug]/'], disposition: 'redirect', source: '/topics/:slug', destination: '/sermons', permanent: false },

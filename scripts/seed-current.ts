@@ -16,13 +16,16 @@
  * Publishable rows go in as drafts (the database refuses an INSERT with
  * published_at) and are then published through cms_set_published as the `seed`
  * system actor, keeping their original publish time and recording a
- * publication_events row (#94). A row that is already published is left as it is.
+ * publication_events row (#94). A row that is already published, or whose
+ * publish state was already set through cms_set_published (a staff unpublish),
+ * is left as it is; the verification then reports it as differing from the plan.
  */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import fs from 'node:fs'
 import path from 'node:path'
 import { buildSeedPlan, checkExpresso, SEED_TABLES, type Row, type SeedTable } from '../src/lib/seed/plan'
 import { crossTableCollisions, diffFingerprint, diffPlan, formatDiff, fromLive, isApplied, LIVE_SELECT, writeRefusal } from '../src/lib/seed/diff'
+import { publishSeedRow } from '../src/lib/seed/publish'
 import { PUBLISH_AS } from '../src/lib/seed/sql'
 
 const root = process.cwd()
@@ -89,16 +92,13 @@ async function seedActor(db: SupabaseClient): Promise<string> {
 async function write(db: SupabaseClient, plan: ReturnType<typeof buildSeedPlan>) {
   const actor = await seedActor(db)
   async function upsert(table: string, row: Row, onConflict = 'slug'): Promise<string> {
-    const type = PUBLISH_AS[table as SeedTable]
+    const publishable = PUBLISH_AS[table as SeedTable] !== undefined
     const { published_at: publishedAt, ...draft } = row
-    const { data, error } = await db.from(table).upsert(type ? draft : row, { onConflict }).select('id').single()
+    const { data, error } = await db.from(table).upsert(publishable ? draft : row, { onConflict }).select('id').single()
     if (error) throw new Error(`${table} ${row.slug ?? row.start_datetime}: ${error.message}`)
     const id = (data as Row).id as string
-    if (type && publishedAt != null) {
-      const { error: publishError } = await db.rpc('cms_set_published', {
-        p_entity_type: type, p_entity_id: id, p_publish: true, p_actor_id: actor, p_published_at: publishedAt,
-      })
-      if (publishError) throw new Error(`publish ${table} ${row.slug}: ${publishError.message}`)
+    if (await publishSeedRow(db, table as SeedTable, id, publishedAt, actor) === 'skipped') {
+      console.log(`${table} ${row.slug}: publish state already set through cms_set_published; left as it is`)
     }
     return id
   }

@@ -1,0 +1,13 @@
+{
+  "name": "pg-rehearsal",
+  "private": true,
+  "type": "module",
+  "description": "Rehearses supabase/schema.sql and migrations on a real local Postgres 17 with concurrent clients. Not part of the app build.",
+  "scripts": {
+    "rehearse": "node rehearse-pg.mjs ../.."
+  },
+  "dependencies": {
+    "embedded-postgres": "17.11.0-beta.19",
+    "pg": "8.23.1"
+  }
+}

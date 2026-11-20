@@ -6,7 +6,7 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 
 ## Current status (2026-11-20)
 
-**Phase:** **Draft site, the Data stack, seed publishing, decided redirects, and the church mark are on `main`.** #137 makes generated seed SQL insert drafts and publish through `cms_set_published` as the seed actor. `supabase/ops/2026-11-20-seed.sql` is committed and has **not** been applied to the live database. `scripts/seed-current.ts` can still republish a row staff unpublished. #138 redirects `/expresso` (301) and `/prayer` and `/volunteering` (302). The prayer form is specified and not built. Launch date: **owner to confirm** (see `docs/10-launch-checklist.md`).
+**Phase:** **Draft site, the Data stack, seed publishing, decided redirects, the church mark, and the prayer form are on `main`.** #137 makes generated seed SQL insert drafts and publish through `cms_set_published` as the seed actor. `supabase/ops/2026-11-20-seed.sql` is committed and has **not** been applied to the live database. #141 makes `scripts/seed-current.ts` skip a row that already has publication history. #140 adds the prayer form on `/get-connected#prayer`. It sends only when `FORMS_PRAYER_RECIPIENT` is set. Launch date: **owner to confirm** (see `docs/10-launch-checklist.md`).
 
 **Active plan:** [`docs/agents/assignments/2026-11-19-batch-3.md`](../agents/assignments/2026-11-19-batch-3.md) (Batches 3-6 order: [`batches.md`](./batches.md); milestones M1-M5: [`roadmap-milestones.md`](./roadmap-milestones.md); lane backlogs: [`backlog/`](./backlog/)).
 **Status sources:** GitHub Project 3 (Batch, Delivery stage, Milestone fields) · [`docs/08-mvp-status-roadmap.md`](../08-mvp-status-roadmap.md) · QA reports in [`docs/agents/qa/`](../agents/qa/).
@@ -36,7 +36,7 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 
 Full dated log: [owner-decisions.md](owner-decisions.md). 2026-11-19 additions: production Supabase used before launch (no Preview project; live data is an older import, reconcile and seed in #101); staff login sender `info@thrivevineyard.com` (DNS caveat in #103); staff-account control is admin-role only, owner the only admin (#102); Express(o) Sundays 8:30 AM. Current work plan: [session 2](../agents/assignments/2026-11-19-session-2.md).
 
-Shared abuse limiter = Postgres. Announcements: newest featured wins, no priority or scheduling (staff guide `docs/staff/announcements.md`). GTM container `GTM-PRJX6P9H`; no consent notice for now. Native email forms replace Google Forms (`AGENTS.md` forms constraint, approved 2026-11-19). Automated publishing uses reserved system actor rows in `admin_staff_accounts` (#94, decided 2026-11-19). Redirects `/expresso` to `/plan-a-visit#services` (301) and `/prayer`, `/volunteering` to `/get-connected` (302) are on `main` (#138). Prayer requests will be a site form: optional name, optional email or phone, required "How can we be praying for you", delivered to info@thrivevineyard.com (owner, 2026-11-20). That form is not built yet.
+Shared abuse limiter = Postgres. Announcements: newest featured wins, no priority or scheduling (staff guide `docs/staff/announcements.md`). GTM container `GTM-PRJX6P9H`; no consent notice for now. Native email forms replace Google Forms (`AGENTS.md` forms constraint, approved 2026-11-19). Automated publishing uses reserved system actor rows in `admin_staff_accounts` (#94, decided 2026-11-19). Redirects `/expresso` to `/plan-a-visit#services` (301) and `/prayer`, `/volunteering` to `/get-connected` (302) are on `main` (#138). The prayer form is on `/get-connected#prayer` (#140, #141): optional name, optional email or phone, required "How can we be praying for you". Delivery is only to `FORMS_PRAYER_RECIPIENT`, which production still needs set to info@thrivevineyard.com (owner, 2026-11-20).
 
 ### Still pending before launch
 
@@ -123,6 +123,7 @@ Shared abuse limiter = Postgres. Announcements: newest featured wins, no priorit
 | **v0.8.5** | Data stack through the revalidation helper | 2026-11-20 | Data | Squash-merged #15, #18, #23, #95, #114, #90, #96, #120, #122 after rebases and full gates. Role, publication-event, and publish-guard migrations were already on the live project. |
 | **v0.8.6** | Dependency triage and system actors (#132, #133) | 2026-11-20 | Ops, Data | Lockfile audit reports no vulnerabilities. Dependabot stays a written proposal. System actors and the INSERT guard are on `main`; the live migration `system_actors` was applied first. |
 | **v0.8.7** | Seed publishing, reserved slugs, redirects, church mark (#137, #136, #138, #134) | 2026-11-20 | Data, Experience, Ops | Seed SQL publishes as the seed actor; the new SQL file is not applied live. Public landing pages use the shared reserved-slug list. Decided redirects are active. Nav mark and both pastors are on the home and About pages. |
+| **v0.8.8** | Prayer form and seed publish skip (#141, #140) | 2026-11-20 | Data, Ops | Prayer requests use their own inbox env key. `seed-current` skips rows with publication history. `/prayer` redirects to `/get-connected#prayer`. |
 
 ---
 

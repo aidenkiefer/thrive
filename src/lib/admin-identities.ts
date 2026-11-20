@@ -1,5 +1,7 @@
-import { createHash } from 'node:crypto'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createSubjectLimiter, normalizeIpSubject, type LimitRule, type SubjectLimiter } from './rate-limit'
+
+export { clientKeyFrom } from './rate-limit'
 
 /**
  * A1 staff actor contract (D1R): individual one-time email code sign-in.
@@ -14,7 +16,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
  * authorship key. Nothing here logs emails, codes, or tokens.
  */
 
-/** Short website session (seconds). JWT sessions slide while in use. */
+/** Website session length (seconds), counted from sign-in; use does not extend it. */
 export const SESSION_MAX_AGE_SECONDS = 4 * 60 * 60
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -115,117 +117,115 @@ export async function resolveActor(
 }
 
 // ---------------------------------------------------------------------------
-// Abuse controls (per server instance; Supabase enforces its own limits too)
+// Abuse controls (counts shared across instances via Postgres; every limiter failure denies)
 // ---------------------------------------------------------------------------
 
-export interface RateLimiter {
-  /** Returns false when the key has used up its allowance in the window. */
-  take(key: string): boolean
-}
+/** Request-code sends: per client address, per email, and a global cap. */
+export const codeRequestRules = {
+  ip: { purpose: 'otp.request.ip', limit: 10, windowSeconds: 900 },
+  email: { purpose: 'otp.request.email', limit: 3, windowSeconds: 900 },
+  global: { purpose: 'otp.request.global', limit: 60, windowSeconds: 3600 },
+} satisfies Record<string, LimitRule>
 
-export function createRateLimiter(
-  max: number,
-  windowMs: number,
-  now: () => number = Date.now,
-  maxKeys = 5000,
-): RateLimiter {
-  const hits = new Map<string, number[]>()
-  return {
-    take(key) {
-      const t = now()
-      const recent = (hits.get(key) ?? []).filter(h => t - h < windowMs)
-      if (recent.length >= max) {
-        hits.set(key, recent)
-        return false
-      }
-      recent.push(t)
-      hits.delete(key)
-      hits.set(key, recent)
-      while (hits.size > maxKeys) {
-        const oldest = hits.keys().next().value
-        if (oldest === undefined) break
-        hits.delete(oldest)
-      }
-      return true
-    },
-  }
-}
+/** Verification attempts: per client address and per email. */
+export const codeVerifyRules = {
+  ip: { purpose: 'otp.verify.ip', limit: 30, windowSeconds: 900 },
+  email: { purpose: 'otp.verify.email', limit: 8, windowSeconds: 900 },
+} satisfies Record<string, LimitRule>
 
-const WINDOW_MS = 15 * 60 * 1000
-/** Request-code sends: per email, per client address, and a global cap per instance. */
-export const codeRequestLimits = {
-  email: createRateLimiter(3, WINDOW_MS),
-  ip: createRateLimiter(10, WINDOW_MS),
-  global: createRateLimiter(60, 60 * 60 * 1000),
-}
-/** Verification attempts: per email and per client address. */
-export const codeVerifyLimits = {
-  email: createRateLimiter(8, WINDOW_MS),
-  ip: createRateLimiter(30, WINDOW_MS),
-}
+/** Reads RATE_LIMIT_HASH_SECRET and Supabase env per call, so missing config denies. */
+const defaultLimiter = createSubjectLimiter()
 
-export interface AbuseLimits {
-  email: RateLimiter
-  ip: RateLimiter
-  global?: RateLimiter
-}
-
-/** Hash so raw emails are not kept as map keys. */
-export function limiterKey(scope: string, value: string): string {
-  return createHash('sha256').update(`${scope}\u0000${value}`).digest('hex')
-}
+/** Subject for the single global counter. */
+const GLOBAL_SUBJECT = 'all'
 
 // ---------------------------------------------------------------------------
 // Request a code
 // ---------------------------------------------------------------------------
 
-export type RequestCodeResult = { status: 'accepted' } | { status: 'rate_limited' }
+export type RequestCodeResult =
+  | { status: 'accepted' }
+  | { status: 'rate_limited'; retryAfterSeconds: number }
+  | { status: 'unavailable' }
 
-export interface RequestCodeDeps {
-  store: StaffStore | null
-  otp: OtpAuth | null
-  limits?: AbuseLimits
-  clientKey: string
+interface TimingDeps {
   /** Minimum wall time per call, so known and unknown emails take similar time. */
   minDurationMs?: number
   sleep?: (ms: number) => Promise<void>
   now?: () => number
+  /** Receives one fixed, PII-free line when a send or verify throws. Defaults to console.error. */
+  log?: (line: string) => void
+}
+
+export interface RequestCodeDeps extends TimingDeps {
+  store: StaffStore | null
+  otp: OtpAuth | null
+  limiter?: SubjectLimiter
+  clientKey: string
+  /**
+   * Runs the roster lookup and send after the response (the route passes
+   * next/server `after`), so response time never depends on membership.
+   * Without it the task runs inline, which only tests should rely on.
+   */
+  defer?: (task: () => Promise<void>) => void
 }
 
 const defaultSleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
-/**
- * Sends a code only when the email belongs to an active preprovisioned staff
- * account. The result never reveals whether it did: every non-throttled path is
- * 'accepted'. Only the client-address and global limits are visible (429), and
- * they apply identically to every email. The per-email limit is silent.
- */
-export async function requestStaffCode(rawEmail: unknown, deps: RequestCodeDeps): Promise<RequestCodeResult> {
+/** Starts the clock; the returned function waits out the rest of minDurationMs, then returns its argument. */
+function padToMinimum(deps: TimingDeps): <T>(result: T) => Promise<T> {
   const now = deps.now ?? Date.now
   const sleep = deps.sleep ?? defaultSleep
   const started = now()
-  const limits = deps.limits ?? codeRequestLimits
-
-  const finish = async (result: RequestCodeResult): Promise<RequestCodeResult> => {
+  return async result => {
     const wait = (deps.minDurationMs ?? 0) - (now() - started)
     if (wait > 0) await sleep(wait)
     return result
   }
+}
 
-  if (!limits.ip.take(limiterKey('ip', deps.clientKey)) || (limits.global && !limits.global.take('all'))) {
-    return finish({ status: 'rate_limited' })
+/**
+ * Sends a code only when the email belongs to an active preprovisioned staff
+ * account. The result never reveals whether it did: every non-throttled path is
+ * 'accepted'. The client-address and global limits are visible (429) and apply
+ * identically to every email. The per-email limit is silent (no send, still
+ * 'accepted'). If the shared limiter is unhealthy at any step the result is
+ * 'unavailable' and nothing is sent; that depends only on limiter health, never
+ * on whether the email is a staff member. The roster lookup and send run in
+ * `deps.defer`, after the answer is decided.
+ */
+export async function requestStaffCode(rawEmail: unknown, deps: RequestCodeDeps): Promise<RequestCodeResult> {
+  const finish = padToMinimum(deps)
+  const limiter = deps.limiter ?? defaultLimiter
+
+  const ipResult = await limiter(codeRequestRules.ip, normalizeIpSubject(deps.clientKey))
+  const visible = ipResult.allowed ? await limiter(codeRequestRules.global, GLOBAL_SUBJECT) : ipResult
+  if (!visible.allowed) {
+    if (visible.reason === 'limited') {
+      return finish({ status: 'rate_limited', retryAfterSeconds: visible.retryAfterSeconds })
+    }
+    return finish({ status: 'unavailable' })
   }
 
   const email = normalizeEmail(rawEmail)
-  if (!email || !deps.store || !deps.otp) return finish({ status: 'accepted' })
-  if (!limits.email.take(limiterKey('email', email))) return finish({ status: 'accepted' })
-
-  try {
-    const row = await deps.store.findByEmail(email)
-    if (isActive(row)) await deps.otp.requestCode(email)
-  } catch {
-    // Swallowed on purpose: a failure must look the same as success.
+  const { store, otp } = deps
+  if (!email || !store || !otp) return finish({ status: 'accepted' })
+  const emailResult = await limiter(codeRequestRules.email, email)
+  if (!emailResult.allowed) {
+    return finish(emailResult.reason === 'limited' ? { status: 'accepted' } : { status: 'unavailable' })
   }
+
+  const send = async () => {
+    try {
+      const row = await store.findByEmail(email)
+      if (isActive(row)) await otp.requestCode(email)
+    } catch {
+      // The caller still sees success; only a fixed code is logged.
+      (deps.log ?? console.error)('[staff-code] send_failed')
+    }
+  }
+  if (deps.defer) deps.defer(send)
+  else await send()
   return finish({ status: 'accepted' })
 }
 
@@ -233,29 +233,36 @@ export async function requestStaffCode(rawEmail: unknown, deps: RequestCodeDeps)
 // Verify a code
 // ---------------------------------------------------------------------------
 
-export interface VerifyCodeDeps {
+export interface VerifyCodeDeps extends TimingDeps {
   store: StaffStore | null
   otp: OtpAuth | null
-  limits?: Pick<AbuseLimits, 'email' | 'ip'>
+  limiter?: SubjectLimiter
   clientKey: string
 }
 
 /**
  * Verifies the emailed code and returns the active actor, or null for every
  * failure (unknown/disabled staff, wrong, expired, or replayed code, Auth user
- * that is not the bound one, throttling, or any error).
+ * that is not the bound one, throttling, limiter failure, or any error).
+ * Unknown and disabled emails skip the Supabase call, so every result is
+ * padded to `deps.minDurationMs`.
  */
 export async function verifyStaffCode(
   rawEmail: unknown,
   rawCode: unknown,
   deps: VerifyCodeDeps,
 ): Promise<StaffActor | null> {
-  const limits = deps.limits ?? codeVerifyLimits
+  const finish = padToMinimum(deps)
+  return finish(await verifyUnpadded(rawEmail, rawCode, deps))
+}
+
+async function verifyUnpadded(rawEmail: unknown, rawCode: unknown, deps: VerifyCodeDeps): Promise<StaffActor | null> {
+  const limiter = deps.limiter ?? defaultLimiter
   const email = normalizeEmail(rawEmail)
   const code = normalizeCode(rawCode)
   if (!email || !code || !deps.store || !deps.otp) return null
-  if (!limits.ip.take(limiterKey('ip', deps.clientKey))) return null
-  if (!limits.email.take(limiterKey('email', email))) return null
+  if (!(await limiter(codeVerifyRules.ip, normalizeIpSubject(deps.clientKey))).allowed) return null
+  if (!(await limiter(codeVerifyRules.email, email)).allowed) return null
 
   try {
     const row = await deps.store.findByEmail(email)
@@ -264,6 +271,7 @@ export async function verifyStaffCode(
     if (!authUserId || authUserId.toLowerCase() !== row.auth_user_id.toLowerCase()) return null
     return toActor(row)
   } catch {
+    (deps.log ?? console.error)('[staff-code] verify_error')
     return null
   }
 }
@@ -325,17 +333,4 @@ export function createOtpAuth(env: IdentityEnv = process.env): OtpAuth | null {
       return data.user.id
     },
   }
-}
-
-/** First hop of x-forwarded-for (set by the platform), else a fixed bucket. */
-export function clientKeyFrom(headers: { get(name: string): string | null } | Record<string, unknown> | undefined): string {
-  if (!headers) return 'unknown'
-  const read = (name: string): string => {
-    const value = typeof (headers as { get?: unknown }).get === 'function'
-      ? (headers as { get(n: string): string | null }).get(name)
-      : (headers as Record<string, unknown>)[name]
-    return typeof value === 'string' ? value : ''
-  }
-  const forwarded = read('x-forwarded-for').split(',')[0]?.trim()
-  return forwarded || read('x-real-ip').trim() || 'unknown'
 }

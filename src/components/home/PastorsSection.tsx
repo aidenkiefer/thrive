@@ -10,12 +10,19 @@ import { Button } from '@/components/ui'
  * Source: docs/audit/2026-11/pages/about.md, "Our History":
  *  - "Co-Pastors Kevin and Molly Kiefer" (attribution)
  *  - Kevin's quote, verbatim: "It's a privilege to be able to show our community the goodness of Jesus and how He can change lives."
- * Photo: PHOTOS.pastors (LaSalle set: Kevin at the pulpit).
+ * Photos: Kevin and Molly at the pulpit (LaSalle set), shown together as co-pastors.
  */
 export function PastorsSection() {
   return (
     <Band tone="white" prose={false}>
-      <FeatureSplit photo="pastors" aspect="aspect-square" reverse className="mx-auto max-w-5xl">
+      <FeatureSplit
+        photos={['pastors', 'mollyPulpit']}
+        captions={['Kevin Kiefer', 'Molly Kiefer']}
+        positions={['object-center', 'object-[center_32%]']}
+        aspect="aspect-[3/4]"
+        reverse
+        className="mx-auto max-w-5xl"
+      >
         <SectionIntro eyebrow="Meet the pastors" title="Pastors Kevin and Molly Kiefer" />
         <PullQuote attribution="Pastor Kevin Kiefer, Co-Pastor">
           It&rsquo;s a privilege to be able to show our community the goodness of Jesus and how He can change lives.

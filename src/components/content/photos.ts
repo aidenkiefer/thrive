@@ -45,12 +45,6 @@ export const PHOTOS = {
     width: 1600,
     height: 1067,
   },
-  conversation: {
-    src: '/images/church/lasalle-11.webp',
-    alt: 'Two people talk together beside a Thrive poster.',
-    width: 1600,
-    height: 1067,
-  },
   worshipSinging: {
     src: '/images/church/lasalle-02.webp',
     alt: 'A woman sings during a worship gathering.',
@@ -68,6 +62,12 @@ export const PHOTOS = {
     alt: 'Pastor Kevin Kiefer speaks at the pulpit beneath the cross.',
     width: 1600,
     height: 1067,
+  },
+  mollyPulpit: {
+    src: '/images/church/lasalle-12.webp',
+    alt: 'Pastor Molly Kiefer speaks at the pulpit beneath the cross.',
+    width: 1066,
+    height: 1600,
   },
   familyWorship: {
     src: '/images/church/lasalle-07.webp',

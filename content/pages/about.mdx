@@ -14,10 +14,6 @@ Thrive Vineyard Church is a Vineyard church plant in Palatine, IL. It began in A
 
 </Band>
 
-<Band tone="light" prose={false} className="!py-8 md:!py-10">
-  <Photo name="conversation" aspect="aspect-[16/9]" />
-</Band>
-
 {/* Our history. Source: audit about.md "Our History". Every factual sentence is preserved; see the notes in the build report for the few light edits. */}
 <Band tone="white" narrow>
 
@@ -87,7 +83,7 @@ And Pastor Molly shares his optimism.
 
 {/* Meet the pastors teaser. Source: audit about.md (Meet the Team, history text); photo from photos.ts */}
 <Band tone="white" prose={false}>
-<FeatureSplit photo="pastors" reverse aspect="aspect-square">
+<FeatureSplit photos={['pastors', 'mollyPulpit']} captions={['Kevin Kiefer', 'Molly Kiefer']} positions={['object-center', 'object-[center_32%]']} reverse aspect="aspect-[3/4]">
 
 ## Meet the pastors
 

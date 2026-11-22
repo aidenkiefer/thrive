@@ -14,8 +14,9 @@ export function SiteShell({ children }: SiteShellProps) {
   const [skipLinkFocused, setSkipLinkFocused] = useState(false)
   const isAdminRoute = pathname.startsWith('/admin')
 
+  // Admin routes render their own <main> inside AdminShell and the login page.
   if (isAdminRoute) {
-    return <main id="main-content" className="min-h-screen">{children}</main>
+    return <>{children}</>
   }
 
   return (

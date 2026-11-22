@@ -14,7 +14,7 @@ export function WelcomeSection() {
   return (
     <Band tone="white" prose={false}>
       <FeatureSplit photo="familyWorship" aspect="aspect-[4/5]" position="object-top" className="max-w-5xl mx-auto">
-        <p className="text-sm font-medium tracking-wide text-brand-600">Come as you are</p>
+        <p className="eyebrow text-accent-600">Come as you are</p>
         <h2>We can&rsquo;t wait to meet you</h2>
         {/* Source: about.md "Get in Touch" */}
         <p>Join us for our worship service, Sundays at 9:30am. Or feel free to reach out and let&rsquo;s connect. We can&rsquo;t wait to meet you!</p>

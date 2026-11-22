@@ -13,7 +13,7 @@ type Status =
   | { kind: 'network' }
 
 const fieldClass =
-  'mt-1 w-full rounded-md border border-brand-100 bg-neutral-0 px-4 py-2.5 text-neutral-950 placeholder:text-neutral-600 focus-visible:border-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2'
+  'mt-1 w-full rounded-xl border border-neutral-300 bg-neutral-0 px-4 py-2.5 text-neutral-950 shadow-sm placeholder:text-neutral-500 focus-visible:border-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2'
 const labelClass = 'block text-sm font-medium text-neutral-800'
 const errorClass = 'mt-1 text-sm text-red-800'
 
@@ -91,22 +91,22 @@ export function PrayerForm() {
     <form className="relative space-y-6" onSubmit={onSubmit} noValidate aria-busy={status.kind === 'submitting'}>
       <div aria-live="polite" aria-atomic="true" className="space-y-3">
         {status.kind === 'sent' ? (
-          <p role="status" className="rounded-md border border-green-300 bg-green-50 p-3 text-sm text-green-900">
+          <p role="status" className="rounded-xl border border-success-600/25 bg-success-50 p-3 text-sm text-success-700">
             Thanks — your prayer request was sent.
           </p>
         ) : null}
         {status.kind === 'unavailable' ? (
-          <p role="alert" className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+          <p role="alert" className="rounded-xl border border-warning-600/25 bg-warning-50 p-3 text-sm text-warning-700">
             We couldn&apos;t send your request right now. Please try again in a few minutes.
           </p>
         ) : null}
         {status.kind === 'network' ? (
-          <p role="alert" className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+          <p role="alert" className="rounded-xl border border-warning-600/25 bg-warning-50 p-3 text-sm text-warning-700">
             We couldn&apos;t reach the server. Check your connection and try again.
           </p>
         ) : null}
         {errorFor('form') ? (
-          <p role="alert" className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+          <p role="alert" className="rounded-xl border border-danger-600/25 bg-danger-50 p-3 text-sm text-danger-700">
             {errorFor('form')}
           </p>
         ) : null}

@@ -43,7 +43,7 @@ export function Card({
     </>
   )
 
-  const rootClasses = `rounded-lg bg-neutral-0 shadow-sm overflow-hidden ${className}`
+  const rootClasses = `rounded-2xl bg-neutral-0 shadow-soft ring-1 ring-brand-900/5 overflow-hidden ${className}`
 
   if (href) {
     return (

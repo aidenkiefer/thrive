@@ -68,29 +68,26 @@ export function GlobalNav() {
 
   return (
     <header
-      className={`sticky top-0 z-50 bg-brand-800 transition-shadow ${
-        scrolled ? 'shadow-md' : ''
+      className={`sticky top-0 z-50 transition-[background-color,box-shadow] duration-300 ${
+        scrolled || mobileOpen
+          ? 'bg-brand-800/95 shadow-[0_8px_24px_-12px_rgb(10_27_39/0.5)] backdrop-blur-md'
+          : 'bg-brand-800'
       }`}
     >
       <div className="mx-auto flex h-16 max-w-content items-center justify-between gap-4 px-4 sm:px-6 lg:h-[72px] lg:px-8">
-        {/* Wordmark */}
-        <Link href="/" className="flex shrink-0 items-center gap-2.5 leading-none">
+        <Link
+          href="/"
+          aria-label="Thrive Vineyard Church home"
+          className="flex shrink-0 items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-4 focus-visible:ring-offset-brand-800"
+        >
           <Image
-            src="/images/brand/thrive-mark.webp"
-            alt=""
-            width={512}
-            height={512}
+            src="/images/brand/thrive-wordmark-white.webp"
+            alt="Thrive Vineyard Church"
+            width={1411}
+            height={202}
             priority
-            className="h-8 w-8 shrink-0 lg:h-9 lg:w-9"
+            className="h-6 w-auto sm:h-7 xl:h-8"
           />
-          <span className="flex flex-col leading-none">
-            <span className="font-display text-xl font-semibold tracking-tight text-white">
-              Thrive Vineyard
-            </span>
-            <span className="mt-1 hidden text-[11px] font-medium tracking-wide text-accent-400 sm:block">
-              Spirit Filled. Down to Earth.
-            </span>
-          </span>
         </Link>
 
         {/* Desktop nav */}
@@ -112,14 +109,14 @@ export function GlobalNav() {
           <Link
             href={giveLink.href}
             aria-current={isActive(giveLink.href) ? 'page' : undefined}
-            className="whitespace-nowrap rounded-md border border-white/30 px-3.5 py-2 text-sm font-medium text-white press hover:bg-white/10"
+            className="whitespace-nowrap rounded-full border border-white/25 px-4 py-2 text-sm font-medium text-white press hover:border-white/50 hover:bg-white/10"
           >
             {giveLink.label}
           </Link>
           <Link
             href={visitLink.href}
             aria-current={isActive(visitLink.href) ? 'page' : undefined}
-            className="whitespace-nowrap rounded-md bg-accent-400 px-3.5 py-2 text-sm font-medium text-neutral-950 press hover:brightness-95"
+            className="whitespace-nowrap rounded-full bg-accent-400 px-4 py-2 text-sm font-semibold text-brand-950 shadow-sm press hover:bg-accent-300"
           >
             {visitLink.label}
           </Link>
@@ -153,7 +150,7 @@ export function GlobalNav() {
       {mobileOpen && (
         <div
           id="mobile-navigation"
-          className="drawer-in max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-white/10 bg-brand-800 lg:hidden"
+          className="drawer-in max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-white/10 lg:hidden"
         >
           <nav className="flex flex-col px-4 py-4" aria-label="Mobile navigation">
             <Link
@@ -161,7 +158,7 @@ export function GlobalNav() {
               ref={firstMobileLinkRef}
               aria-current={isActive(visitLink.href) ? 'page' : undefined}
               onClick={() => setMobileOpen(false)}
-              className="mb-2 flex min-h-11 items-center justify-center rounded-md bg-accent-400 px-4 text-base font-medium text-neutral-950"
+              className="mb-2 flex min-h-11 items-center justify-center rounded-full bg-accent-400 px-4 text-base font-semibold text-brand-950"
             >
               {visitLink.label}
             </Link>
@@ -182,7 +179,7 @@ export function GlobalNav() {
               href={giveLink.href}
               aria-current={isActive(giveLink.href) ? 'page' : undefined}
               onClick={() => setMobileOpen(false)}
-              className="mt-4 flex min-h-11 items-center justify-center rounded-md border border-white/30 px-4 text-base font-medium text-white"
+              className="mt-4 flex min-h-11 items-center justify-center rounded-full border border-white/30 px-4 text-base font-medium text-white"
             >
               {giveLink.label}
             </Link>

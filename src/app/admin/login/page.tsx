@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
@@ -66,41 +68,97 @@ export default function AdminLoginPage() {
     setNotice('')
   }
 
+  const inputClass =
+    'mt-1.5 block w-full rounded-lg border border-neutral-300 bg-neutral-0 px-3.5 py-3 text-[15px] text-neutral-950 shadow-sm transition-colors placeholder:text-neutral-400 hover:border-neutral-400 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/15'
+  const primaryClass =
+    'inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-800 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/25 disabled:cursor-not-allowed disabled:opacity-60'
+  const linkClass =
+    'text-sm font-medium text-brand-700 underline decoration-brand-300 underline-offset-4 transition-colors hover:text-brand-900 disabled:opacity-50'
+
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-sm">
-        <h1 className="mb-6 text-2xl font-bold">Admin Login</h1>
-        {step === 'email' ? (
-          <form onSubmit={requestCode} className="space-y-4">
-            <label className="block text-sm font-medium">Staff email
-              <input name="email" type="email" autoComplete="username" required value={email}
-                onChange={e => setEmail(e.target.value)} className="mt-1 block w-full rounded border p-2" />
-            </label>
-            {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
-            <button type="submit" disabled={busy} className="rounded bg-brand-800 px-4 py-2 text-white disabled:opacity-50">
-              {busy ? 'Sending…' : 'Email me a code'}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={verifyCode} className="space-y-4">
-            {notice && <p role="status" className="text-sm text-neutral-700">{notice}</p>}
-            <label className="block text-sm font-medium">One-time code
-              <input name="code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]{6,12}"
-                required autoFocus className="mt-1 block w-full rounded border p-2 tracking-widest" />
-            </label>
-            {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
-            <div className="flex flex-wrap items-center gap-3">
-              <button type="submit" disabled={busy} className="rounded bg-brand-800 px-4 py-2 text-white disabled:opacity-50">
-                {busy ? 'Checking…' : 'Sign in'}
-              </button>
-              <button type="button" disabled={busy} onClick={() => requestCode()} className="text-sm underline disabled:opacity-50">
-                Send a new code
-              </button>
-              <button type="button" onClick={startOver} className="text-sm underline">Use a different email</button>
-            </div>
-          </form>
-        )}
-      </div>
-    </div>
+    <main id="main-content" className="grid min-h-screen bg-neutral-100 lg:grid-cols-[1.05fr_1fr]">
+      <section className="relative hidden overflow-hidden bg-gradient-to-br from-brand-800 via-brand-800 to-brand-950 p-12 text-white lg:flex lg:flex-col lg:justify-between">
+        <Image
+          src="/images/brand/thrive-mark.webp"
+          alt=""
+          width={512}
+          height={512}
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-32 -right-32 h-[30rem] w-[30rem] opacity-[0.06]"
+        />
+        <div aria-hidden="true" className="pointer-events-none absolute -left-24 top-1/3 h-72 w-72 rounded-full bg-accent-400/20 blur-3xl" />
+        <Image
+          src="/images/brand/thrive-wordmark-white.webp"
+          alt="Thrive Vineyard Church"
+          width={1411}
+          height={202}
+          priority
+          className="relative h-auto w-72"
+        />
+        <div className="relative max-w-md">
+          <p className="eyebrow text-accent-300">Staff admin</p>
+          <p className="mt-4 font-display text-4xl font-semibold leading-tight">
+            One place for every event, group, and announcement.
+          </p>
+          <p className="mt-4 text-white/70">Spirit Filled. Down to Earth.</p>
+        </div>
+      </section>
+
+      <section className="flex items-center justify-center px-5 py-12 sm:px-8">
+        <div className="w-full max-w-sm">
+          <Image
+            src="/images/brand/thrive-wordmark-navy.webp"
+            alt="Thrive Vineyard Church"
+            width={1411}
+            height={202}
+            priority
+            className="mx-auto mb-10 h-auto w-60 lg:hidden"
+          />
+          <div className="rounded-3xl bg-neutral-0 p-7 shadow-lift ring-1 ring-neutral-200 sm:p-8">
+            <h1 className="font-display text-2xl font-semibold text-brand-900">
+              {step === 'email' ? 'Sign in to admin' : 'Check your email'}
+            </h1>
+            <p className="mt-1.5 text-sm text-neutral-600">
+              {step === 'email'
+                ? 'We’ll email you a one-time code. No password needed.'
+                : `Enter the code we sent to ${email}.`}
+            </p>
+            {step === 'email' ? (
+              <form onSubmit={requestCode} className="mt-6 space-y-5">
+                <label className="block text-sm font-medium text-neutral-800">Staff email
+                  <input name="email" type="email" autoComplete="username" required value={email}
+                    onChange={e => setEmail(e.target.value)} placeholder="you@thrivevineyard.com" className={inputClass} />
+                </label>
+                {error && <p role="alert" className="rounded-lg bg-danger-50 px-3 py-2 text-sm font-medium text-danger-700">{error}</p>}
+                <button type="submit" disabled={busy} className={primaryClass}>
+                  {busy ? 'Sending…' : 'Email me a code'}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={verifyCode} className="mt-6 space-y-5">
+                {notice && <p role="status" className="rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-800">{notice}</p>}
+                <label className="block text-sm font-medium text-neutral-800">One-time code
+                  <input name="code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]{6,12}"
+                    required autoFocus className={`${inputClass} text-center font-mono text-lg tracking-[0.4em]`} />
+                </label>
+                {error && <p role="alert" className="rounded-lg bg-danger-50 px-3 py-2 text-sm font-medium text-danger-700">{error}</p>}
+                <button type="submit" disabled={busy} className={primaryClass}>
+                  {busy ? 'Checking…' : 'Sign in'}
+                </button>
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                  <button type="button" disabled={busy} onClick={() => requestCode()} className={linkClass}>
+                    Send a new code
+                  </button>
+                  <button type="button" onClick={startOver} className={linkClass}>Use a different email</button>
+                </div>
+              </form>
+            )}
+          </div>
+          <p className="mt-8 text-center text-xs text-neutral-500">
+            <Link href="/" className="font-medium text-neutral-600 hover:text-brand-800">← Back to thrivevineyard.com</Link>
+          </p>
+        </div>
+      </section>
+    </main>
   )
 }

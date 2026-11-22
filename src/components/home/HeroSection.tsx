@@ -24,7 +24,7 @@ export function HeroSection() {
           {/* Secondary-on-dark: Button 'secondary' is dark-on-light, so use a local white outline. */}
           <Link
             href="/sermons"
-            className="inline-flex min-h-11 items-center justify-center rounded-md border border-white/70 px-6 py-2.5 text-sm font-medium text-white press hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-900"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/50 px-6 py-2.5 text-sm font-semibold text-white backdrop-blur-sm press hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-900"
           >
             Watch a Message
           </Link>

@@ -18,7 +18,7 @@ const variants: Record<LinkButtonVariant, string> = {
 }
 
 const base =
-  'inline-flex min-h-11 items-center justify-center rounded-md px-5 py-2.5 text-sm font-medium press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
+  'inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
 
 /**
  * Local 44px-tall link styled as a button. External http(s) links open in a new

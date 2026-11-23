@@ -15,8 +15,8 @@ export interface AdminSection {
   href: string
   icon: AdminIconName
   description: string
-  /** Supabase table counted on the dashboard. */
-  table: string
+  /** Supabase table counted on the dashboard; absent for file-backed tools. */
+  table?: string
   /** Table has a published_at column, so drafts can be counted. */
   publishable: boolean
 }
@@ -32,6 +32,7 @@ export const adminSectionGroups: AdminSectionGroup[] = [
     sections: [
       { label: 'Announcements', href: '/admin/announcements', icon: 'megaphone', description: 'Site notices. The newest featured one leads the homepage.', table: 'announcements', publishable: true },
       { label: 'Sermons', href: '/admin/sermons', icon: 'play', description: 'Messages, series, and speakers.', table: 'sermons', publishable: true },
+      { label: 'Media library', href: '/admin/media', icon: 'layout', description: 'Browse church photos, artwork, and brand images.', publishable: false },
       { label: 'Campaign pages', href: '/admin/landing-pages', icon: 'layout', description: 'Standalone landing pages for campaigns.', table: 'landing_pages', publishable: true },
     ],
   },

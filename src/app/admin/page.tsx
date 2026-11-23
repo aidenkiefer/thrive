@@ -8,6 +8,7 @@ export const metadata = { title: 'Dashboard' }
 type AdminDb = Awaited<ReturnType<typeof adminDb>>
 
 async function countSection(db: AdminDb, section: AdminSection): Promise<SectionCounts> {
+  if (!section.table) return null
   try {
     const totalQuery = db.from(section.table).select('id', { count: 'exact', head: true })
     const draftQuery = section.publishable

@@ -43,19 +43,30 @@ export function PageHero({
           </div>
           <div
             aria-hidden="true"
-            className="absolute inset-0 -z-10 bg-gradient-to-r from-brand-900/95 via-brand-900/75 to-brand-900/35"
+            className="absolute inset-0 -z-10 bg-gradient-to-r from-brand-950/95 via-brand-900/75 to-brand-900/30"
           />
         </>
       ) : (
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-gradient-to-br from-brand-900 via-brand-800 to-brand-600/70"
-        />
+        <>
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -z-20 bg-gradient-to-br from-brand-900 via-brand-800 to-brand-700"
+          />
+          <div aria-hidden="true" className="absolute -right-24 top-1/2 -z-10 h-80 w-80 -translate-y-1/2 rounded-full bg-accent-400/15 blur-3xl" />
+          <Image
+            src="/images/brand/thrive-mark.webp"
+            alt=""
+            width={512}
+            height={512}
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-20 top-1/2 -z-10 hidden h-[26rem] w-[26rem] -translate-y-1/2 opacity-[0.06] md:block"
+          />
+        </>
       )}
       <Container>
         <div className={`hero-enter max-w-2xl ${padding}`}>
           {eyebrow ? (
-            <p className="mb-4 text-sm font-medium tracking-wide text-accent-400">{eyebrow}</p>
+            <p className="eyebrow mb-5 text-accent-300">{eyebrow}</p>
           ) : null}
           <h1
             className={`font-display font-semibold leading-[1.1] text-white ${

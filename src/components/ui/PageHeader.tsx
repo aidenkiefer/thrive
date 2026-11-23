@@ -18,7 +18,7 @@ export function PageHeader({
   return (
     <header className={`max-w-prose ${className}`}>
       {eyebrow ? (
-        <p className="mb-3 text-sm font-medium tracking-wide text-brand-600">{eyebrow}</p>
+        <p className="eyebrow mb-3 text-accent-600">{eyebrow}</p>
       ) : null}
       <Heading level="h1">{title}</Heading>
       {description ? <p className="mt-4 text-lg text-neutral-600">{description}</p> : null}

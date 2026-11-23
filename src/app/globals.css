@@ -20,6 +20,10 @@
     @apply outline-2 outline-offset-2 outline-brand-600;
   }
 
+  ::selection {
+    @apply bg-accent-200 text-brand-900;
+  }
+
   .prose-content {
     @apply text-neutral-600;
   }
@@ -321,6 +325,21 @@
     }
   }
 
+
+  /* Small caps label above section titles, with a short rose rule. */
+  .eyebrow {
+    @apply inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.16em];
+  }
+
+  .eyebrow::before {
+    content: '';
+    @apply h-px w-6 bg-current opacity-60;
+  }
+
+  .text-center .eyebrow,
+  .eyebrow.eyebrow-center {
+    @apply justify-center;
+  }
 
   @media (prefers-reduced-motion: reduce) {
     *,

@@ -15,14 +15,14 @@ interface ButtonProps {
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-brand-800 text-white hover:bg-brand-600',
-  secondary: 'border border-brand-800 text-brand-800 hover:bg-brand-100',
-  ghost: 'text-brand-800 hover:bg-brand-100',
-  accent: 'bg-accent-400 text-neutral-950 hover:brightness-95',
+  primary: 'bg-brand-800 text-white shadow-sm shadow-brand-900/20 hover:bg-brand-700 hover:shadow-md hover:shadow-brand-900/20',
+  secondary: 'border border-brand-800/80 text-brand-800 hover:border-brand-800 hover:bg-brand-50',
+  ghost: 'text-brand-800 hover:bg-brand-50',
+  accent: 'bg-accent-400 text-brand-950 shadow-sm shadow-accent-700/20 hover:bg-accent-300 hover:shadow-md hover:shadow-accent-700/20',
 }
 
 const baseClasses =
-  'inline-flex min-h-11 items-center justify-center rounded-md px-5 py-2.5 text-sm font-medium press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
 
 export function Button({
   variant = 'primary',

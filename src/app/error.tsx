@@ -14,7 +14,7 @@ export default function GlobalError({
     <Section background="light">
       <Container>
         <div className="mx-auto max-w-prose py-12 text-center">
-          <p className="mb-3 text-sm font-medium tracking-wide text-brand-600">
+          <p className="eyebrow mb-4 text-accent-600">
             Something went wrong
           </p>
           <Heading level="h1">Please try again</Heading>

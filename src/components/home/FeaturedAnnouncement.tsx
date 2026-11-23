@@ -17,7 +17,7 @@ export function FeaturedAnnouncement({ announcement }: { announcement: Announcem
   const { title, body, cta_text, cta_url } = announcement
   const external = cta_url ? /^(https?:|mailto:|tel:)/.test(cta_url) : false
   const ctaClasses =
-    'inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-brand-800 px-6 py-2.5 text-sm font-medium text-white press hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2'
+    'inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand-800 px-6 py-2.5 text-sm font-semibold text-white press hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2'
 
   return (
     <section aria-label="Announcement" className="bg-neutral-0 py-8 md:py-10">

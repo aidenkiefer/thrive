@@ -22,9 +22,7 @@ export function SectionIntro({
     <div className={`reveal ${align === 'center' ? 'mx-auto text-center' : ''} max-w-2xl ${className}`}>
       {eyebrow ? (
         <p
-          className={`mb-3 text-sm font-medium tracking-wide ${
-            inverse ? 'text-accent-400' : 'text-brand-600'
-          }`}
+          className={`eyebrow mb-4 ${inverse ? 'text-accent-300' : 'text-accent-600'}`}
         >
           {eyebrow}
         </p>

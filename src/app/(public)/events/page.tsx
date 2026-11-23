@@ -16,7 +16,7 @@ export const metadata: Metadata = pageMetadata({
 type Props = { searchParams: Promise<{ month?: string; view?: string }> }
 
 const control =
-  'inline-flex min-h-11 items-center rounded-md px-4 text-sm font-medium press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2'
+  'inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2'
 
 export default async function EventsPage({ searchParams }: Props) {
   const [{ oneTime, occurrences }, params] = await Promise.all([

@@ -57,7 +57,7 @@ export function LatestSermonSection({ sermon }: { sermon: Sermon | null }) {
               href={SITE.social.youtube}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center justify-center rounded-md border border-white/70 px-6 py-2.5 text-sm font-medium text-white press hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-800"
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/70 px-6 py-2.5 text-sm font-semibold text-white press hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-800"
             >
               Watch on YouTube
             </a>
@@ -79,7 +79,7 @@ export function LatestSermonSection({ sermon }: { sermon: Sermon | null }) {
     <Band tone="navy" prose={false}>
       <div className="reveal grid items-center gap-10 lg:grid-cols-5 lg:gap-14">
         <div className="lg:col-span-2">
-          <p className="mb-3 text-sm font-medium tracking-wide text-accent-400">Latest message</p>
+          <p className="eyebrow mb-4 text-accent-300">Latest message</p>
           <h2 className="font-display text-3xl font-semibold leading-tight text-white md:text-4xl">{sermon.title}</h2>
           {meta.length > 0 ? <p className="mt-3 text-white/70">{meta.join(' · ')}</p> : null}
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2">

@@ -1,0 +1,121 @@
+/*
+ * Admin form system. Admin pages write plain inputs, labels, buttons, and
+ * <details> rows; these scoped rules give them one consistent, branded look so
+ * page files keep only their data and validation logic.
+ */
+
+.admin-ui h1 {
+  @apply font-display text-3xl font-semibold tracking-tight text-brand-900;
+}
+
+.admin-ui h2 {
+  @apply font-display text-xl font-semibold text-brand-900;
+}
+
+.admin-ui h3 {
+  @apply font-display text-lg font-semibold text-brand-900;
+}
+
+/* Forms render as cards. */
+.admin-ui form {
+  @apply rounded-2xl border border-neutral-200 bg-neutral-0 p-5 shadow-soft md:p-6;
+}
+
+.admin-ui form > * + * {
+  @apply mt-4;
+}
+
+.admin-ui form.grid > * + * {
+  @apply mt-0;
+}
+
+.admin-ui form.grid {
+  @apply gap-4;
+}
+
+.admin-ui label {
+  @apply text-sm font-medium text-neutral-800;
+}
+
+.admin-ui input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']),
+.admin-ui select,
+.admin-ui textarea {
+  @apply mt-1.5 block w-full rounded-lg border border-neutral-300 bg-neutral-0 px-3 py-2.5 text-[15px] font-normal text-neutral-950 shadow-sm transition-colors placeholder:text-neutral-400 hover:border-neutral-400 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/15;
+}
+
+.admin-ui textarea {
+  @apply leading-relaxed;
+}
+
+.admin-ui input:read-only:not([type='checkbox']):not([type='radio']) {
+  @apply cursor-not-allowed border-dashed bg-neutral-100 text-neutral-600 hover:border-neutral-300;
+}
+
+.admin-ui input[type='checkbox'],
+.admin-ui input[type='radio'] {
+  @apply h-4 w-4 shrink-0 cursor-pointer accent-brand-800;
+}
+
+/* Checkbox labels ("Published", "Cancelled", "Featured") read as toggle rows. */
+.admin-ui label:has(> input[type='checkbox']) {
+  @apply flex w-fit cursor-pointer items-center gap-2.5 rounded-lg border border-neutral-300 bg-neutral-0 px-3 py-2 transition-colors hover:border-brand-400;
+}
+
+.admin-ui label:has(> input[type='checkbox']:checked) {
+  @apply border-brand-300 bg-brand-50 text-brand-900;
+}
+
+.admin-ui button[type='submit'] {
+  @apply inline-flex min-h-10 items-center justify-center rounded-full bg-brand-800 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/25 disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+.admin-ui form[aria-busy='true'] button[type='submit'] {
+  @apply cursor-wait opacity-70;
+}
+
+/* Collapsible existing-item rows. */
+.admin-ui details {
+  @apply overflow-hidden rounded-xl border border-neutral-200 bg-neutral-0 p-0 shadow-sm transition-shadow;
+}
+
+.admin-ui details:hover {
+  @apply border-neutral-300;
+}
+
+.admin-ui details[open] {
+  @apply border-brand-200 shadow-soft;
+}
+
+.admin-ui summary {
+  @apply flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 text-[15px] font-medium text-neutral-900 transition-colors hover:bg-neutral-50;
+}
+
+.admin-ui summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-ui summary::before {
+  content: '';
+  @apply h-2 w-2 shrink-0 rotate-[-45deg] border-b-2 border-r-2 border-neutral-400 transition-transform;
+}
+
+.admin-ui details[open] > summary {
+  @apply border-b border-neutral-200 bg-brand-50/60;
+}
+
+.admin-ui details[open] > summary::before {
+  @apply rotate-45 border-brand-600;
+}
+
+.admin-ui details > div {
+  @apply mt-0 bg-neutral-50 p-4;
+}
+
+.admin-ui details form {
+  @apply shadow-none;
+}
+
+/* Secondary links styled as bordered buttons on the page body. */
+.admin-ui main a[class~='border'] {
+  @apply rounded-full border-neutral-300 bg-neutral-0 text-sm font-medium text-brand-800 transition-colors hover:border-brand-300 hover:bg-brand-50;
+}

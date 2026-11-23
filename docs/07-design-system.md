@@ -274,47 +274,57 @@ Tied to project milestones. Design system is a prerequisite for **v0.3.0** (home
 
 1. Page templates for sermons, events, groups using same components
 2. MDX prose styling for static pages
-3. Admin panel inherits tokens (shared Tailwind config)
+3. Admin panel inherits tokens (shared Tailwind config): done 2026-11-22 (sidebar shell, dashboard, scoped form styles in `src/app/admin/admin.css`)
 4. Accessibility pass: contrast ratios, focus states, reduced motion
 
 ### Phase D — Brand assets (parallel, human-driven)
 
-- [ ] Confirm navy `#183d59` with leadership (or approve refined palette above)
+- [x] Confirm navy `#183d59` with leadership (or approve refined palette above): full palette built on it, see "Brand palette"
 - [ ] Choose display font (Fraunces vs alternatives) — quick stakeholder preview
 - [ ] Commission or select authentic photography bank (hero, hub cards, about)
 - [ ] Recreate logo as SVG
 
 ---
 
-## Tailwind token sketch
+## Brand palette
 
-Reference implementation for Phase A — not yet applied:
+Implemented in `tailwind.config.ts` (2026-11-22). Everything is built around the live navy **`#183d59` (`brand-800`)**; the older four-step tokens kept their values, so existing classes did not shift.
 
-```ts
-// tailwind.config.ts (planned)
-colors: {
-  brand: {
-    900: '#0f2838',
-    800: '#183d59', // live primary
-    600: '#245a7a',
-    100: '#e8eef2',
-  },
-  accent: {
-    400: '#c9828a',
-    50: '#fbf1f0',
-  },
-  neutral: {
-    950: '#1a1a1a',
-    600: '#5c5c5c',
-    100: '#f7f7f5',
-    0: '#ffffff',
-  },
-},
-fontFamily: {
-  display: ['var(--font-fraunces)', 'Georgia', 'serif'],
-  sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-},
-```
+### Families
+
+| Family | Role | Key steps |
+|---|---|---|
+| `brand` (navy) | Primary. Nav, footer, headings on dark, primary buttons, admin chrome | `50 #f3f7fa` · `100 #e8eef2` · `200 #cddbe6` · `300 #a3bdd0` · `400 #7097b3` · `500 #4a7697` · `600 #245a7a` · `700 #1d4a6a` · **`800 #183d59`** · `900 #0f2838` · `950 #0a1b27` |
+| `accent` (dusty rose) | Warmth. Visit CTA, eyebrows, highlights, selection | `50 #fbf1f0` · `100 #f6e2e1` · `200 #edc6c7` · `300 #dea3a8` · **`400 #c9828a`** · `500 #b4656f` · `600 #984d58` · `700 #7c3d47` |
+| `sky` | Cool tint for quiet info surfaces (sparingly) | `50 #f2f8fb` … `400 #5fa5c9` |
+| `sand` | Warm tint for alternating bands (sparingly) | `50 #fcfaf6` … `300 #dccdb3` |
+| `neutral` (warm grey) | Text, borders, page background | `0 #ffffff` · `100 #f7f7f5` (page) · `200 #ecebe7` · `300 #dad8d2` · `600 #5c5c5c` (secondary text) · `950 #1a1a1a` (body text) |
+| `success` / `warning` / `danger` | Form and admin status only | `50` surface · `600` icon/border · `700` text |
+
+Shadows: `shadow-soft` (resting cards) and `shadow-lift` (hover / raised panels), both tinted navy instead of black.
+
+### Usage rules
+
+- **Navy carries the brand; rose is the spice.** Roughly 60% neutral surfaces, 30% navy, 10% rose. One rose CTA per view.
+- **Text contrast (WCAG AA):** body `neutral-950` on `neutral-100`; links `brand-800`/`brand-600`; rose *text* on light backgrounds uses `accent-600`+, never `accent-400`. On navy, use white, `white/70`+, or `accent-300`/`accent-400`.
+- **Buttons are pills** (`rounded-full`). Primary = `brand-800`; accent = `accent-400` with `brand-950` text; secondary = navy outline; on dark = white outline.
+- **Eyebrows** use the `.eyebrow` class (uppercase, tracked, short rule): `text-accent-600` on light, `text-accent-300` on navy.
+- **Cards:** `rounded-2xl`, `shadow-soft`, `ring-1 ring-brand-900/5`; links lift to `shadow-lift`.
+- **Status colors stay out of marketing UI.** No green/amber/red outside forms and admin.
+
+### Logos
+
+Source files are in `media-library/wordpress-assets/` (white only). Web-ready variants live in `public/images/brand/`:
+
+| File | Use |
+|---|---|
+| `thrive-wordmark-white.webp` | Symbol + "THRIVE VINEYARD CHURCH" on navy: site header, footer, admin login panel |
+| `thrive-wordmark-navy.webp` | Same lockup on light backgrounds (mobile admin login, print-style pages) |
+| `thrive-mark.webp` | White symbol on navy: admin sidebar, low-opacity watermarks in heroes, CTA bands, footer |
+| `thrive-mark-navy.webp` | Symbol on light backgrounds |
+| `src/app/icon.png`, `src/app/apple-icon.png` | Favicon (navy disc, white lines) and iOS home-screen tile |
+
+Rules: keep clear space of at least the symbol's radius around the lockup; never recolor beyond white/navy; never place the white files on light backgrounds; watermarks stay at 4–7% opacity and are always `aria-hidden`. A vector (SVG) master is still outstanding (Phase D).
 
 ---
 

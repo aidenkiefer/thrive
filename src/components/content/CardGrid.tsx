@@ -47,7 +47,7 @@ export function InfoCard({ title, icon, photo, href, linkLabel = 'Learn more', c
       ) : null}
       <div className="flex h-full flex-col p-6">
         {icon ? (
-          <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-brand-100 text-brand-800">
+          <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700 ring-1 ring-brand-100">
             {icon}
           </span>
         ) : null}
@@ -64,9 +64,9 @@ export function InfoCard({ title, icon, photo, href, linkLabel = 'Learn more', c
       </div>
     </>
   )
-  const classes = 'group flex flex-col overflow-hidden rounded-2xl bg-neutral-0 shadow-sm ring-1 ring-black/5'
+  const classes = 'group flex flex-col overflow-hidden rounded-2xl bg-neutral-0 shadow-soft ring-1 ring-brand-900/5'
   if (!href) return <article className={classes}>{body}</article>
-  const linkClasses = `${classes} motion-lift hover:shadow-md`
+  const linkClasses = `${classes} motion-lift hover:shadow-lift hover:ring-brand-900/10`
   if (external) {
     return (
       <a

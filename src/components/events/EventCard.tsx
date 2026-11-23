@@ -31,7 +31,7 @@ export function EventCard({ slug, name, date, summary, imageUrl, category, locat
   return (
     <Link
       href={`/events/${slug}`}
-      className={`group flex overflow-hidden rounded-2xl bg-neutral-0 shadow-sm ring-1 ring-black/5 motion-lift hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 ${
+      className={`group flex overflow-hidden rounded-2xl bg-neutral-0 shadow-soft ring-1 ring-brand-900/5 motion-lift hover:shadow-lift focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 ${
         list ? 'flex-col sm:flex-row' : 'h-full flex-col'
       }`}
     >

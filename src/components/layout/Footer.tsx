@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { SERVICE_TIMES } from '@/lib/constants/service-times'
 import { SITE } from '@/components/content/site-info'
@@ -20,31 +21,46 @@ const socialLinks = [
   { label: 'Instagram', href: SITE.social.instagram },
 ]
 
-const headingClass = 'text-sm font-semibold tracking-wide text-accent-400'
+const headingClass = 'font-sans text-xs font-semibold uppercase tracking-[0.16em] text-accent-300'
 const linkClass = 'transition-colors hover:text-white'
 
 export function Footer() {
   return (
-    <footer className="bg-brand-900 text-white">
-      <div className="mx-auto max-w-content px-4 py-14 sm:px-6 lg:px-8">
+    <footer className="relative isolate overflow-hidden bg-brand-900 text-white">
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-400/60 to-transparent" />
+      <Image
+        src="/images/brand/thrive-mark.webp"
+        alt=""
+        width={512}
+        height={512}
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-40 -right-24 -z-10 h-[28rem] w-[28rem] opacity-[0.04]"
+      />
+      <div className="mx-auto max-w-content px-4 pb-10 pt-16 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div>
-            <Link href="/" className="font-display text-2xl font-semibold text-white">
-              {SITE.shortName}
+            <Link href="/" aria-label={`${SITE.shortName} home`} className="inline-block">
+              <Image
+                src="/images/brand/thrive-wordmark-white.webp"
+                alt="Thrive Vineyard Church"
+                width={1411}
+                height={202}
+                className="h-auto w-56"
+              />
             </Link>
-            <p className="mt-2 text-sm text-accent-400">{SITE.tagline}</p>
+            <p className="mt-4 font-display text-lg italic text-accent-300">{SITE.tagline}</p>
             <p className="mt-4 text-sm leading-relaxed text-white/70">
               A Vineyard church in Palatine, IL.
             </p>
-            <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/70">
+            <ul className="mt-5 flex flex-wrap gap-2 text-sm text-white/80">
               {socialLinks.map((link) => (
                 <li key={link.label}>
                   <a
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={linkClass}
+                    className="inline-flex min-h-9 items-center rounded-full border border-white/15 px-3.5 transition-colors hover:border-white/40 hover:bg-white/5 hover:text-white"
                   >
                     {link.label}
                   </a>
@@ -119,7 +135,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-white/10 pt-6 text-center text-xs text-white/50">
+        <div className="mt-14 border-t border-white/10 pt-6 text-center text-xs text-white/50">
           © {new Date().getFullYear()} {SITE.shortName}. All rights reserved.
         </div>
       </div>

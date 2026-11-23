@@ -120,8 +120,12 @@
   @apply rounded-full border-neutral-300 bg-neutral-0 text-sm font-medium text-brand-800 transition-colors hover:border-brand-300 hover:bg-brand-50;
 }
 
-/* Shared DatePicker (src/components/ui/DatePicker.tsx) styles itself; this only
-   matches its trigger to the admin inputs above. */
+/* Shared DatePicker (src/components/ui/DatePicker.tsx) styles itself; these only
+   match it to the admin inputs above, which sit inside text-sm labels. */
+.admin-ui [data-date-picker] {
+  @apply text-[15px] leading-5;
+}
+
 .admin-ui [data-date-picker='trigger'] {
   @apply rounded-lg px-3;
 }

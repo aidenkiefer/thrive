@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useRef, useState, type FocusEvent, type KeyboardEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FocusEvent, type KeyboardEvent, type MouseEvent } from 'react'
 import {
   addDays, addMonths, chicagoToday, chicagoZoneAbbreviation, clampDate, formatDateLabel, formatMonthLabel,
   isInRange, isSkippedWallTime, monthEdges, monthGrid, parseFormValue, parseIsoDate, serializeValue,
@@ -39,9 +39,10 @@ type DatePickerProps = {
 
 const WEEKDAYS = [['Su', 'Sunday'], ['Mo', 'Monday'], ['Tu', 'Tuesday'], ['We', 'Wednesday'], ['Th', 'Thursday'], ['Fr', 'Friday'], ['Sa', 'Saturday']]
 
-const FIELD = 'mt-1.5 rounded-xl border border-neutral-300 bg-neutral-0 px-4 py-2.5 text-[15px] text-neutral-950 shadow-sm transition-colors hover:border-neutral-400 focus-visible:border-brand-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/15 disabled:cursor-not-allowed disabled:opacity-60'
+// Like ui/Input, inherits font size and line height so it lines up with the inputs beside it.
+const FIELD = 'mt-1.5 rounded-xl border border-neutral-300 bg-neutral-0 px-4 py-2.5 text-neutral-950 shadow-sm transition-colors hover:border-neutral-400 focus-visible:border-brand-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/15 disabled:cursor-not-allowed disabled:opacity-60'
 const LINK = 'rounded font-semibold text-brand-800 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40 disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline'
-const NAV = 'inline-flex h-8 w-8 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-brand-50 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent'
+const NAV = 'inline-flex h-8 w-8 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-brand-50 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40 aria-disabled:cursor-not-allowed aria-disabled:opacity-30 aria-disabled:hover:bg-transparent'
 
 function weekday(value: string): number {
   const parts = parseIsoDate(value)
@@ -94,10 +95,12 @@ export function DatePicker({
   const today = open ? chicagoToday() : ''
   const view = parseIsoDate(focus) ?? { year: 2026, month: 1, day: 1 }
   const edges = monthEdges(focus)
+  const canPrevious = isInRange(edges.previousEnd, min)
+  const canNext = isInRange(edges.nextStart, undefined, max)
 
   useEffect(() => {
     if (!open) return
-    function outside(event: MouseEvent) {
+    function outside(event: globalThis.MouseEvent) {
       if (!root.current?.contains(event.target as Node)) setOpen(false)
     }
     document.addEventListener('mousedown', outside)
@@ -158,9 +161,18 @@ export function DatePicker({
     setFocus(clampDate(step(), min, max))
   }
 
-  // A floating calendar closes when focus leaves the field; an inline one stays put.
+  // A floating calendar closes when focus moves to something outside the field; an
+  // inline one stays put. Outside clicks are handled by the mousedown listener.
   function blur(event: FocusEvent<HTMLDivElement>) {
-    if (placement === 'popover' && open && !root.current?.contains(event.relatedTarget as Node | null)) setOpen(false)
+    const next = event.relatedTarget as Node | null
+    if (placement === 'popover' && open && next && !root.current?.contains(next)) setOpen(false)
+  }
+
+  // Clicking the field's non-interactive parts (panel padding, headings) keeps focus
+  // where it is. Otherwise focus jumps to a focusable ancestor, such as the
+  // skip-link target <main tabIndex={-1}>, which reads as leaving the field.
+  function keepFocus(event: MouseEvent<HTMLDivElement>) {
+    if (!(event.target as HTMLElement).closest('button, input')) event.preventDefault()
   }
 
   const offset = withTime && date && time ? wallOffset(date, time) : ''
@@ -174,7 +186,7 @@ export function DatePicker({
     : 'mt-2 w-full max-w-[20rem]'
 
   return (
-    <div ref={root} role="group" aria-labelledby={`${id}-label`} onBlur={blur} className={`relative ${className}`}>
+    <div ref={root} role="group" aria-labelledby={`${id}-label`} onBlur={blur} onMouseDown={keepFocus} className={`relative ${className}`}>
       <span id={`${id}-label`} className={hideLabel ? 'sr-only' : 'block text-sm font-medium text-neutral-800'}>{label}</span>
       {name && <input type="hidden" name={name} value={serializeValue({ date, time }, withTime)} />}
       <div className={withTime ? 'flex flex-wrap gap-x-3' : ''}>
@@ -191,12 +203,13 @@ export function DatePicker({
           onClick={() => (open ? close() : show())}
         >
           <CalendarIcon />
-          <span className={date ? '' : 'text-neutral-500'}>{date ? formatDateLabel(date) : placeholder}</span>
+          <span className={`whitespace-nowrap ${date ? '' : 'text-neutral-500'}`}>{date ? formatDateLabel(date) : placeholder}</span>
         </button>
         {withTime && (
           <input
             ref={timeInput}
             type="time"
+            data-date-picker="time"
             disabled={disabled}
             aria-label={`${label} time`}
             value={time}
@@ -221,11 +234,11 @@ export function DatePicker({
           onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); close() } }}
         >
           <div className="mb-2 flex items-center justify-between">
-            <button type="button" className={NAV} aria-label="Previous month" disabled={!isInRange(edges.previousEnd, min)} onClick={() => setFocus(clampDate(addMonths(focus, -1), min, max))}>
+            <button type="button" className={NAV} aria-label="Previous month" aria-disabled={!canPrevious || undefined} onClick={() => canPrevious && setFocus(clampDate(addMonths(focus, -1), min, max))}>
               <Chevron flip />
             </button>
             <span className="font-display text-[15px] font-semibold text-brand-900" aria-live="polite">{formatMonthLabel(view.year, view.month)}</span>
-            <button type="button" className={NAV} aria-label="Next month" disabled={!isInRange(edges.nextStart, undefined, max)} onClick={() => setFocus(clampDate(addMonths(focus, 1), min, max))}>
+            <button type="button" className={NAV} aria-label="Next month" aria-disabled={!canNext || undefined} onClick={() => canNext && setFocus(clampDate(addMonths(focus, 1), min, max))}>
               <Chevron />
             </button>
           </div>

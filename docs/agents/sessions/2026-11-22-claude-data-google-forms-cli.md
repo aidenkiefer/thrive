@@ -26,3 +26,4 @@ Stacked on #157 (merge first). Independent review requested (Ops/QA O1 + senior-
 - `??:??` **note** #146: review found no blocking contradictions for Data. Non-blocking: (a) carry-over map stale: #147 and #150 MERGED on main, admin.css/date-editor and theme holds resolved; D3 (#42) parked.
   (b) "no hand-rolled OAuth, use Ops auth library" resolved with no dependency via gcloud ADC. (c) main AGENTS.md stack line says "ChurchSuite for form links only" until #146 merges.
   (d) #55 body keeps older native-signup scope text below its 2026-11-22 refinement, which could mislead. (e) C1 wording clarified in README (see decision).
+- `??:??` **note** #151/#159: session end. Contract PR #157 and lane PR #159 open; independent review requested on both (PR comments). #146 findings posted as a PR comment; #151 status comment posted. D3 (#42) parked; nothing self-merged. (opus/high)

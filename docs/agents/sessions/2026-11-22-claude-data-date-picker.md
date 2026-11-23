@@ -3,9 +3,9 @@
 **Assignment:** none (owner ad-hoc QoL request 2026-11-22: "calendar date select") · **Lane:** data · **Tool:** claude · **Started:** 2026-11-22
 
 ## Status
-Done: QOL-datepicker at a7c30f6; QOL-datepicker-shared at f3474d3 (opus-5.5/standard), gate PASS (typecheck, lint, build; vitest 528/528).
-Open (**blocker**): interactive browser smoke test NOT run; see "Browser smoke test handoff" at the end. Requests: #76/#78 use DatePicker popover.
-Branch claude/data-date-picker; PR #147 body regenerated via scribe pr.
+Done: QOL-datepicker at a7c30f6; QOL-datepicker-shared at f3474d3; smoke-test fixes at 98a25ff (opus-5.5/standard). Full gate PASS (typecheck, lint, build; vitest 528/528).
+Browser smoke test: **done**. 58/59 checks pass with no console errors or warnings. The one miss is cosmetic: Chrome's native time input is 2px taller than the admin inputs. Results are under "Browser smoke test handoff".
+Open: none blocking. Requests: #76/#78 use DatePicker popover. Branch claude/data-date-picker; PR #147.
 
 ## Entries
 <!-- Append-only, oldest first. Types: decision · change · blocker · request · note -->
@@ -35,6 +35,8 @@ Branch claude/data-date-picker; PR #147 body regenerated via scribe pr.
 
 ## Browser smoke test handoff
 
+> **Completed 2026-11-22** (same session, after the owner installed the libs). Results are below; the steps are kept for re-runs.
+
 PR #147 head `dc882b4` (all changes pushed; worktree clean; main had not moved). Unit tests and SSR markup are verified; **client-side interaction has never run in a browser.** The scratch harness from this session was not kept (session scratchpad), so rebuild it:
 
 1. **Libs:** install them (command above). Check: `ldd ~/.cache/ms-playwright/chromium-1255/chrome-linux64/chrome | grep "not found"` prints nothing.
@@ -51,3 +53,20 @@ PR #147 head `dc882b4` (all changes pushed; worktree clean; main had not moved).
    - Submit posts the expected strings (date `YYYY-MM-DD`; datetime `YYYY-MM-DDTHH:MM:00-06:00`/`-05:00`). After a successful save, AdminForm remounts and the picker resets to the saved value.
    - Screenshots at 900px and 390px. The admin trigger matches the admin inputs (rounded-lg, px-3); the public trigger matches `ui/Input`.
 5. Log the results here and check the QA line in the PR body (`gh api -X PATCH repos/aidenkiefer/thrive/pulls/147 -F body=@<file>`; `gh pr edit` is broken on this repo).
+
+### Smoke test results (2026-11-22, headless Chromium 1255 via playwright-core, `next dev`)
+
+**58/59 checks passed, no console errors or warnings.** The checks covered:
+
+- **Admin date field:** opens with focus on the selected date; arrows, Home/End, PageUp/PageDown and Shift+PageUp move focus; the month heading follows; Enter picks, closes, and returns focus; Escape closes and returns focus; required fields show no Clear.
+- **Timed fields:** a stored UTC value shows as the 09:00 CST Chicago value; a July date gets `-05:00` and CDT; 2026-03-08 02:30 shows the spring-forward warning, which clears at 09:00.
+- **Empty optional timed field:** opens on Chicago today (aria-current); picking a date moves focus to the time input; the half-filled warning shows; typing a time completes `2026-11-22T10:30:00-06:00`; Clear empties it.
+- **Submit:** the server action received `preached_at=2025-12-20`, `start_datetime=2026-03-08T09:00:00-05:00`, `end_datetime=2026-11-22T10:30:00-06:00`. After the success redirect, AdminForm remounted and the pickers reset to the saved values.
+- **Inline calendar in an open `<details>` row:** not clipped (an elementFromPoint hit on the last day).
+- **Public popover:** floats without moving content; closes on outside click and when Tab leaves the field; the GET form posts `?from=2026-12-24` and prefills from the URL; the trigger matches `ui/Input`.
+- **Controlled from/to pair:** onChange works; days past max are aria-disabled and can't be picked; month nav and Today are disabled at the bounds; keyboard focus is clamped to max.
+- **390px:** the popover fits the viewport; there's no horizontal scroll; admin date and time wrap onto two rows.
+
+- `--:--` **change** smoke-test fixes [98a25ff]: (1) the popover closed when Next month reached the `max` month, because the newly disabled button dropped focus; month buttons now use `aria-disabled`. (2) Clicking the popover's padding closed it, because focus jumped to the public layout's `<main tabIndex={-1}>` (the skip-link target). Clicks on non-interactive parts now keep focus, and only focus moving to another element outside the field closes the popover. (3) Trigger text wrapped in a flex filter bar (95px tall); added nowrap. (4) The trigger had a fixed 15px text size and so depended on its surroundings (46px tall vs 42px admin inputs); it now inherits font size and line height like `ui/Input`, and admin.css sets the admin size via `[data-date-picker]`. (opus-5.5/standard)
+- `--:--` **note** known cosmetic: Chrome renders the native time input 2px taller than the admin text inputs (44px vs 42px). Zeroing the `::-webkit-datetime-edit` padding only recovered 0.25px, so it was left alone. (opus-5.5/standard)
+- `--:--` **note** "blocker" resolved: the owner installed libnss3, libnspr4 and libasound2t64; Chromium 1255 now launches headless. (opus-5.5/standard)

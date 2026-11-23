@@ -1,5 +1,15 @@
 # Managed-service tradeoffs and owner decisions — 2026-11-22
 
+## Final MVP refinement (later 2026-11-22)
+
+The owner requests API-based form management and intentional Thrive branding, then explicitly chose the simpler MVP: branded Thrive pages/sections hand off to the hosted Google responder form. A Forms API operator CLI and reusable local templates may create/read/update/publish launch forms. No custom field renderer, submit proxy, Apps Script bridge or response synchronization is required for MVP. Those future improvements are tracked in #148. Current delivery: #151 CLI, #149 branded surface, #50 umbrella.
+
+**Verified capability boundary:** Forms REST exposes form management, but responses only get/list. A fully custom input frontend cannot submit through a documented REST response-create method. Apps Script FormResponse.submit() is a possible future bridge; its programmatic submissions do not fire installable form-submit triggers, so notifications cannot be assumed. This is why the owner deferred that approach. Sources: [REST methods](https://developers.google.com/workspace/forms/api/reference/rest), [responses](https://developers.google.com/workspace/forms/api/reference/rest/v1/forms.responses), [Apps Script submit](https://developers.google.com/apps-script/reference/forms/form-response#submit()), [trigger restriction](https://developers.google.com/apps-script/guides/triggers/installable).
+
+**Cost/setup boundary:** current [Forms API usage guidance](https://developers.google.com/workspace/forms/api/limits) describes standard included use and account-specific quotas, with pricing/overage policy evolving. Check actual console limits before live execution; do not enable billing or quota increases to make the CLI work without owner approval. API management belongs to the operator, not each page visitor. Free Browser/Computer setup is authorized for later tonight; OAuth login/consent, credentials and live service validation wait for that window. Offline fixture development and dry-run plans can start now. Do not fabricate response/public signup URLs or claim live PASS from mocks.
+
+The approved simple data/media/recovery choices below remain. See [tonight's staged assignment](../../agents/assignments/2026-11-22-managed-signup-sprint.md) for lane boundaries and handoff prompts.
+
 **Status:** Owner accepted Google Forms, committed assets plus Supabase Storage with uploader deferred, and the GitHub Actions/private R2 backup direction on November 22. Added custom form features are low priority and not required for MVP. The owner also explicitly deferred the fixed 12-month cleanup requirement; ordinary private sharing remains required. No accounts, subscriptions, credentials, live settings or application functionality were changed by this document.
 
 ## Approved direction

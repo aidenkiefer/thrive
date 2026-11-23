@@ -1,5 +1,11 @@
 # Thrive Vineyard Website
 
+## MVP signup refinement — later 2026-11-22
+
+Owner chose a **branded Thrive signup surface linking to Google's hosted form** for MVP. Use the official Forms REST API through an operator CLI to create/read/update/publish forms from reusable templates (#151); no authenticated Google API call per public page view. Responses/private review remain in Google. Custom Thrive input rendering and an Apps Script submission bridge are post-MVP (#148), not launch blockers. The branded surface is #149; #50 is the umbrella.
+
+Free Browser/Computer setup is authorized for the later owner-assisted window. Defer account consent/provisioning until then; do not enable a paid plan, billable commitment or unknown-cost service. This does not replace artifact-specific live database or DNS approval. Build/QA templates, dry runs, mocked API adapters and branded handoff states before setup; mocks never establish real service success. Newest refinement supersedes earlier plain-link-only or custom-field aspirations.
+
 Centralized ministry information platform for Thrive Vineyard church. Every event, group, sermon series, and announcement is **one canonical entity** shown everywhere, never duplicated across pages.
 
 **Stack:** Next.js 15 App Router (TypeScript, Tailwind) · Supabase Postgres · NextAuth for `/admin/**` · MDX in `content/pages/` for structural pages · Google Forms for signup links; ChurchSuite for giving links · Vercel (`main` = production).

@@ -4,7 +4,14 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 
 ---
 
-## Current status (2026-11-20)
+## Current status (2026-11-22)
+
+- Owner-approved Cursor redesign #144 is merged as `ab66c93`: brand palette/logos/icons, public polish, admin shell/dashboard/login and scoped form styling.
+- Codex independent diff review and Node 20 full gate passed on reviewed head and merged main (510 tests, typecheck, lint, build); main CI succeeded. Real signed-in browser acceptance remains open.
+- UI-dependent issues #37/#41/#42/#47/#49/#50/#56/#61/#67 now target this design; unfinished functionality and runtime checks remain open. QA report: [redesign #144](../agents/qa/2026-11-22-redesign-144.md).
+- Wednesday Nov 25 targets approved/tested MVP readiness with native signup essentials; CMS preview/restore is deferred (#32/#33). Six detailed owner packages remain unanswered; DNS cutover requires separate owner go.
+
+## Previous checkpoint (2026-11-20)
 
 **Phase:** **Draft site, the Data stack, seed publishing, decided redirects, the church mark, and the prayer form are on `main`.** #137 makes generated seed SQL insert drafts and publish through `cms_set_published` as the seed actor. `supabase/ops/2026-11-20-seed.sql` is committed and has **not** been applied to the live database. #141 makes `scripts/seed-current.ts` skip a row that already has publication history. #140 adds the prayer form on `/get-connected#prayer`. It sends only when `FORMS_PRAYER_RECIPIENT` is set. Launch date: **owner to confirm** (see `docs/10-launch-checklist.md`).
 

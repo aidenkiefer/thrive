@@ -1,0 +1,40 @@
+{
+  "$comment": "Contract C1 EXAMPLE (fixture). Shows every publicationState. IDs and URLs are fake and must never be linked or copied into admin. The real manifest is config/google-forms/manifest.json, written only by the CLI. Public pages use an entity's responderUrl only when publicationState is published (see publicResponderUrl in src/lib/google-forms/validate.ts).",
+  "manifestVersion": 1,
+  "fixture": true,
+  "forms": [
+    {
+      "entityKey": "group:example-planned-group",
+      "templateKey": "group-signup",
+      "templateVersion": 1,
+      "formId": null,
+      "responderUrl": null,
+      "publicationState": "planned",
+      "contentHash": null,
+      "revisionId": null,
+      "updatedAt": null
+    },
+    {
+      "entityKey": "event:example-configured-event",
+      "templateKey": "event-signup",
+      "templateVersion": 1,
+      "formId": "FIXTURE_configured_form_id",
+      "responderUrl": null,
+      "publicationState": "configured",
+      "contentHash": "sha256:fixture",
+      "revisionId": "FIXTURE_revision",
+      "updatedAt": "2026-11-22T00:00:00.000Z"
+    },
+    {
+      "entityKey": "group:example-published-group",
+      "templateKey": "group-signup",
+      "templateVersion": 1,
+      "formId": "FIXTURE_published_form_id",
+      "responderUrl": "https://docs.google.com/forms/d/e/FIXTURE_NOT_A_REAL_FORM/viewform",
+      "publicationState": "published",
+      "contentHash": "sha256:fixture",
+      "revisionId": "FIXTURE_revision",
+      "updatedAt": "2026-11-22T00:00:00.000Z"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "$comment": "EXAMPLE ONLY. Copy to launch.json and replace every entry with owner-approved entities, titles and descriptions. The sandbox entry is the one owner-assisted live check; it never links from a public page.",
+  "launchVersion": 1,
+  "forms": [
+    {
+      "entityKey": "sandbox:forms-cli-check",
+      "templateKey": "group-signup",
+      "templateVersion": 1,
+      "title": "Sandbox signup check",
+      "description": "Internal test form for the Thrive website signup tooling. Not a real signup.",
+      "publish": true
+    }
+  ]
+}

@@ -49,8 +49,8 @@ Each manifest entry has `entityKey`, `templateKey`, `templateVersion`, `formId`,
 
 Rules for public surfaces (Experience lane):
 
-- Link an entity's form only through `publicResponderUrl(entry)` from `src/lib/google-forms/validate.ts`. It returns the URL only for a `published` non-sandbox entry whose URL is a responder link that also passes `isApprovedFormUrl`. Otherwise it returns `null`, which means the page shows its pending or unavailable state.
-- The live link reaches a page through the **existing admin signup-URL field** for the entity. The owner pastes the approved `responderUrl` there in the setup window. Nothing writes the manifest into Supabase, and page views never call the Google API.
+- **Public pages read the link from the entity's existing admin signup-URL field**, gated as today by `isApprovedFormUrl` (`src/lib/form-urls.ts`). The owner pastes an approved, published `responderUrl` from the manifest into that field in the setup window. Pages never read the manifest. Nothing writes the manifest into Supabase, and page views never call the Google API.
+- `publicResponderUrl(entry)` (`src/lib/google-forms/validate.ts`) answers which manifest URL may be copied into admin. It returns the URL only for a `published` non-sandbox entry whose URL is a responder link that also passes `isApprovedFormUrl`. Otherwise it returns `null`. Experience can use it with the fixture manifest to build the linked versus pending or unavailable development states.
 - Editor URLs (`/forms/d/<id>/edit`) and prefill links are never public and never recorded.
 - `manifest.example.json` is a fixture (`"fixture": true`). Its URLs are fake. Use it for development states only. `apply` refuses to run against it.
 

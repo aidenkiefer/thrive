@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint .",
     "seed": "npx tsx scripts/seed-current.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "media:catalog": "node scripts/build-media-library.mjs",
+    "predev": "npm run media:catalog",
+    "prebuild": "npm run media:catalog"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
@@ -29,6 +32,7 @@
     "eslint": "^9",
     "eslint-config-next": "^15.0.0",
     "postcss": "^8.4.49",
+    "sharp": "0.35.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5",
     "vitest": "^4.1.12",

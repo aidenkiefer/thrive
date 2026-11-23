@@ -1,6 +1,11 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  // Build-time optimized files stay private and must accompany serverless routes.
+  outputFileTracingIncludes: {
+    '/admin/media': ['./.media-previews/catalog.json'],
+    '/admin/media/image/*': ['./.media-previews/**'],
+  },
   images: {
     remotePatterns: [
       {

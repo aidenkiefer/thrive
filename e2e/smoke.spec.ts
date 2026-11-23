@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { expect, test as base } from '@playwright/test'
+import { expect, test as base, type Page, type Request } from '@playwright/test'
 
 const test = base.extend<{ browserErrors: string[] }>({
   browserErrors: async ({ context, page, baseURL }, use) => {
@@ -23,7 +23,7 @@ const test = base.extend<{ browserErrors: string[] }>({
     page.on('pageerror', error => errors.push(error.message))
     page.on('console', message => {
       if (message.type() === 'error' && !message.text().includes('net::ERR_BLOCKED_BY_CLIENT')) {
-        errors.push(message.text())
+        errors.push(`${message.text()} @ ${message.location().url}`)
       }
     })
 
@@ -32,6 +32,14 @@ const test = base.extend<{ browserErrors: string[] }>({
     await use(errors)
   },
 })
+
+async function waitForHydration(page: Page) {
+  // ThemeToggle has no aria-pressed value in SSR markup. Its first effect sets
+  // one after React hydrates the persistent shell.
+  await expect(page.getByRole('button', { name: /Switch to (dark|light) mode/ }).first())
+    .toHaveAttribute('aria-pressed', /^(true|false)$/)
+  await page.waitForLoadState('networkidle')
+}
 
 const publicPaths = [
   '/',
@@ -50,6 +58,7 @@ for (const path of publicPaths) {
     const response = await page.goto(path)
     expect(response?.status()).toBe(200)
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible()
+    await waitForHydration(page)
     expect(browserErrors).toEqual([])
   })
 }
@@ -88,10 +97,15 @@ test('/sitemap.xml serves a sitemap with public URLs', async ({ page, request })
 })
 
 for (const prefix of ['', '/sermons', '/sermons/series', '/events', '/groups', '/ministries', '/outreach']) {
-  test(`${prefix || '/'} returns HTTP 404 and the not-found UI for an unknown path`, async ({ page }) => {
+  test(`${prefix || '/'} returns HTTP 404 and the not-found UI for an unknown path`, async ({ page, browserErrors }) => {
     const response = await page.goto(`${prefix}/smoke-missing-${randomUUID()}`)
     expect.soft(response?.status()).toBe(404)
-    await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: 'We could not find that page' })).toBeVisible()
+    await waitForHydration(page)
+    // Chromium reports the expected document 404 as a console resource error.
+    // Match its exact URL so a missing asset or React hydration error still fails.
+    const document404 = `Failed to load resource: the server responded with a status of 404 (Not Found) @ ${page.url()}`
+    expect(browserErrors.filter(error => error !== document404)).toEqual([])
   })
 }
 
@@ -120,17 +134,20 @@ test('/im-new/ reaches /plan-a-visit and reports each redirect hop', async ({ pa
   expect(response?.status()).toBe(200)
   await expect(page).toHaveURL('/plan-a-visit')
 
-  const redirects: string[] = []
-  for (let request = response!.request().redirectedFrom(); request; request = request.redirectedFrom()) {
-    redirects.unshift(new URL(request.url()).pathname)
+  const hops: { path: string; status: number }[] = []
+  for (let request: Request | null = response!.request(); request; request = request.redirectedFrom()) {
+    const hopResponse = await request.response()
+    hops.unshift({ path: new URL(request.url()).pathname, status: hopResponse?.status() ?? 0 })
   }
-  const chain = [...redirects, new URL(response!.url()).pathname].join(' -> ')
-  test.info().annotations.push({ type: 'redirect hops', description: `${redirects.length}: ${chain}` })
-  await test.info().attach('redirect chain', {
-    body: `${redirects.length} hop(s): ${chain}`,
-    contentType: 'text/plain',
-  })
-  expect(redirects.length, chain).toBeGreaterThan(0)
+  const chain = hops.map(hop => `${hop.path} (${hop.status})`).join(' -> ')
+  test.info().annotations.push({ type: 'redirect chain', description: chain })
+  await test.info().attach('redirect chain', { body: chain, contentType: 'text/plain' })
+  expect(hops).toEqual([
+    { path: '/im-new/', status: 308 },
+    { path: '/im-new', status: 308 },
+    { path: '/plan-a-visit', status: 200 },
+  ])
+  await waitForHydration(page)
   expect(browserErrors).toEqual([])
 })
 
@@ -146,6 +163,7 @@ test('/feedback renders the labelled form', async ({ page, browserErrors }) => {
   const submit = page.getByRole('button', { name: 'Send feedback' })
   await expect(submit).toBeVisible()
   await expect(submit).toHaveAttribute('type', 'submit')
+  await waitForHydration(page)
   expect(browserErrors).toEqual([])
 })
 

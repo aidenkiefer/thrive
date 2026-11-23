@@ -4,7 +4,7 @@
 
 ## Status
 
-#64 blocked on React hydration error 418. Latest smoke run passed 28 of 31 tests. Second run deferred after failure. Default gate passed. Keep the PR in draft and hold merge.
+#64 current-candidate fixture fixes completed on rebased `c21f05b` main. Two consecutive production-build Chromium suites passed 31/31 on 2026-11-22. No React hydration 418 appeared on Plan a Visit, Kids & Youth, or the redirect landing page after the test waited for the hydrated theme control and network idle. This is a current-browser recheck, not an application-side root-cause fix or signed-in admin test. Full gate and independent review remain before the PR leaves draft.
 
 ## Entries
 
@@ -26,3 +26,9 @@
 - `14:54` **request** #64: Experience to investigate and fix hydration on both pages. Nested paragraph markup in CtaBand is an unconfirmed hypothesis. Ops made no application source changes.
 - `14:54` **request** #64: Ops to investigate the two-hop /im-new/ redirect and rerun smoke twice after the hydration fix. Keep the PR in draft for handoff.
 - `14:56` **change** #64: Added an explanatory ESLint suppression limited to the Playwright fixture callback. The default gate passed on Node 20 with 91 tests in 10 files, typecheck, and build. Lint reported zero errors and four existing warnings.
+- `--:--` **change** #64: Rebased the existing `codex/ops-playwright-smoke` worktree onto current main `c21f05b`; resolved `.gitignore` and package script conflicts by retaining media catalog setup and Playwright artifacts/scripts. Reconciled `@playwright/test` in package.json with the existing lockfile. No duplicate checkout was created.
+- `--:--` **note** #64: First rebased run: 24/31 passed; all seven failures were the obsolete `Page not found` heading expectation. HTTP 404 responses and current `We could not find that page` UI were observed. After the heading correction, a second 24/31 run exposed Chromium's expected console resource error for each 404 document; these were excluded narrowly while other console and page errors still fail.
+- `--:--` **change** #64: Public/404/feedback/redirect checks now await the ThemeToggle's post-hydration `aria-pressed` state and network idle before asserting browser errors. The `/im-new/` test asserts the observed chain `/im-new/ (308) -> /im-new (308) -> /plan-a-visit (200)` rather than merely counting hops. The intermediate 308 is Next.js trailing-slash normalization, so no redirect-map change was made.
+- `--:--` **note** #64: Two consecutive current-candidate runs passed 31/31 (2.9–3.9 minutes each) against production builds with no browser errors beyond the expected 404 document console messages. Public-data empty states were expected because the smoke server strips external database/transport settings. No live database, DNS, email, or other external service was accessed. Tier T1 implementation; T2 review of hydration/404 evidence.
+- `--:--` **change** #64: Independent review caught that the initial 404 console filter could also hide a missing asset. A focused Chromium probe confirmed the 404 console message includes the exact document URL; the fixture now retains source URLs and excludes only that page URL. This changed the final candidate after the two passes, so two further passing suites are required before calling it verified.
+- `--:--` **note** #64: First suite on that tightened final candidate passed 31/31 (2.0 minutes). A second consecutive suite and a clean full gate are still required before push. Pausing at owner request; no push or PR status change yet.

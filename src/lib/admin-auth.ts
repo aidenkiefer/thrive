@@ -11,8 +11,9 @@ import {
 const VERIFY_MIN_DURATION_MS = 700
 
 /**
- * Staff sign-in is a one-time email code (Supabase Auth OTP, preprovisioned
- * staff only). There is no shared-password or OIDC path. The JWT carries only
+ * Staff sign-in is a one-time email code (Supabase Auth OTP). Rostered staff
+ * of any domain, plus self-signup for new @thrivevineyard.com addresses
+ * (see admin-identities.ts). There is no shared-password or OIDC path. The JWT carries only
  * {actorId, authUserId, authVersion}; no Supabase tokens and no email.
  */
 export const adminAuthOptions: NextAuthOptions = {

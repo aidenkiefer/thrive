@@ -3,9 +3,9 @@
 **Assignment:** none (owner ad-hoc QoL request 2026-11-22: "calendar date select") · **Lane:** data · **Tool:** claude · **Started:** 2026-11-22
 
 ## Status
-Done: QOL-datepicker checkpointed at a7c30f6 (opus-5.5/standard), gate PASS (521 tests).
-Open: manual browser click-through of one admin form (QA). Follow-up: #42 uses DatePicker.
-Branch claude/data-date-picker; PR via scribe pr.
+Done: QOL-datepicker at a7c30f6; QOL-datepicker-shared at f3474d3 (opus-5.5/standard), gate PASS (typecheck, lint, build; vitest 528/528).
+Open: manual browser click-through of one admin form (QA); interactive browser check not done. Requests: #76/#78 use DatePicker popover.
+Branch claude/data-date-picker; PR #147 body regenerated via scribe pr.
 
 ## Entries
 <!-- Append-only, oldest first. Types: decision · change · blocker · request · note -->
@@ -21,3 +21,12 @@ Branch claude/data-date-picker; PR via scribe pr.
 - `--:--` **note**: seconds are dropped on re-save (time input is HH:MM); existing data uses :00 seconds so no change expected. (opus-5.5/standard)
 - `--:--` **request**: #42 (series/speaker editors) should use DatePicker for series start/end date. Target lane: data (follow-up, not out-of-lane). (opus-5.5/standard)
 - `--:--` **note**: searched issues/PRs first; no existing guidance on a date picker. (opus-5.5/standard)
+- `--:--` **change** QOL-datepicker-shared: DatePicker refactored into a shared admin+public UI primitive for the upcoming event/sermon sort and filter work; gate PASS (typecheck, lint, build; vitest 528/528). (opus-5.5/standard) [f3474d3]
+- `--:--` **change** QOL-datepicker-shared key files: src/components/ui/DatePicker.tsx, src/components/ui/index.ts, src/lib/calendar-date.ts, src/lib/church-time.ts, src/lib/admin-validation.ts, src/app/admin/admin.css. (opus-5.5/standard) [f3474d3]
+- `--:--` **decision** (owner-approved cross-lane, 2026-11-22): owner said the date picker is needed on both user and admin sides for event and sermon sorting/filtering. DatePicker moved from src/components/admin/DatePicker.tsx to src/components/ui/DatePicker.tsx (Experience lane); one appended export line in src/components/ui/index.ts. No other Experience files touched. (opus-5.5/standard) [f3474d3]
+- `--:--` **change**: DatePicker styles itself with Tailwind to match ui/Input, with inline SVG icons (no AdminIcon dependency). admin.css date rules removed except `.admin-ui [data-date-picker='trigger']`, which matches the trigger to admin inputs. (opus-5.5/standard) [f3474d3]
+- `--:--` **change**: new props: `value`+`onChange` (controlled); `min`/`max` (inclusive YYYY-MM-DD, out-of-range days aria-disabled, keyboard focus clamped); `placement` "inline" (default) or "popover"; `hideLabel`; `disabled`; `placeholder`; `name` optional (hidden input posts value, so GET filter forms work). (opus-5.5/standard) [f3474d3]
+- `--:--` **change**: Chicago clock helpers moved to src/lib/church-time.ts and re-exported from admin-validation.ts (imports unchanged), so public code never imports an admin module. src/lib/admin-date.ts renamed to src/lib/calendar-date.ts (parseFormValue, serializeValue, isInRange, clampDate, monthEdges); 18 tests in calendar-date.test.ts. (opus-5.5/standard) [f3474d3]
+- `--:--` **note**: verification on a temporary uncommitted public preview route (deleted): GET param prefilled the hidden input (?from=2026-11-15); UTC 2026-11-23T03:00Z rendered as Chicago 2026-11-22; controlled client filter rendered its state; hideLabel rendered sr-only. (opus-5.5/standard)
+- `--:--` **note**: interactive browser check still not done (local Chromium missing libnss3/libnspr4). QA should click through one admin form and confirm the trigger matches the admin inputs. (opus-5.5/standard)
+- `--:--` **request** (target lane: experience): when building #76 sermon filters or #78 events month view, use `DatePicker` from '@/components/ui' with placement="popover"; optionally document it in docs/07-design-system.md. (opus-5.5/standard)

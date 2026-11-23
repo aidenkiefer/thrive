@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { Footer } from './Footer'
 import { GlobalNav } from './GlobalNav'
+import { PageTransition } from './PageTransition'
 
 interface SiteShellProps {
   children: React.ReactNode
@@ -32,8 +33,8 @@ export function SiteShell({ children }: SiteShellProps) {
         Skip to main content
       </a>
       <GlobalNav />
-      <main id="main-content" className="min-h-screen" tabIndex={-1}>
-        {children}
+      <main id="main-content" className="min-h-screen overflow-x-clip" tabIndex={-1}>
+        <PageTransition>{children}</PageTransition>
       </main>
       <Footer />
     </>

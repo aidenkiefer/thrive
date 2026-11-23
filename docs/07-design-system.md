@@ -326,6 +326,20 @@ Source files are in `media-library/wordpress-assets/` (white only). Web-ready va
 
 Rules: keep clear space of at least the symbol's radius around the lockup; never recolor beyond white/navy; never place the white files on light backgrounds; watermarks stay at 4–7% opacity and are always `aria-hidden`. A vector (SVG) master is still outstanding (Phase D).
 
+### Dark mode
+
+Class-based (`darkMode: 'class'`). An inline script from `src/lib/theme/preferences.ts` sets `html.dark` before first paint: the visitor's stored choice (`localStorage['thrive-theme']`) wins, otherwise the system setting. `ThemeToggle` (`src/components/ui/ThemeToggle.tsx`) sits in the site header, the admin sidebar and top bar, and the login page. It reveals the new theme as a circle grown from the button where View Transitions are supported, and switches instantly when motion is reduced.
+
+How the palette flips (`src/app/theme.css`): colors marked `themed()` in `tailwind.config.ts` read CSS variables. Neutrals invert into navy-tinted charcoal (page `#0c161d`, cards `#132029`, body text `#f0f3f5`). Navy 50–300, rose 50–200, sky and sand tints, and the status `50`/`700` steps swap to dark equivalents. Navy 400–950 and rose 300–700 stay fixed, so the header, footer, navy bands, and CTAs keep the brand. Navy *text* classes (`text-brand-600`–`900`, `text-accent-600/700`) get light overrides under `.dark`.
+
+Rules: build new UI from the palette classes and it adapts automatically. Avoid `bg-white`/`text-black`/`gray-*` (they don't flip; use `neutral-0`/`neutral-950`/`neutral-*`). Navy primary buttons add `dark:bg-brand-600` for contrast. The white-on-light logo variants swap with `dark:hidden` / `hidden dark:block`.
+
+### Page transitions
+
+`PageTransition` (`src/components/layout/PageTransition.tsx`) wraps the public `<main>` and the admin content pane, keyed by pathname. After the first load, each route change plays `.page-enter` (`globals.css`): the new view fades in over the first ~100ms while zooming from 104% down to 99.7%, then settles at 100% (340ms total). The header, footer, and admin sidebar stay still. Both `<main>` elements use `overflow-x: clip` so the enlarged first frame never adds a scrollbar. Skipped under `prefers-reduced-motion`.
+
+The wrapper must live in a layout that persists across the routes it animates (the root `SiteShell`, the admin `AdminShell` in `src/app/admin/layout.tsx`). Rendered inside a page, it remounts on every navigation and treats each one as a first load.
+
 ---
 
 ## Related docs

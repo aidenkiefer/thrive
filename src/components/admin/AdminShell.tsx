@@ -6,6 +6,9 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { signOut } from 'next-auth/react'
 
+import { PageTransition } from '@/components/layout/PageTransition'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
+
 import { AdminIcon } from './AdminIcon'
 import { adminSectionGroups, type AdminIconName } from './admin-sections'
 
@@ -115,8 +118,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="admin-ui min-h-screen bg-neutral-100 lg:flex">
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-gradient-to-b from-brand-800 to-brand-900 lg:flex">
-        <div className="border-b border-white/10 px-5 py-5">
+        <div className="flex items-center justify-between gap-2 border-b border-white/10 py-5 pl-5 pr-3">
           <Brand />
+          <ThemeToggle />
         </div>
         <SidebarContents pathname={pathname} />
       </aside>
@@ -124,16 +128,19 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-40 bg-brand-800 lg:hidden">
         <div className="flex h-16 items-center justify-between px-4">
           <Brand />
-          <button
-            type="button"
-            onClick={() => setMenuOpen((open) => !open)}
-            aria-expanded={menuOpen}
-            aria-controls="admin-mobile-nav"
-            aria-label={menuOpen ? 'Close admin menu' : 'Open admin menu'}
-            className="flex h-11 w-11 items-center justify-center rounded-lg text-white hover:bg-white/10"
-          >
-            <AdminIcon name={menuOpen ? 'close' : 'menu'} className="h-6 w-6" />
-          </button>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={() => setMenuOpen((open) => !open)}
+              aria-expanded={menuOpen}
+              aria-controls="admin-mobile-nav"
+              aria-label={menuOpen ? 'Close admin menu' : 'Open admin menu'}
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-white hover:bg-white/10"
+            >
+              <AdminIcon name={menuOpen ? 'close' : 'menu'} className="h-6 w-6" />
+            </button>
+          </div>
         </div>
         {menuOpen && (
           <div id="admin-mobile-nav" className="drawer-in flex max-h-[calc(100vh-4rem)] flex-col border-t border-white/10 bg-brand-900">
@@ -142,8 +149,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         )}
       </header>
 
-      <main id="admin-main" className="min-w-0 flex-1 px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
-        <div className="mx-auto max-w-5xl">{children}</div>
+      <main id="admin-main" className="min-w-0 flex-1 overflow-x-clip px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
+        <PageTransition className="mx-auto max-w-5xl">{children}</PageTransition>
       </main>
     </div>
   )

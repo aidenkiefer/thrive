@@ -66,18 +66,18 @@ export default async function EventsPage({ searchParams }: Props) {
                 <select
                   name="month"
                   defaultValue={selectedMonth}
-                  className="mt-1 block min-h-11 min-w-[12rem] max-w-full rounded-md border border-neutral-200 bg-white px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+                  className="mt-1 block min-h-11 min-w-[12rem] max-w-full rounded-md border border-neutral-200 bg-neutral-0 px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
                 >
                   <option value="">All upcoming months</option>
                   {availableMonths.map(month => <option key={month} value={month}>{new Date(`${month}-01T12:00:00-06:00`).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'America/Chicago' })}</option>)}
                 </select>
               </label>
               {listView && <input type="hidden" name="view" value="list" />}
-              <button className={`${control} bg-brand-800 text-white hover:bg-brand-600`} type="submit">Filter</button>
+              <button className={`${control} bg-brand-800 text-white hover:bg-brand-600 dark:bg-brand-600 dark:hover:bg-brand-500`} type="submit">Filter</button>
               {selectedMonth && <Link href={listView ? '/events?view=list' : '/events'} className={`${control} text-brand-800 underline underline-offset-4 hover:bg-brand-100`}>Clear filter</Link>}
-              <div className="ml-auto flex gap-1 rounded-lg bg-white p-1 ring-1 ring-black/5" role="group" aria-label="Layout">
-                <Link href={selectedMonth ? `/events?month=${selectedMonth}` : '/events'} aria-current={!listView ? 'page' : undefined} className={`${control} ${!listView ? 'bg-brand-800 text-white' : 'text-brand-800 hover:bg-brand-100'}`}>Grid</Link>
-                <Link href={selectedMonth ? `/events?month=${selectedMonth}&view=list` : '/events?view=list'} aria-current={listView ? 'page' : undefined} className={`${control} ${listView ? 'bg-brand-800 text-white' : 'text-brand-800 hover:bg-brand-100'}`}>List</Link>
+              <div className="ml-auto flex gap-1 rounded-lg bg-neutral-0 p-1 ring-1 ring-black/5" role="group" aria-label="Layout">
+                <Link href={selectedMonth ? `/events?month=${selectedMonth}` : '/events'} aria-current={!listView ? 'page' : undefined} className={`${control} ${!listView ? 'bg-brand-800 text-white dark:bg-brand-600' : 'text-brand-800 hover:bg-brand-100'}`}>Grid</Link>
+                <Link href={selectedMonth ? `/events?month=${selectedMonth}&view=list` : '/events?view=list'} aria-current={listView ? 'page' : undefined} className={`${control} ${listView ? 'bg-brand-800 text-white dark:bg-brand-600' : 'text-brand-800 hover:bg-brand-100'}`}>List</Link>
               </div>
             </form>
             {events.length === 0 ? (

@@ -119,3 +119,23 @@
 .admin-ui main a[class~='border'] {
   @apply rounded-full border-neutral-300 bg-neutral-0 text-sm font-medium text-brand-800 transition-colors hover:border-brand-300 hover:bg-brand-50;
 }
+
+/* Dark theme: headings and selected toggles use @apply'd navy text, which theme.css cannot reach. */
+.dark .admin-ui h1,
+.dark .admin-ui h2,
+.dark .admin-ui h3 {
+  color: #e2ecf4;
+}
+
+.dark .admin-ui label:has(> input[type='checkbox']:checked),
+.dark .admin-ui main a[class~='border'] {
+  color: #bcd3e6;
+}
+
+.dark .admin-ui input:read-only:not([type='checkbox']):not([type='radio']) {
+  @apply bg-neutral-50;
+}
+
+.dark .admin-ui button[type='submit'] {
+  @apply bg-brand-600 hover:bg-brand-500;
+}

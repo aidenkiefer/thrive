@@ -326,6 +326,47 @@
   }
 
 
+  /* ------------------------------------------------------------------
+   * Page transitions
+   *
+   * PageTransition adds .page-enter to the new view after a route change:
+   * it fades in quickly from slightly enlarged, eases a hair past 100%, and settles,
+   * so switching between similar-looking views reads as a change of state.
+   * Fill mode is backwards only, so no scale remains after the animation
+   * (fixed and sticky children keep working).
+   * ------------------------------------------------------------------ */
+  @media (prefers-reduced-motion: no-preference) {
+    /* The fade finishes early so most of the zoom plays at full opacity and reads clearly. */
+    @keyframes page-zoom {
+      0% {
+        opacity: 0;
+        scale: 1.04;
+      }
+      30% {
+        opacity: 1;
+      }
+      75% {
+        scale: 0.997;
+      }
+      100% {
+        opacity: 1;
+        scale: 1;
+      }
+    }
+
+    .page-enter {
+      transform-origin: 50% min(35vh, 50%);
+      animation: page-zoom 340ms var(--ease-out) backwards;
+    }
+  }
+
+  /* Theme toggle: ThemeToggle animates a circular reveal instead of the default crossfade. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
   /* Small caps label above section titles, with a short rose rule. */
   .eyebrow {
     @apply inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.16em];

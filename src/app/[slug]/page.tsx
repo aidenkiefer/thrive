@@ -59,7 +59,7 @@ export default async function LandingPage({ params }: Props) {
         <PageHeader title={heading} />
         {page.hero_subheading && <p className="mt-4 max-w-2xl text-lg text-neutral-700">{page.hero_subheading}</p>}
         {body && <p className="mt-6 max-w-prose whitespace-pre-line text-neutral-700">{body}</p>}
-        {ctaUrl && page.cta_text && <a href={ctaUrl} className="mt-8 inline-block rounded bg-brand-800 px-5 py-3 text-white">{page.cta_text}</a>}
+        {ctaUrl && page.cta_text && <a href={ctaUrl} className="mt-8 inline-block rounded bg-brand-800 px-5 py-3 text-white dark:bg-brand-600">{page.cta_text}</a>}
       </Container>
     </Section>
   )

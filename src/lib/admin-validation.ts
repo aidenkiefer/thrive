@@ -9,9 +9,11 @@
  *   needs. Drafts may be saved incomplete, within the database's NOT NULL columns.
  */
 
+import { chicagoOffset, chicagoWallTime } from './church-time'
 import { isApprovedFormUrl } from './form-urls'
 
-export const CHURCH_TIME_ZONE = 'America/Chicago'
+// Re-exported so existing importers keep working; church-time.ts is the source.
+export { CHURCH_TIME_ZONE, chicagoOffset, chicagoWallTime } from './church-time'
 
 /** A validation failure the admin can fix. Shown in the form, not the error page. */
 export class AdminInputError extends Error {
@@ -50,27 +52,6 @@ export function requireSlug(value: string): string {
   const slug = value.trim().toLowerCase()
   if (!SLUG.test(slug)) fail('URL slug is required and may use only lowercase letters, numbers, and single hyphens')
   return slug
-}
-
-/** Wall-clock "YYYY-MM-DDTHH:MM" for an instant in the church's time zone. */
-export function chicagoWallTime(instant: Date): string {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: CHURCH_TIME_ZONE,
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-  }).formatToParts(instant)
-  const get = (type: string) => parts.find(part => part.type === type)?.value ?? ''
-  return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}`
-}
-
-/** Chicago's UTC offset ("-05:00" or "-06:00") at an instant. */
-export function chicagoOffset(instant: Date): string {
-  const wall = chicagoWallTime(instant)
-  const asUtc = Date.parse(`${wall}:00Z`)
-  const minutes = Math.round((asUtc - Math.floor(instant.getTime() / 60000) * 60000) / 60000)
-  const sign = minutes < 0 ? '-' : '+'
-  const abs = Math.abs(minutes)
-  return `${sign}${String(Math.floor(abs / 60)).padStart(2, '0')}:${String(abs % 60).padStart(2, '0')}`
 }
 
 /**

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
-  addDays, addMonths, chicagoToday, chicagoZoneAbbreviation, formatDateLabel, instantToWall,
-  isSkippedWallTime, monthGrid, parseIsoDate, serializeWall, wallOffset,
-} from './admin-date'
+  addDays, addMonths, chicagoToday, chicagoZoneAbbreviation, clampDate, formatDateLabel, instantToWall,
+  isInRange, isSkippedWallTime, monthEdges, monthGrid, parseFormValue, parseIsoDate, serializeValue,
+  serializeWall, wallOffset,
+} from './calendar-date'
 import { parseInstant } from './admin-validation'
 
 describe('serializeWall', () => {
@@ -78,5 +79,52 @@ describe('calendar math', () => {
     expect(formatDateLabel('2026-12-05')).toBe('Sat, Dec 5, 2026')
     expect(chicagoZoneAbbreviation(wallOffset('2026-12-05', '09:00'))).toBe('CST')
     expect(chicagoZoneAbbreviation(wallOffset('2026-07-04', '09:00'))).toBe('CDT')
+  })
+})
+
+describe('parseFormValue', () => {
+  it('inverts serializeValue for complete, half-filled, and empty values', () => {
+    for (const wall of [
+      { date: '2026-12-05', time: '09:00' }, { date: '2026-07-04', time: '18:30' },
+      { date: '2026-12-05', time: '' }, { date: '', time: '09:00' }, { date: '', time: '' },
+    ]) {
+      expect(parseFormValue(serializeValue(wall, true), true)).toEqual(wall)
+    }
+    expect(parseFormValue(serializeValue({ date: '2026-12-05', time: '' }, false), false)).toEqual({ date: '2026-12-05', time: '' })
+  })
+
+  it('keeps a skipped spring-forward time as picked so the warning can show', () => {
+    const value = serializeWall({ date: '2026-03-08', time: '02:30' })
+    expect(parseFormValue(value, true)).toEqual({ date: '2026-03-08', time: '02:30' })
+  })
+
+  it('converts stored UTC instants to Chicago wall time', () => {
+    expect(parseFormValue('2026-12-05T15:00:00+00:00', true)).toEqual({ date: '2026-12-05', time: '09:00' })
+    expect(parseFormValue('2026-11-23T03:00:00Z', false)).toEqual({ date: '2026-11-22', time: '' })
+  })
+
+  it('drops values that are not dates', () => {
+    expect(parseFormValue('2026-02-30', false)).toEqual({ date: '', time: '' })
+    expect(parseFormValue('soon', true)).toEqual({ date: '', time: '' })
+  })
+})
+
+describe('range helpers', () => {
+  it('treats bounds as inclusive and optional', () => {
+    expect(isInRange('2026-12-05', '2026-12-05', '2026-12-05')).toBe(true)
+    expect(isInRange('2026-12-04', '2026-12-05')).toBe(false)
+    expect(isInRange('2026-12-06', undefined, '2026-12-05')).toBe(false)
+    expect(isInRange('1999-01-01')).toBe(true)
+  })
+
+  it('clamps into the bounds', () => {
+    expect(clampDate('2026-01-01', '2026-06-01', '2026-12-31')).toBe('2026-06-01')
+    expect(clampDate('2027-01-01', '2026-06-01', '2026-12-31')).toBe('2026-12-31')
+    expect(clampDate('2026-08-01', '2026-06-01')).toBe('2026-08-01')
+  })
+
+  it('finds the neighbouring month edges', () => {
+    expect(monthEdges('2026-03-15')).toEqual({ previousEnd: '2026-02-28', nextStart: '2026-04-01' })
+    expect(monthEdges('2026-12-31')).toEqual({ previousEnd: '2026-11-30', nextStart: '2027-01-01' })
   })
 })

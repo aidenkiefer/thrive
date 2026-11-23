@@ -1,13 +1,15 @@
 /**
- * Date math for the admin calendar picker. Pure (no React, Next, or Supabase
- * imports), so the picker and its tests share one implementation.
+ * Calendar date math for the shared DatePicker (admin forms and public
+ * filters). Pure (no React, Next, or Supabase imports), so components and tests
+ * share one implementation.
  *
  * Dates are "YYYY-MM-DD" strings and times "HH:MM" strings, both as Chicago
- * wall-clock values. The picker serializes them into exactly the formats the
- * server validators in admin-validation.ts accept, so those stay the source of truth.
+ * wall-clock values. ISO date strings compare correctly as plain strings, which
+ * the range helpers rely on. Timed values serialize to exactly what the admin
+ * validators in admin-validation.ts accept, so those stay the source of truth.
  */
 
-import { chicagoOffset, chicagoWallTime } from './admin-validation'
+import { chicagoOffset, chicagoWallTime } from './church-time'
 
 export type WallDateTime = { date: string; time: string }
 
@@ -95,6 +97,53 @@ export function serializeWall({ date, time }: WallDateTime): string {
   if (!date && !time) return ''
   if (!date || !time) return date || time
   return `${date}T${time}:00${wallOffset(date, time)}`
+}
+
+const CHICAGO_LITERAL = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(?::\d{2}(?:\.\d+)?)?-0[56]:00$/
+const TIME_ONLY = /^\d{2}:\d{2}$/
+
+/**
+ * The inverse of `serializeValue`: a form or URL value back to date and time.
+ * Values already in Chicago offset are read literally (so a just-picked time
+ * shows as picked); anything else, such as a UTC instant from Postgres, is
+ * converted to Chicago wall time. Half-filled values survive the round trip.
+ */
+export function parseFormValue(value: string | null | undefined, withTime: boolean): WallDateTime {
+  const raw = (value || '').trim()
+  if (!raw) return { date: '', time: '' }
+  if (DATE_ONLY.test(raw)) return { date: parseIsoDate(raw) ? raw : '', time: '' }
+  if (withTime && TIME_ONLY.test(raw)) return { date: '', time: raw }
+  const literal = withTime ? CHICAGO_LITERAL.exec(raw) : null
+  if (literal) return { date: literal[1], time: literal[2] }
+  const wall = instantToWall(raw)
+  return withTime ? wall : { date: wall.date, time: '' }
+}
+
+/** The value a DatePicker posts or reports: "YYYY-MM-DD", or the timed form from serializeWall. */
+export function serializeValue(wall: WallDateTime, withTime: boolean): string {
+  return withTime ? serializeWall(wall) : wall.date
+}
+
+/** True when a date falls inside the optional inclusive bounds. */
+export function isInRange(value: string, min?: string, max?: string): boolean {
+  return !(min && value < min) && !(max && value > max)
+}
+
+/** Pulls a date inside the optional inclusive bounds. */
+export function clampDate(value: string, min?: string, max?: string): string {
+  if (min && value < min) return min
+  if (max && value > max) return max
+  return value
+}
+
+/** Last day of the month before / first day of the month after a date. */
+export function monthEdges(value: string): { previousEnd: string; nextStart: string } {
+  const parts = parseIsoDate(value)
+  if (!parts) return { previousEnd: value, nextStart: value }
+  return {
+    previousEnd: addDays(isoDate(parts.year, parts.month, 1), -1),
+    nextStart: addDays(isoDate(parts.year, parts.month, 1), new Date(Date.UTC(parts.year, parts.month, 0)).getUTCDate()),
+  }
 }
 
 /** "-06:00" → "CST", "-05:00" → "CDT", for the zone hint beside the time. */

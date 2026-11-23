@@ -7,7 +7,7 @@ import {
   assertEndAfterStart, assertPublishable, fail, formUrlPublishProblems, httpsUrl, oneTimeEventPublishProblems,
   parseInstant, requireInstant, requireSlug, requireText,
 } from '@/lib/admin-validation'
-import { DatePicker } from '@/components/admin/DatePicker'
+import { DatePicker } from '@/components/ui/DatePicker'
 import { AdminForm } from '../_components/admin-form'
 import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
 import Link from 'next/link'

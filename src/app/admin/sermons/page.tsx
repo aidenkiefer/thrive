@@ -6,7 +6,7 @@ import { revalidateEntity } from '@/lib/revalidate'
 import {
   assertPublishable, fail, httpsUrl, parseDateOnly, requireSlug, requireText, sermonPublishProblems,
 } from '@/lib/admin-validation'
-import { DatePicker } from '@/components/admin/DatePicker'
+import { DatePicker } from '@/components/ui/DatePicker'
 import { AdminForm } from '../_components/admin-form'
 import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
 

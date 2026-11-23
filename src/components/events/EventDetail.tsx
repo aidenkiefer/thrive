@@ -1,7 +1,6 @@
-import { isApprovedFormUrl } from '@/lib/form-urls'
 import { CalendarIcon, PinIcon } from '@/components/content/icons'
 import { CardImage } from './CardImage'
-import { LinkButton } from './LinkButton'
+import { SignupPanel } from '@/components/signup/SignupPanel'
 
 interface EventDetailProps {
   name: string
@@ -31,7 +30,7 @@ function formatTime(dateStr: string) {
 }
 
 export function EventDetail({
-  imageUrl, location, venue,
+  name, imageUrl, location, venue,
   churchsuiteFormUrl, externalUrl, startDatetime,
   recurrenceDescription, typicalTime, nextOccurrenceStart, description,
 }: EventDetailProps) {
@@ -46,10 +45,12 @@ export function EventDetail({
   const recurs = recurrenceDescription && !startDatetime
     ? `Recurs: ${recurrenceDescription}${typicalTime ? ` at ${typicalTime}` : ''}`
     : null
-  // Only ChurchSuite / Google Forms links are treated as signup forms.
-  const formUrl = isApprovedFormUrl(churchsuiteFormUrl) ? churchsuiteFormUrl : null
   const moreUrl = externalUrl && externalUrl !== churchsuiteFormUrl ? externalUrl : null
   const hasFacts = Boolean(displayDate || place || recurs)
+  // A form URL was intended when the field is non-empty, even if it's not yet a
+  // valid responder link (the panel then shows a pending state).
+  const hasIntendedForm = typeof churchsuiteFormUrl === 'string' && churchsuiteFormUrl.trim().length > 0
+  const showSignup = hasIntendedForm || Boolean(moreUrl)
 
   return (
     <article className="grid gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(16rem,1fr)] lg:items-start">
@@ -69,7 +70,7 @@ export function EventDetail({
         )}
       </div>
 
-      {(hasFacts || formUrl || moreUrl) && (
+      {(hasFacts || showSignup) && (
         <aside className="rounded-2xl bg-neutral-100 p-6 ring-1 ring-black/5 lg:sticky lg:top-24">
           <h2 className="font-display text-xl font-semibold text-neutral-950">Event details</h2>
           <dl className="mt-4 space-y-4 text-sm">
@@ -89,11 +90,14 @@ export function EventDetail({
             )}
             {recurs && <div><dt className="sr-only">Recurrence</dt><dd className="text-neutral-600">{recurs}</dd></div>}
           </dl>
-          {(formUrl || moreUrl) && (
-            <div className="mt-6 flex flex-col gap-3">
-              {formUrl && <LinkButton href={formUrl}>Sign Up / Register</LinkButton>}
-              {moreUrl && <LinkButton href={moreUrl} variant={formUrl ? 'secondary' : 'primary'}>Event details / Sign up</LinkButton>}
-            </div>
+          {showSignup && (
+            <SignupPanel
+              kind="event"
+              entityName={name}
+              formUrl={churchsuiteFormUrl}
+              moreUrl={moreUrl}
+              expectSignup={hasIntendedForm}
+            />
           )}
         </aside>
       )}

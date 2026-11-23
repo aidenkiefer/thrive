@@ -21,14 +21,16 @@ export function ThemeToggle({ tone = 'onDark', className = '' }: { tone?: ThemeT
 
   useEffect(() => {
     setDark(document.documentElement.classList.contains('dark'))
+    const observer = new MutationObserver(() => setDark(document.documentElement.classList.contains('dark')))
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
     const query = window.matchMedia('(prefers-color-scheme: dark)')
     function onSystemChange(event: MediaQueryListEvent) {
-      if (localStorage.getItem(THEME_STORAGE_KEY)) return
+      try { if (localStorage.getItem(THEME_STORAGE_KEY)) return } catch {}
       applyTheme(event.matches)
       setDark(event.matches)
     }
     query.addEventListener('change', onSystemChange)
-    return () => query.removeEventListener('change', onSystemChange)
+    return () => { query.removeEventListener('change', onSystemChange); observer.disconnect() }
   }, [])
 
   function toggle(event: MouseEvent<HTMLButtonElement>) {

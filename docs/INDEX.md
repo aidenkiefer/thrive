@@ -2,6 +2,8 @@
 
 All documentation for the Thrive Vineyard website project.
 
+**Latest owner architecture decisions (2026-11-22):** [managed-services tradeoffs](plans/specs/2026-11-22-managed-services-tradeoffs.md) and [owner decisions](plans/owner-decisions.md). Google Forms signups, managed-service preference, >1,000 concurrent-user design target, media and recovery choices supersede older provider/scope assumptions.
+
 **Current phase (2026-11-19):** draft site on `main`; Data stack built and held for Preview verification. Status: [plans/PROGRESS.md](plans/PROGRESS.md) · Roadmap and milestones: [plans/roadmap-milestones.md](plans/roadmap-milestones.md) · Batch order: [plans/batches.md](plans/batches.md) · Owner decisions: [plans/owner-decisions.md](plans/owner-decisions.md) · Live database rules and baseline: [ops/supabase-live-project.md](ops/supabase-live-project.md) · Current plan: [agents/assignments/2026-11-19-session-2.md](agents/assignments/2026-11-19-session-2.md).
 
 ---

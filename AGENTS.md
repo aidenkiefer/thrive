@@ -2,7 +2,19 @@
 
 Centralized ministry information platform for Thrive Vineyard church. Every event, group, sermon series, and announcement is **one canonical entity** shown everywhere, never duplicated across pages.
 
-**Stack:** Next.js 15 App Router (TypeScript, Tailwind) · Supabase Postgres · NextAuth for `/admin/**` · MDX in `content/pages/` for structural pages · ChurchSuite for form links only · Vercel (`main` = production).
+**Stack:** Next.js 15 App Router (TypeScript, Tailwind) · Supabase Postgres · NextAuth for `/admin/**` · MDX in `content/pages/` for structural pages · Google Forms for signup links; ChurchSuite for giving links · Vercel (`main` = production).
+
+## Owner architecture direction (2026-11-22)
+
+- Prefer managed/hosted services that reduce our runtime, custom code and operational burden. Compare maintenance, reliability, permissions, portability and current quotas before implementing a subsystem.
+- Prefer suitable free allowances until payment is justified. This is not a hard $0 ceiling; present paid commitments and expected recurring charges to the owner before enabling them.
+- Target **more than 1,000 concurrent website visitors**, primarily a regional audience within roughly 60 miles. This is an unverified capacity requirement, not 1,000 simultaneous submissions, database connections or requests/second. Define journey/load assumptions and favor CDN/static/cache delivery.
+- Keep the existing stack and accepted #144 visual design. Major architecture/interface/design/product/cost changes still return to the owner.
+- **Signup choice:** Google Forms/Sheets, with external response review and links from Thrive admin; no response synchronization, custom form builder or in-app response dashboard for MVP. Standard provider notifications are sufficient; custom detailed-email automation, bespoke export controls and automated retention are not required for MVP. Ordinary private sharing and deletion on request are retained; the fixed 12-month cleanup requirement is explicitly deferred.
+- **Media:** retain optimized committed site assets; use Supabase Storage for changing images, owner/dashboard-managed initially. Defer the custom staff uploader.
+- **Recovery:** approved direction is weekly GitHub Actions exports, encrypted before transfer to separate private R2 storage, keeping ten verified snapshots, restore rehearsal and failure/missed-backup alerts. Exact account setup and any paid commitment still need owner action/approval.
+- **Mail:** native staff-code sender info@thrivevineyard.com; website notification sender website@updates.thrivevineyard.com; default recipient info@thrivevineyard.com includes prayer. The prayer recipient env setting can point to that same inbox; no separate prayer mailbox is required.
+- Wednesday November 25 means tested/approved MVP readiness, not automatic DNS cutover. CMS preview/version restore remains deferred. Decision record and tradeoffs: docs/plans/specs/2026-11-22-managed-services-tradeoffs.md.
 
 ## Commands
 
@@ -27,7 +39,7 @@ Three tools (Claude Code, Cursor, Codex) work in parallel. Start with [agent onb
 - **Admin routes require auth.** `src/middleware.ts` protects `/admin/**` via NextAuth. Never bypass it.
 - **Never invent ministry data:** no fabricated dates, staff names, contact info, descriptions, or form URLs. Unknowns go to the owner.
 - **SEO redirects:** any public URL change from the WordPress site needs a 301 in `next.config.ts` (see `docs/04-seo-url-migration-map.md`).
-- **Forms:** ChurchSuite and approved Google Forms are hosted links/embeds. Thrive-owned website forms, including feedback, use server-side email to the configured admin address and optional per-form recipients. See the [current floorplan](floorplan.md).
+- **Forms:** Google Forms owns event/group signup collection and responses; use approved hosted links/embeds without syncing responses into Supabase. ChurchSuite giving stays external. Existing native feedback/prayer forms use server-side email, both to the approved default church inbox. See the [current floorplan](floorplan.md) and dated owner decisions.
 - **No secrets in git.** `.env*` stays local (except `.env.local.example`).
 
 ## Map

@@ -2,13 +2,24 @@
 
 The [current floorplan](../floorplan.md) adds server-side email for Thrive-owned forms and GitHub Projects for development tracking. Hosted integrations still use their own destinations. See [MVP release dependencies](plans/specs/2026-11-18-mvp-preparation.md) for service checks.
 
+## Current service decisions (2026-11-22)
+
+Owner direction: prefer managed services and suitable free allowances to reduce Thrive's application runtime and maintenance; paying is allowed when justified and owner-approved. The existing stack remains. Target >1,000 concurrent regional website users is not a verified free-tier capacity claim.
+
+- **Signups:** Google Forms/Sheets with external response review and approved site/admin links. Do not build native form definitions/response storage/admin review or synchronize responses into Supabase for MVP. Standard provider notifications are sufficient; detailed-email automation and bespoke access/export tooling are deferred. Keep response sharing private; the fixed 12-month cleanup requirement is explicitly deferred.
+- **Native feedback/prayer:** continue Resend email-only flows. Auth sender info@thrivevineyard.com; website sender website@updates.thrivevineyard.com; default recipient info@thrivevineyard.com. Set the existing FORMS_PRAYER_RECIPIENT to that same address privately; a separate mailbox is unnecessary. No configuration or delivery is proved by this decision.
+- **Media:** existing optimized assets remain in the site; changing images use Supabase Storage, owner/dashboard-managed initially. Custom staff upload UI is deferred. Storage/upload currently described below is an intended integration, not proof of an implemented uploader.
+- **Recovery:** weekly GitHub Actions logical exports, encrypted before upload to separate private R2 storage, newest ten verified snapshots, restore rehearsal and failure/staleness alerts. Account/credential/paid setup remains owner-controlled. Database exports do not recover media objects or Google response data; inventory those separately.
+
+See [the source-backed comparison and record](plans/specs/2026-11-22-managed-services-tradeoffs.md). Newest dated decisions override historical assumptions below.
+
 ## Supabase
 
 **Role:** Primary data layer for all dynamic content.
 
 **What lives here:**
 - All content tables (sermons, events, groups, announcements, landing pages, etc.)
-- Media file storage (images, audio, video uploaded through the admin panel)
+- Owner/dashboard-managed image storage for changing media (chosen 2026-11-22; custom staff uploader deferred). Existing video remains on its managed video destination; no generic admin audio/video upload is claimed.
 - Staff email-code issuance and verification in Supabase Auth; service-only `admin_staff_accounts` membership binds each Auth user to a durable actor ID
 
 **Access pattern:**
@@ -63,7 +74,7 @@ Supabase Auth needs a code-only email template and dedicated SMTP credentials. P
 
 The native website feedback form uses the server-side F1 form registry and the D3 Resend Email API transport. `FORMS_MAIL_TRANSPORT=resend` selects delivery only when `RESEND_API_KEY` is present; an unconfigured or failed send returns an unavailable result to the visitor. The fake transport is for local development and cannot be selected in production. The form registry resolves the sender and required default recipient on the server, with optional additional recipients per form. The visitor cannot set either.
 
-Configure `RESEND_API_KEY`, `FORMS_MAIL_FROM`, and `FORMS_DEFAULT_RECIPIENT` as server-only deployment variables. Use a scoped API key for website forms. Set the sender to an address on a verified Resend domain; `updates.thrivevineyard.com` is registered but its DNS verification is pending. `info@thrivevineyard.com` is the proposed default inbox until the owner confirms its delivery. Resend acceptance is not proof of inbox receipt: before enabling public submission, use an isolated Preview deployment and an approved test recipient to verify delivery, Reply-To, failure handling, and access to submissions. Do not send test content to the production inbox without the owner's direction.
+Configure `RESEND_API_KEY`, `FORMS_MAIL_FROM`, and `FORMS_DEFAULT_RECIPIENT` as server-only deployment variables. Use a scoped API key for website forms. The updates sending domain and a sandbox feedback send were recorded as verified on November 20. The November 22 owner decision selects website@updates.thrivevineyard.com for native website sends and info@thrivevineyard.com as default recipient, including prayer. Production configuration and inbox delivery remain checks; the historical sandbox result does not prove them. Resend acceptance is not proof of inbox receipt: before enabling public submission, use an isolated Preview deployment and an approved test recipient to verify delivery, Reply-To, failure handling, and access to submissions. Do not send test content to the production inbox without the owner's direction.
 
 Supabase Auth may use Resend SMTP for staff one-time codes, with a separate key and code-only template. Keep authentication traffic and website feedback messages distinct.
 
@@ -73,7 +84,7 @@ Supabase Auth may use Resend SMTP for staff one-time codes, with a separate key 
 
 **Role on live site:** Online giving only (`thrivevineyard.churchsuite.com/donate/`).
 
-**Role on new site:** Registration/signup forms via `churchsuite_form_url` fields on entities (groups, events, outreach). Online giving continues via ChurchSuite donate URL on `/give`.
+**Role on new site:** Giving continues through the ChurchSuite donate destination. Group/event signup provider is now Google Forms. Existing hosted signup URLs are migration references until approved Google destinations are configured and tested; legacy column names do not dictate the provider.
 
 **Important:** The live WordPress site uses **Gravity Forms** for signups and contact — not ChurchSuite. See [01-current-site-audit.md](./01-current-site-audit.md) for the full form inventory and migration decision.
 
@@ -106,7 +117,7 @@ Rendered as:
 
 **Deployment:** Auto-deploys on push to `main`. Preview deployments on PRs/branches.
 
-**Cost:** Free tier covers a church website comfortably (100GB bandwidth/month, unlimited requests on hobby plan).
+**Cost/capacity:** Verify the current Vercel account plan, eligibility and included delivery/compute/image allowances. Do not assume unlimited requests or that free hosting proves the >1,000 concurrent-visitor target. Estimate cache-hit and uncached request load; measure before claiming readiness. Current plan documentation: https://vercel.com/docs/plans/hobby (checked 2026-11-22).
 
 ---
 

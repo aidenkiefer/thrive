@@ -6,6 +6,7 @@ import { revalidateEntity } from '@/lib/revalidate'
 import {
   assertPublishable, fail, httpsUrl, parseDateOnly, requireSlug, requireText, sermonPublishProblems,
 } from '@/lib/admin-validation'
+import { DatePicker } from '@/components/ui/DatePicker'
 import { AdminForm } from '../_components/admin-form'
 import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
 
@@ -86,7 +87,7 @@ function SermonForm({ item, speakers, series, feedback }: { item?: Sermon; speak
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Title<input name="title" defaultValue={item?.title} required className="mt-1 block w-full rounded border p-2" /></label>
     <label className="block text-sm">URL slug<input name="slug" defaultValue={item?.slug} required readOnly={Boolean(item)} className="mt-1 block w-full rounded border p-2 read-only:bg-gray-100" /></label>
-    <label className="block text-sm">Preached date<input name="preached_at" type="date" defaultValue={item?.preached_at} required className="mt-1 block rounded border p-2" /></label>
+    <DatePicker name="preached_at" label="Preached date" required defaultValue={item?.preached_at} />
     <label className="block text-sm">Speaker<select name="speaker_id" defaultValue={item?.speaker_id || ''} className="mt-1 block w-full rounded border p-2"><option value="">No speaker</option>{speakers.map(row => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
     <label className="block text-sm">Series<select name="series_id" defaultValue={item?.series_id || ''} className="mt-1 block w-full rounded border p-2"><option value="">No series</option>{series.map(row => <option key={row.id} value={row.id}>{row.title}</option>)}</select></label>
     <label className="block text-sm">Description<textarea name="description" defaultValue={item?.description || ''} rows={4} className="mt-1 block w-full rounded border p-2" /></label>

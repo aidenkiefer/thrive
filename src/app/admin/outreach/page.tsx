@@ -4,6 +4,7 @@ import { publishIntent, saveWithPublication } from '@/lib/cms'
 import { readFeedback, saveWithFeedback, type AdminFeedback } from '@/lib/admin-form'
 import { assertPublishable, fail, formUrlPublishProblems, httpsUrl, requireSlug, requireText } from '@/lib/admin-validation'
 import { revalidateEntity } from '@/lib/revalidate'
+import { DatePicker } from '@/components/ui/DatePicker'
 import { AdminForm } from '../_components/admin-form'
 import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
 
@@ -74,8 +75,8 @@ function OutreachForm({ item, feedback }: { item?: Outreach; feedback?: AdminFee
     <label className="block text-sm">Contact email<input name="contact_email" type="email" defaultValue={item?.contact_email || ''} className="mt-1 block w-full rounded border p-2" /></label>
     <label className="block text-sm">Volunteer signup URL<input name="volunteer_signup_url" defaultValue={item?.volunteer_signup_url || ''} className="mt-1 block w-full rounded border p-2" /></label>
     <label className="block text-sm">ChurchSuite URL<input name="churchsuite_form_url" defaultValue={item?.churchsuite_form_url || ''} className="mt-1 block w-full rounded border p-2" /></label>
-    <label className="block text-sm">Start date<input name="start_date" type="date" defaultValue={item?.start_date || ''} className="mt-1 block rounded border p-2" /></label>
-    <label className="block text-sm">End date<input name="end_date" type="date" defaultValue={item?.end_date || ''} className="mt-1 block rounded border p-2" /></label>
+    <DatePicker name="start_date" label="Start date" defaultValue={item?.start_date} />
+    <DatePicker name="end_date" label="End date" defaultValue={item?.end_date} />
     <label className="flex gap-2 text-sm"><input type="checkbox" name="is_ongoing" defaultChecked={item?.is_ongoing} />Ongoing</label>
     <label className="flex gap-2 text-sm"><input type="checkbox" name="published" defaultChecked={Boolean(item?.published_at)} />Published</label>
     <button type="submit" className="rounded bg-brand-800 px-4 py-2 text-white">{item ? 'Save outreach' : 'Create outreach'}</button>

@@ -139,3 +139,13 @@
 .dark .admin-ui button[type='submit'] {
   @apply bg-brand-600 hover:bg-brand-500;
 }
+
+/* Shared DatePicker (src/components/ui/DatePicker.tsx) styles itself; these only
+   match it to the admin inputs above, which sit inside text-sm labels. */
+.admin-ui [data-date-picker] {
+  @apply text-[15px] leading-5;
+}
+
+.admin-ui [data-date-picker='trigger'] {
+  @apply rounded-lg px-3;
+}

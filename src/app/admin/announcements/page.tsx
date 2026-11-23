@@ -6,6 +6,7 @@ import { revalidateEntity } from '@/lib/revalidate'
 import {
   announcementPublishProblems, assertPublishable, httpsUrl, parseInstant, requireText, siteOrHttpsUrl,
 } from '@/lib/admin-validation'
+import { DatePicker } from '@/components/admin/DatePicker'
 import { AdminForm } from '../_components/admin-form'
 import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
 
@@ -61,7 +62,7 @@ function AnnouncementForm({ item, feedback }: { item?: Announcement; feedback?: 
       <label className="block text-sm">Button text<input name="cta_text" defaultValue={item?.cta_text || ''} className="mt-1 block w-full rounded border p-2" /></label>
       <label className="block text-sm">Button URL<input name="cta_url" defaultValue={item?.cta_url || ''} className="mt-1 block w-full rounded border p-2" /></label>
       <label className="block text-sm">Image URL<input name="featured_image_url" defaultValue={item?.featured_image_url || ''} className="mt-1 block w-full rounded border p-2" /></label>
-      <label className="block text-sm">Expires (ISO date and time with timezone, optional)<input name="expires_at" type="text" placeholder="2026-12-01T00:00:00-06:00" defaultValue={item?.expires_at || ''} className="mt-1 block w-full rounded border p-2" /></label>
+      <DatePicker name="expires_at" label="Expires (optional)" withTime defaultValue={item?.expires_at} />
       <label className="flex gap-2 text-sm"><input type="checkbox" name="is_homepage_feature" defaultChecked={item?.is_homepage_feature} />Feature on homepage</label>
       <label className="flex gap-2 text-sm"><input type="checkbox" name="published" defaultChecked={Boolean(item?.published_at)} />Published</label>
       <button className="rounded bg-brand-800 px-4 py-2 text-white" type="submit">{item ? 'Save changes' : 'Create announcement'}</button>

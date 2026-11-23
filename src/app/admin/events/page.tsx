@@ -7,6 +7,7 @@ import {
   assertEndAfterStart, assertPublishable, fail, formUrlPublishProblems, httpsUrl, oneTimeEventPublishProblems,
   parseInstant, requireInstant, requireSlug, requireText,
 } from '@/lib/admin-validation'
+import { DatePicker } from '@/components/admin/DatePicker'
 import { AdminForm } from '../_components/admin-form'
 import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
 import Link from 'next/link'
@@ -76,8 +77,8 @@ function EventForm({ item, feedback }: { item?: EventRow; feedback?: AdminFeedba
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Name<input name="name" defaultValue={item?.name} required className="mt-1 block w-full rounded border p-2" /></label>
     <label className="block text-sm">URL slug<input name="slug" defaultValue={item?.slug} required readOnly={Boolean(item)} className="mt-1 block w-full rounded border p-2 read-only:bg-gray-100" /></label>
-    <label className="block text-sm">Start (ISO time with Chicago offset: -06:00 winter, -05:00 summer)<input name="start_datetime" placeholder="2026-12-05T09:00:00-06:00" defaultValue={item?.start_datetime} required className="mt-1 block w-full rounded border p-2" /></label>
-    <label className="block text-sm">End (ISO time with offset)<input name="end_datetime" defaultValue={item?.end_datetime || ''} className="mt-1 block w-full rounded border p-2" /></label>
+    <DatePicker name="start_datetime" label="Start" withTime required defaultValue={item?.start_datetime} />
+    <DatePicker name="end_datetime" label="End (optional)" withTime defaultValue={item?.end_datetime} />
     <label className="block text-sm">Description<textarea name="description" defaultValue={item?.description || ''} rows={4} className="mt-1 block w-full rounded border p-2" /></label>
     <label className="block text-sm">Short summary<input name="short_summary" defaultValue={item?.short_summary || ''} className="mt-1 block w-full rounded border p-2" /></label>
     <label className="block text-sm">Category<input name="category" defaultValue={item?.category || ''} className="mt-1 block w-full rounded border p-2" /></label>

@@ -119,3 +119,90 @@
 .admin-ui main a[class~='border'] {
   @apply rounded-full border-neutral-300 bg-neutral-0 text-sm font-medium text-brand-800 transition-colors hover:border-brand-300 hover:bg-brand-50;
 }
+
+/* Calendar date field (src/components/admin/DatePicker.tsx). The calendar opens
+   inline so it isn't clipped by the overflow-hidden <details> rows above. */
+.admin-ui .admin-date-label {
+  @apply block text-sm font-medium text-neutral-800;
+}
+
+/* Date and time share a row and wrap when the field is narrow (two-column forms). */
+.admin-ui .admin-date-controls-time {
+  @apply flex flex-wrap gap-x-3;
+}
+
+.admin-ui .admin-date-controls-time > .admin-date-trigger {
+  flex: 3 1 13rem;
+}
+
+.admin-ui .admin-date-controls-time > input {
+  flex: 1 1 9rem;
+}
+
+.admin-ui .admin-date-trigger {
+  @apply mt-1.5 flex w-full items-center gap-2.5 rounded-lg border border-neutral-300 bg-neutral-0 px-3 py-2.5 text-left text-[15px] text-neutral-950 shadow-sm transition-colors hover:border-neutral-400 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/15;
+}
+
+.admin-ui .admin-date-trigger svg {
+  @apply shrink-0 text-brand-700;
+}
+
+.admin-ui .admin-date-trigger[aria-expanded='true'] {
+  @apply border-brand-600;
+}
+
+.admin-ui .admin-date-meta {
+  @apply mt-1.5 flex items-center gap-3 text-xs text-neutral-600;
+}
+
+.admin-ui .admin-date-warning {
+  @apply mt-1.5 text-xs font-medium text-amber-800;
+}
+
+.admin-ui .admin-date-link {
+  @apply rounded font-semibold text-brand-800 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40;
+}
+
+.admin-ui .admin-date-panel {
+  @apply mt-2 w-full max-w-[20rem] rounded-xl border border-neutral-200 bg-neutral-0 p-3 shadow-soft;
+}
+
+.admin-ui .admin-date-header {
+  @apply mb-2 flex items-center justify-between;
+}
+
+.admin-ui .admin-date-month {
+  @apply font-display text-[15px] font-semibold text-brand-900;
+}
+
+.admin-ui .admin-date-nav {
+  @apply inline-flex h-8 w-8 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-brand-50 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40;
+}
+
+.admin-ui .admin-date-grid {
+  @apply w-full border-collapse text-center;
+}
+
+.admin-ui .admin-date-grid th {
+  @apply pb-1 text-xs font-medium text-neutral-500;
+}
+
+.admin-ui .admin-date-grid td {
+  @apply p-0.5;
+}
+
+.admin-ui .admin-date-grid button {
+  @apply mx-auto flex h-9 w-9 items-center justify-center rounded-full text-sm text-neutral-900 transition-colors hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600;
+}
+
+.admin-ui .admin-date-grid button[aria-current='date'] {
+  @apply font-semibold text-brand-800 ring-1 ring-brand-300;
+}
+
+.admin-ui .admin-date-grid button[aria-pressed='true'] {
+  @apply bg-brand-800 font-semibold text-white hover:bg-brand-700;
+}
+
+.admin-ui .admin-date-footer {
+  @apply mt-2 flex justify-between border-t border-neutral-200 px-1 pt-2 text-sm;
+}

@@ -7,6 +7,7 @@ import {
   assertEndAfterStart, assertPublishable, fail, formUrlPublishProblems, httpsUrl, parseInstant, recurringEventPublishProblems,
   requireInstant, requireSlug, requireText,
 } from '@/lib/admin-validation'
+import { DatePicker } from '@/components/admin/DatePicker'
 import { AdminForm } from '../_components/admin-form'
 import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
 
@@ -127,8 +128,8 @@ function OccurrenceForm({ item, events, feedback }: { item?: Occurrence; events:
     <div className="md:col-span-2"><FormFeedback feedback={feedback} formKey={formKey} /></div>
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Recurring event<select name="recurring_event_id" defaultValue={item?.recurring_event_id || ''} required className="mt-1 block w-full rounded border p-2"><option value="">Select event</option>{events.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select></label>
-    <label className="block text-sm">Starts (ISO offset)<input name="start_datetime" defaultValue={item?.start_datetime || ''} placeholder="2026-11-15T09:30:00-06:00" required className="mt-1 block w-full rounded border p-2" /></label>
-    <label className="block text-sm">Ends (optional)<input name="end_datetime" defaultValue={item?.end_datetime || ''} className="mt-1 block w-full rounded border p-2" /></label>
+    <DatePicker name="start_datetime" label="Starts" withTime required defaultValue={item?.start_datetime} />
+    <DatePicker name="end_datetime" label="Ends (optional)" withTime defaultValue={item?.end_datetime} />
     <label className="block text-sm">Location override<input name="location" defaultValue={item?.location || ''} className="mt-1 block w-full rounded border p-2" /></label>
     <label className="block text-sm">Notes<input name="notes" defaultValue={item?.notes || ''} className="mt-1 block w-full rounded border p-2" /></label>
     <label className="flex gap-2 text-sm"><input type="checkbox" name="cancelled" defaultChecked={item?.cancelled} />Cancelled</label>

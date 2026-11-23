@@ -8,7 +8,11 @@ export { clientKeyFrom } from './rate-limit'
  * A1 staff actor contract (D1R): individual one-time email code sign-in.
  *
  * Supabase Auth issues and verifies the email code, but only for staff who are
- * preprovisioned in `admin_staff_accounts` (service-role-only). The website
+ * in `admin_staff_accounts` (service-role-only), or for a new
+ * @thrivevineyard.com address (self-signup: the server creates the Auth user
+ * with the service role, and the first verified code inserts an active
+ * 'staff'-role row). Off-domain people are only ever added by hand, and
+ * existing rows are honored whatever their domain. The website
  * session is a NextAuth JWT holding {actorId, authUserId, authVersion} and
  * nothing from Supabase Auth. Every protected request re-reads the row and
  * requires status 'active', the same auth user, and the same auth version, so
@@ -56,6 +60,13 @@ export interface StaffAccountRow {
 export interface StaffStore {
   findByEmail(email: string): Promise<StaffAccountRow | null>
   findByActorId(actorId: string): Promise<StaffAccountRow | null>
+  /** Self-signup: create the Supabase Auth user (email confirmed) unless one exists. Public signup stays off. */
+  ensureAuthUser(email: string): Promise<void>
+  /**
+   * Self-signup: insert an active 'staff'-role row. If the email already has a
+   * row (a concurrent sign-in), returns that row; the caller re-checks it.
+   */
+  createStaff(email: string, authUserId: string): Promise<StaffAccountRow | null>
 }
 
 /** The two Supabase Auth calls we use. Injected so tests stub the boundary. */
@@ -70,6 +81,18 @@ export function normalizeEmail(raw: unknown): string | null {
   const email = raw.trim().toLowerCase()
   if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null
   return email
+}
+
+/** The only email domain that may create a new staff account by signing in. Subdomains do not count. */
+export const STAFF_SIGNUP_DOMAIN = 'thrivevineyard.com'
+
+/**
+ * Self-signup gate: true only for a well-formed @thrivevineyard.com address.
+ * Applies to emails with no roster row; it never revokes an existing row.
+ */
+export function isStaffSignupEmail(raw: unknown): boolean {
+  const email = normalizeEmail(raw)
+  return !!email && email.slice(email.lastIndexOf('@') + 1) === STAFF_SIGNUP_DOMAIN
 }
 
 export function normalizeCode(raw: unknown): string | null {
@@ -193,8 +216,9 @@ function padToMinimum(deps: TimingDeps): <T>(result: T) => Promise<T> {
 }
 
 /**
- * Sends a code only when the email belongs to an active preprovisioned staff
- * account. The result never reveals whether it did: every non-throttled path is
+ * Sends a code only when the email belongs to an active staff account, or has
+ * no row and is a @thrivevineyard.com address (self-signup; the Auth user is
+ * created first). Disabled rows get nothing. The result never reveals whether it did: every non-throttled path is
  * 'accepted'. The client-address and global limits are visible (429) and apply
  * identically to every email. The per-email limit is silent (no send, still
  * 'accepted'). If the shared limiter is unhealthy at any step the result is
@@ -226,7 +250,12 @@ export async function requestStaffCode(rawEmail: unknown, deps: RequestCodeDeps)
   const send = async () => {
     try {
       const row = await store.findByEmail(email)
-      if (isActive(row)) await otp.requestCode(email)
+      if (isActive(row)) {
+        await otp.requestCode(email)
+      } else if (!row && isStaffSignupEmail(email)) {
+        await store.ensureAuthUser(email)
+        await otp.requestCode(email)
+      }
     } catch {
       // The caller still sees success; only a fixed code is logged.
       (deps.log ?? console.error)('[staff-code] send_failed')
@@ -250,7 +279,8 @@ export interface VerifyCodeDeps extends TimingDeps {
 
 /**
  * Verifies the emailed code and returns the active actor, or null for every
- * failure (unknown/disabled staff, wrong, expired, or replayed code, Auth user
+ * failure. A new @thrivevineyard.com address with no row gets an active
+ * 'staff'-role row on its first verified code. Failures: off-domain unknown or disabled staff, wrong, expired, or replayed code, Auth user
  * that is not the bound one, throttling, limiter failure, or any error).
  * Unknown and disabled emails skip the Supabase call, so every result is
  * padded to `deps.minDurationMs`.
@@ -274,10 +304,18 @@ async function verifyUnpadded(rawEmail: unknown, rawCode: unknown, deps: VerifyC
 
   try {
     const row = await deps.store.findByEmail(email)
-    if (!isActive(row)) return null
+    if (isActive(row)) {
+      const authUserId = await deps.otp.verifyCode(email, code)
+      if (!authUserId || authUserId.toLowerCase() !== row.auth_user_id.toLowerCase()) return null
+      return toActor(row)
+    }
+    // Disabled rows never sign up again; off-domain emails are never created.
+    if (row || !isStaffSignupEmail(email)) return null
     const authUserId = await deps.otp.verifyCode(email, code)
-    if (!authUserId || authUserId.toLowerCase() !== row.auth_user_id.toLowerCase()) return null
-    return toActor(row)
+    if (!authUserId) return null
+    const created = await deps.store.createStaff(email, authUserId)
+    if (!isActive(created) || created.auth_user_id.toLowerCase() !== authUserId.toLowerCase()) return null
+    return toActor(created)
   } catch {
     (deps.log ?? console.error)('[staff-code] verify_error')
     return null
@@ -310,6 +348,20 @@ export function createStaffStore(env: IdentityEnv = process.env): StaffStore | n
   return {
     findByEmail: email => one('email', email),
     findByActorId: actorId => one('actor_id', actorId),
+    async ensureAuthUser(email) {
+      const { error } = await db.auth.admin.createUser({ email, email_confirm: true })
+      // An existing Auth user is fine: the code goes to the same address.
+      if (error && error.code !== 'email_exists' && error.status !== 422) throw new Error('auth user create failed')
+    },
+    async createStaff(email, authUserId) {
+      // kind and role take their defaults ('staff'); status defaults to 'active'.
+      const { data, error } = await db.from('admin_staff_accounts')
+        .insert({ email, auth_user_id: authUserId }).select(columns).single()
+      if (!error) return data as StaffAccountRow
+      // 23505: the email (concurrent sign-in) or auth user is already bound. Re-read by email.
+      if (error.code === '23505') return one('email', email)
+      throw new Error('staff create failed')
+    },
   }
 }
 

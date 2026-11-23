@@ -34,7 +34,7 @@ export default function AdminLoginPage() {
         setError('Could not send a code. Try again.')
       } else {
         setStep('code')
-        setNotice('If that email is registered for staff access, a code is on its way. It expires soon.')
+        setNotice('If that email can sign in (new staff: use your @thrivevineyard.com address), a code is on its way. It expires soon.')
       }
     } catch {
       setError('Could not send a code. Try again.')

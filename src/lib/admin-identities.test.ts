@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it, vi } from 'vitest'
 import {
-  clientKeyFrom, normalizeCode, normalizeEmail, parseSessionIdentity,
+  clientKeyFrom, isStaffSignupEmail, normalizeCode, normalizeEmail, parseSessionIdentity,
   requestStaffCode, resolveActor, verifyStaffCode,
   type OtpAuth, type StaffAccountRow, type StaffStore,
 } from './admin-identities'
@@ -16,12 +16,26 @@ function row(over: Partial<StaffAccountRow> = {}): StaffAccountRow {
   return { actor_id: ACTOR, email: 'pat@example.org', auth_user_id: AUTH, status: 'active', auth_version: 1, role: 'staff', ...over }
 }
 
-function memoryStore(rows: StaffAccountRow[]): StaffStore {
-  return {
-    findByEmail: async email => rows.find(r => r.email === email) ?? null,
-    findByActorId: async id => rows.find(r => r.actor_id === id) ?? null,
+const NEW_ACTOR = '44444444-4444-4444-8444-444444444444'
+
+/** Mutable roster: createStaff appends like the real insert (unique email and auth user). */
+function memoryStore(rows: StaffAccountRow[]) {
+  const store = {
+    findByEmail: async (email: string) => rows.find(r => r.email === email) ?? null,
+    findByActorId: async (id: string) => rows.find(r => r.actor_id === id) ?? null,
+    ensureAuthUser: vi.fn(async (_email: string) => {}),
+    createStaff: vi.fn(async (email: string, authUserId: string) => {
+      const existing = rows.find(r => r.email === email)
+      if (existing) return existing
+      if (rows.some(r => r.auth_user_id === authUserId)) return null
+      const created = { actor_id: NEW_ACTOR, email, auth_user_id: authUserId, status: 'active', auth_version: 1, role: 'staff' }
+      rows.push(created)
+      return created
+    }),
   }
+  return store satisfies StaffStore
 }
+const noSignup = { ensureAuthUser: async () => {}, createStaff: async () => null }
 
 function fakeOtp(over: Partial<OtpAuth> = {}) {
   const otp = {
@@ -79,7 +93,7 @@ describe('resolveActor (every protected request)', () => {
     expect(await resolveActor(claims, memoryStore([row({ role: undefined as unknown as string })]))).toBeNull()
   })
   it('fails closed when the store throws', async () => {
-    const store: StaffStore = { findByEmail: async () => { throw new Error('db') }, findByActorId: async () => { throw new Error('db') } }
+    const store: StaffStore = { findByEmail: async () => { throw new Error('db') }, findByActorId: async () => { throw new Error('db') }, ...noSignup }
     expect(await resolveActor(claims, store)).toBeNull()
   })
   it('does not trust an email claim for identity', () => {
@@ -272,7 +286,7 @@ describe('fail closed when the limiter is unhealthy', () => {
   it.each(variants)('request is identically unavailable and sends nothing (%s)', async (_n, make) => {
     const otp = fakeOtp()
     const find = vi.fn(async () => row())
-    const store: StaffStore = { findByEmail: find, findByActorId: async () => null }
+    const store: StaffStore = { findByEmail: find, findByActorId: async () => null, ...noSignup }
     for (const email of ['pat@example.org', 'nobody@example.org', 'not-an-email', undefined]) {
       expect(await requestStaffCode(email, { store, otp, limiter: make(), clientKey: 'a' })).toEqual({ status: 'unavailable' })
     }
@@ -282,7 +296,7 @@ describe('fail closed when the limiter is unhealthy', () => {
   it.each(variants)('verify returns null before any lookup (%s)', async (_n, make) => {
     const otp = fakeOtp()
     const find = vi.fn(async () => row())
-    const store: StaffStore = { findByEmail: find, findByActorId: async () => null }
+    const store: StaffStore = { findByEmail: find, findByActorId: async () => null, ...noSignup }
     expect(await verifyStaffCode('pat@example.org', '123456', { store, otp, limiter: make(), clientKey: 'a' })).toBeNull()
     expect(otp.verifyCode).not.toHaveBeenCalled()
     expect(find).not.toHaveBeenCalled()
@@ -380,6 +394,73 @@ describe('verifyStaffCode', () => {
     const wrong = fakeOtp({ verifyCode: vi.fn(async () => null) })
     expect(await verifyStaffCode('pat@example.org', '111111', { ...deps([row()], wrong), log })).toBeNull()
     expect(lines).toEqual(['[staff-code] verify_error'])
+  })
+})
+
+describe('self-signup for new @thrivevineyard.com staff', () => {
+  const NEW = 'new.person@thrivevineyard.com'
+  const deps = (store: ReturnType<typeof memoryStore>, otp: OtpAuth) => ({ store, otp, limiter: open(), clientKey: 'a' })
+
+  it('treats only exact @thrivevineyard.com addresses as signup-eligible', () => {
+    expect(isStaffSignupEmail(NEW)).toBe(true)
+    expect(isStaffSignupEmail(' New.Person@ThriveVineyard.COM ')).toBe(true)
+    for (const email of [
+      'pat@gmail.com', 'pat@mail.thrivevineyard.com', 'pat@thrivevineyard.com.evil.co',
+      'pat@evilthrivevineyard.com', 'thrivevineyard.com@gmail.com', 'pat@thrivevineyard.co', '', null, 42,
+    ]) expect(isStaffSignupEmail(email)).toBe(false)
+  })
+  it('creates the Auth user and sends a code for an unknown domain email', async () => {
+    const store = memoryStore([])
+    const otp = fakeOtp()
+    expect(await requestStaffCode(NEW, deps(store, otp))).toEqual({ status: 'accepted' })
+    expect(store.ensureAuthUser).toHaveBeenCalledWith(NEW)
+    expect(otp.requestCode).toHaveBeenCalledWith(NEW)
+  })
+  it('sends nothing for an unknown off-domain email, with the same generic result', async () => {
+    const store = memoryStore([])
+    const otp = fakeOtp()
+    expect(await requestStaffCode('stranger@gmail.com', deps(store, otp))).toEqual({ status: 'accepted' })
+    expect(store.ensureAuthUser).not.toHaveBeenCalled()
+    expect(otp.requestCode).not.toHaveBeenCalled()
+  })
+  it('never re-signs-up a disabled domain row', async () => {
+    const store = memoryStore([row({ email: NEW, status: 'disabled' })])
+    const otp = fakeOtp()
+    await requestStaffCode(NEW, deps(store, otp))
+    expect(otp.requestCode).not.toHaveBeenCalled()
+    expect(await verifyStaffCode(NEW, '123456', deps(store, otp))).toBeNull()
+    expect(otp.verifyCode).not.toHaveBeenCalled()
+    expect(store.createStaff).not.toHaveBeenCalled()
+  })
+  it('keeps serving an existing off-domain row (e.g. the owner admin) unchanged', async () => {
+    const owner = row({ email: 'owner@gmail.com', role: 'admin' })
+    const store = memoryStore([owner])
+    const otp = fakeOtp()
+    await requestStaffCode('owner@gmail.com', deps(store, otp))
+    expect(otp.requestCode).toHaveBeenCalledWith('owner@gmail.com')
+    expect(store.ensureAuthUser).not.toHaveBeenCalled()
+    expect(await verifyStaffCode('owner@gmail.com', '123456', deps(store, otp))).toEqual({ ...claims, email: 'owner@gmail.com', role: 'admin' })
+    expect(await resolveActor(claims, store)).toMatchObject({ role: 'admin' })
+  })
+  it('creates an active staff-role row on the first verified code, then resolves it', async () => {
+    const store = memoryStore([])
+    const otp = fakeOtp({ verifyCode: vi.fn(async () => OTHER_AUTH) })
+    const actor = await verifyStaffCode(NEW, '123456', deps(store, otp))
+    expect(store.createStaff).toHaveBeenCalledWith(NEW, OTHER_AUTH)
+    expect(actor).toEqual({ actorId: NEW_ACTOR, authUserId: OTHER_AUTH, authVersion: 1, email: NEW, role: 'staff' })
+    expect(await resolveActor({ actorId: NEW_ACTOR, authUserId: OTHER_AUTH, authVersion: 1 }, store)).toEqual(actor)
+  })
+  it('creates nothing when the code is wrong, or for an off-domain email', async () => {
+    const store = memoryStore([])
+    expect(await verifyStaffCode(NEW, '000000', deps(store, fakeOtp({ verifyCode: vi.fn(async () => null) })))).toBeNull()
+    const otp = fakeOtp()
+    expect(await verifyStaffCode('stranger@gmail.com', '123456', deps(store, otp))).toBeNull()
+    expect(otp.verifyCode).not.toHaveBeenCalled()
+    expect(store.createStaff).not.toHaveBeenCalled()
+  })
+  it('fails closed when the Auth user is already bound to another row', async () => {
+    const store = memoryStore([row()])
+    expect(await verifyStaffCode(NEW, '123456', deps(store, fakeOtp()))).toBeNull()
   })
 })
 

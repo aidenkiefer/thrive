@@ -1,7 +1,9 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Fraunces, Inter } from 'next/font/google'
 import { Analytics, AnalyticsNoScript } from '@/components/analytics/Analytics'
 import { SiteShell } from '@/components/layout/SiteShell'
+import { themeBootScript } from '@/lib/theme/preferences'
+import './theme.css'
 import './globals.css'
 
 const fraunces = Fraunces({
@@ -24,9 +26,15 @@ export const metadata: Metadata = {
   twitter: { card: 'summary_large_image', images: ['/og'] },
 }
 
+export const viewport: Viewport = { themeColor: '#183d59' }
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={`${fraunces.variable} ${inter.variable}`}>
+    // The boot script sets the theme class and transition style before hydration.
+    <html lang="en" data-scroll-behavior="smooth" className={`${fraunces.variable} ${inter.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+      </head>
       <body>
         <AnalyticsNoScript />
         <Analytics />

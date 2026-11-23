@@ -1,6 +1,10 @@
 import type { Config } from 'tailwindcss'
 
+/** Theme-aware color: the channels live in src/app/globals.css (:root for light, .dark for dark). */
+const themed = (name: string) => `rgb(var(--c-${name}) / <alpha-value>)`
+
 const config: Config = {
+  darkMode: 'class',
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -12,10 +16,10 @@ const config: Config = {
       // Palette reference and usage rules: docs/07-design-system.md ("Brand palette").
       colors: {
         brand: {
-          50: '#f3f7fa',
-          100: '#e8eef2',
-          200: '#cddbe6',
-          300: '#a3bdd0',
+          50: themed('brand-50'),
+          100: themed('brand-100'),
+          200: themed('brand-200'),
+          300: themed('brand-300'),
           400: '#7097b3',
           500: '#4a7697',
           600: '#245a7a',
@@ -25,9 +29,9 @@ const config: Config = {
           950: '#0a1b27',
         },
         accent: {
-          50: '#fbf1f0',
-          100: '#f6e2e1',
-          200: '#edc6c7',
+          50: themed('accent-50'),
+          100: themed('accent-100'),
+          200: themed('accent-200'),
           300: '#dea3a8',
           400: '#c9828a',
           500: '#b4656f',
@@ -35,35 +39,35 @@ const config: Config = {
           700: '#7c3d47',
         },
         sky: {
-          50: '#f2f8fb',
-          100: '#e1eff6',
-          200: '#c3dfed',
+          50: themed('sky-50'),
+          100: themed('sky-100'),
+          200: themed('sky-200'),
           300: '#94c5de',
           400: '#5fa5c9',
         },
         sand: {
-          50: '#fcfaf6',
-          100: '#f6f1e8',
-          200: '#ece3d3',
+          50: themed('sand-50'),
+          100: themed('sand-100'),
+          200: themed('sand-200'),
           300: '#dccdb3',
         },
         neutral: {
-          0: '#ffffff',
-          50: '#fbfbfa',
-          100: '#f7f7f5',
-          200: '#ecebe7',
-          300: '#dad8d2',
-          400: '#a9a69e',
-          500: '#7b7972',
-          600: '#5c5c5c',
-          700: '#45443f',
-          800: '#2d2c29',
-          900: '#21201e',
-          950: '#1a1a1a',
+          0: themed('neutral-0'),
+          50: themed('neutral-50'),
+          100: themed('neutral-100'),
+          200: themed('neutral-200'),
+          300: themed('neutral-300'),
+          400: themed('neutral-400'),
+          500: themed('neutral-500'),
+          600: themed('neutral-600'),
+          700: themed('neutral-700'),
+          800: themed('neutral-800'),
+          900: themed('neutral-900'),
+          950: themed('neutral-950'),
         },
-        success: { 50: '#eef7f2', 600: '#2f7d5b', 700: '#256649' },
-        warning: { 50: '#fdf6e9', 600: '#a8660f', 700: '#8a530c' },
-        danger: { 50: '#fcefee', 600: '#b3423d', 700: '#933530' },
+        success: { 50: themed('success-50'), 600: '#2f7d5b', 700: themed('success-700') },
+        warning: { 50: themed('warning-50'), 600: '#a8660f', 700: themed('warning-700') },
+        danger: { 50: themed('danger-50'), 600: '#b3423d', 700: themed('danger-700') },
       },
       boxShadow: {
         soft: '0 1px 2px rgb(15 40 56 / 0.04), 0 4px 16px -4px rgb(15 40 56 / 0.08)',

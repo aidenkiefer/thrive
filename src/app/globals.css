@@ -326,6 +326,69 @@
   }
 
 
+  /* ------------------------------------------------------------------
+   * Page transitions
+   *
+   * PageTransition adds .page-enter to the new view after a route change.
+   * html[data-transition] picks the style (set by themeBootScript):
+   *   lift  - fades in while rising 10px. The quietest option.
+   *   zoom  - grows from 96.5% with a hint of overshoot, like the view
+   *           minimizing and re-expanding. Default.
+   *   focus - sharpens from a soft blur, like a camera pulling focus.
+   * Fill mode is backwards only, so no transform or filter remains after
+   * the animation (fixed and sticky children keep working).
+   * ------------------------------------------------------------------ */
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes page-lift {
+      from {
+        opacity: 0;
+        translate: 0 10px;
+      }
+    }
+
+    @keyframes page-zoom {
+      0% {
+        opacity: 0;
+        scale: 0.965;
+      }
+      70% {
+        opacity: 1;
+        scale: 1.004;
+      }
+      100% {
+        scale: 1;
+      }
+    }
+
+    @keyframes page-focus {
+      from {
+        opacity: 0;
+        filter: blur(6px);
+        scale: 1.012;
+      }
+    }
+
+    .page-enter {
+      transform-origin: 50% min(35vh, 50%);
+      animation: page-zoom 300ms var(--ease-out) backwards;
+    }
+
+    [data-transition='lift'] .page-enter {
+      animation: page-lift 240ms var(--ease-out) backwards;
+    }
+
+    [data-transition='focus'] .page-enter {
+      animation: page-focus 320ms var(--ease-out) backwards;
+    }
+  }
+
+  /* Theme toggle: ThemeToggle animates a circular reveal instead of the default crossfade. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
   /* Small caps label above section titles, with a short rose rule. */
   .eyebrow {
     @apply inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.16em];

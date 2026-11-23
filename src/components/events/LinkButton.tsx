@@ -12,7 +12,7 @@ interface LinkButtonProps {
 }
 
 const variants: Record<LinkButtonVariant, string> = {
-  primary: 'bg-brand-800 text-white hover:bg-brand-600 focus-visible:ring-brand-600',
+  primary: 'bg-brand-800 text-white hover:bg-brand-600 dark:bg-brand-600 dark:hover:bg-brand-500 focus-visible:ring-brand-600',
   secondary: 'border border-brand-800 text-brand-800 hover:bg-brand-100 focus-visible:ring-brand-600',
   onDark: 'border border-white/70 text-white hover:bg-white/10 focus-visible:ring-white focus-visible:ring-offset-brand-900',
 }

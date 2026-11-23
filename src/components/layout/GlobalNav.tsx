@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
+
 import { giveLink, navLinks, visitLink } from './nav-links'
 
 export function GlobalNav() {
@@ -106,6 +108,7 @@ export function GlobalNav() {
 
         {/* Desktop actions */}
         <div className="hidden items-center gap-2 lg:flex">
+          <ThemeToggle />
           <Link
             href={giveLink.href}
             aria-current={isActive(giveLink.href) ? 'page' : undefined}
@@ -123,27 +126,30 @@ export function GlobalNav() {
         </div>
 
         {/* Mobile menu button */}
-        <button
-          ref={menuButtonRef}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-white lg:hidden"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={mobileOpen}
-          aria-controls="mobile-navigation"
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            aria-hidden="true"
+        <div className="flex items-center gap-1 lg:hidden">
+          <ThemeToggle />
+          <button
+            ref={menuButtonRef}
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-white lg:hidden"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-navigation"
           >
-            {mobileOpen ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-          </svg>
-        </button>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              {mobileOpen ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Mobile drawer */}

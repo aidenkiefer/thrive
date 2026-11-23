@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
 
@@ -71,12 +72,13 @@ export default function AdminLoginPage() {
   const inputClass =
     'mt-1.5 block w-full rounded-lg border border-neutral-300 bg-neutral-0 px-3.5 py-3 text-[15px] text-neutral-950 shadow-sm transition-colors placeholder:text-neutral-400 hover:border-neutral-400 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/15'
   const primaryClass =
-    'inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-800 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/25 disabled:cursor-not-allowed disabled:opacity-60'
+    'inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-800 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/25 disabled:cursor-not-allowed disabled:opacity-60'
   const linkClass =
     'text-sm font-medium text-brand-700 underline decoration-brand-300 underline-offset-4 transition-colors hover:text-brand-900 disabled:opacity-50'
 
   return (
-    <main id="main-content" className="grid min-h-screen bg-neutral-100 lg:grid-cols-[1.05fr_1fr]">
+    <main id="main-content" className="relative grid min-h-screen bg-neutral-100 lg:grid-cols-[1.05fr_1fr]">
+      <ThemeToggle tone="onLight" className="absolute right-4 top-4 z-10" />
       <section className="relative hidden overflow-hidden bg-gradient-to-br from-brand-800 via-brand-800 to-brand-950 p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <Image
           src="/images/brand/thrive-mark.webp"
@@ -112,7 +114,15 @@ export default function AdminLoginPage() {
             width={1411}
             height={202}
             priority
-            className="mx-auto mb-10 h-auto w-60 lg:hidden"
+            className="mx-auto mb-10 h-auto w-60 dark:hidden lg:hidden"
+          />
+          <Image
+            src="/images/brand/thrive-wordmark-white.webp"
+            alt="Thrive Vineyard Church"
+            width={1411}
+            height={202}
+            priority
+            className="mx-auto mb-10 hidden h-auto w-60 dark:block lg:!hidden"
           />
           <div className="rounded-3xl bg-neutral-0 p-7 shadow-lift ring-1 ring-neutral-200 sm:p-8">
             <h1 className="font-display text-2xl font-semibold text-brand-900">

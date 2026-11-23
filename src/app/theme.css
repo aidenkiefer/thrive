@@ -1,0 +1,138 @@
+/*
+ * Theme channels for the colors marked themed() in tailwind.config.ts.
+ * Light values are the brand palette; .dark (set before paint by the script in
+ * src/app/layout.tsx) swaps surfaces, tints, and text greys. Navy 400–950 and
+ * rose 300–700 stay fixed so the header, footer, bands, and buttons keep the brand.
+ */
+
+:root {
+  --c-brand-50: 243 247 250;
+  --c-brand-100: 232 238 242;
+  --c-brand-200: 205 219 230;
+  --c-brand-300: 163 189 208;
+  --c-accent-50: 251 241 240;
+  --c-accent-100: 246 226 225;
+  --c-accent-200: 237 198 199;
+  --c-sky-50: 242 248 251;
+  --c-sky-100: 225 239 246;
+  --c-sky-200: 195 223 237;
+  --c-sand-50: 252 250 246;
+  --c-sand-100: 246 241 232;
+  --c-sand-200: 236 227 211;
+  --c-neutral-0: 255 255 255;
+  --c-neutral-50: 251 251 250;
+  --c-neutral-100: 247 247 245;
+  --c-neutral-200: 236 235 231;
+  --c-neutral-300: 218 216 210;
+  --c-neutral-400: 169 166 158;
+  --c-neutral-500: 123 121 114;
+  --c-neutral-600: 92 92 92;
+  --c-neutral-700: 69 68 63;
+  --c-neutral-800: 45 44 41;
+  --c-neutral-900: 33 32 30;
+  --c-neutral-950: 26 26 26;
+  --c-success-50: 238 247 242;
+  --c-success-700: 37 102 73;
+  --c-warning-50: 253 246 233;
+  --c-warning-700: 138 83 12;
+  --c-danger-50: 252 239 238;
+  --c-danger-700: 147 53 48;
+  color-scheme: light;
+}
+
+.dark {
+  --c-brand-50: 19 42 59;
+  --c-brand-100: 23 50 74;
+  --c-brand-200: 33 69 96;
+  --c-brand-300: 48 89 122;
+  --c-accent-50: 38 26 34;
+  --c-accent-100: 54 35 44;
+  --c-accent-200: 85 53 65;
+  --c-sky-50: 16 35 47;
+  --c-sky-100: 21 45 60;
+  --c-sky-200: 31 64 83;
+  --c-sand-50: 29 28 25;
+  --c-sand-100: 38 35 30;
+  --c-sand-200: 54 49 39;
+  --c-neutral-0: 19 32 41;
+  --c-neutral-50: 22 37 48;
+  --c-neutral-100: 12 22 29;
+  --c-neutral-200: 34 52 64;
+  --c-neutral-300: 47 68 82;
+  --c-neutral-400: 95 115 131;
+  --c-neutral-500: 135 151 164;
+  --c-neutral-600: 169 181 191;
+  --c-neutral-700: 194 203 211;
+  --c-neutral-800: 216 222 227;
+  --c-neutral-900: 231 235 238;
+  --c-neutral-950: 240 243 245;
+  --c-success-50: 17 38 29;
+  --c-success-700: 134 211 173;
+  --c-warning-50: 42 33 17;
+  --c-warning-700: 239 194 124;
+  --c-danger-50: 44 22 23;
+  --c-danger-700: 241 162 157;
+  color-scheme: dark;
+}
+
+/* Navy text is tuned for light surfaces; on dark surfaces it shifts to readable light blues. */
+.dark .text-brand-600,
+.dark .hover\:text-brand-600:hover,
+.dark .group:hover .group-hover\:text-brand-600 {
+  color: #8fb4d0;
+}
+
+.dark .text-brand-700,
+.dark .text-brand-800,
+.dark .hover\:text-brand-800:hover,
+.dark .group:hover .group-hover\:text-brand-800 {
+  color: #bcd3e6;
+}
+
+.dark .text-brand-900,
+.dark .hover\:text-brand-900:hover {
+  color: #e2ecf4;
+}
+
+.dark .text-accent-600,
+.dark .text-accent-700 {
+  color: #dea3a8;
+}
+
+/* Hairline rings tinted navy vanish on dark surfaces. */
+.dark .ring-brand-900\/5,
+.dark .ring-black\/5 {
+  --tw-ring-color: rgb(255 255 255 / 0.06);
+}
+
+.dark .hover\:ring-brand-900\/10:hover {
+  --tw-ring-color: rgb(255 255 255 / 0.12);
+}
+
+.dark .shadow-soft {
+  --tw-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px -4px rgb(0 0 0 / 0.35);
+}
+
+.dark .shadow-lift,
+.dark .hover\:shadow-lift:hover {
+  --tw-shadow: 0 2px 4px rgb(0 0 0 / 0.3), 0 16px 32px -12px rgb(0 0 0 / 0.55);
+}
+
+.dark ::selection {
+  background-color: #553541;
+  color: #ffffff;
+}
+
+.dark .prose-content a:not([class]),
+.dark .prose-content th {
+  color: #bcd3e6;
+}
+
+.dark .prose-content a:not([class]):hover {
+  color: #ffffff;
+}
+
+/* Maps and other light-only embeds sit a touch dimmer at night. */
+.dark iframe {
+  filter: brightness(0.85) contrast(1.05);
+}

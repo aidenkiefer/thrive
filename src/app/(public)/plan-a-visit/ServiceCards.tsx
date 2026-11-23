@@ -37,12 +37,12 @@ export function ServiceCards() {
   )
 }
 
-/** Audited step 4 wording, generated per service so the pause flag decides what shows. */
+/** Audited service details with the owner-corrected kids ministry flow (2026-11-22). */
 const AUDITED_DETAILS: Record<string, (time: string) => string> = {
   'Express(o)': (time) =>
     `Our Express(o) service starts at ${time} and lasts around 45 minutes and is located in the cafe downstairs.`,
   'Family Worship': (time) =>
-    `Our family worship service starts at ${time} and lasts 80–90 minutes and offers full programming for all ages of kids.`,
+    `Our family worship service starts at ${time} and lasts 80–90 minutes. Kids join everyone in the sanctuary for worship. After worship, the pastors give everyone about five minutes to say hello and for parents to bring their kids downstairs for kids ministry, before the sermon.`,
 }
 
 export function ServiceDetails() {

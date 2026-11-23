@@ -7,7 +7,7 @@ import { Button } from '@/components/ui'
  * "What to expect" teaser: the audited five steps, compact.
  * Source: docs/audit/2026-11/pages/plan-a-visit.md ("5 Steps if you're new to Thrive").
  * Step 1 service names/times come from SERVICE_TIMES (pause state is never hardcoded).
- * Step 3 and step 5 wording is the audited copy (step 3 lightly shortened).
+ * Kids ministry flow: owner correction, 2026-11-22. Other visitor details follow the audit.
  * Not carried forward: any age bands, ID/pickup, parking or visitor-URL claims.
  */
 export function WhatToExpectSection() {
@@ -29,19 +29,18 @@ export function WhatToExpectSection() {
     },
     { title: 'Map it', body: <p>Find directions to Thrive Vineyard on the map below.</p> },
     {
-      title: 'Check in your kids',
-      // Source: plan-a-visit.md step 3 (shortened)
+      title: 'Worship together',
+      // Source: owner correction, 2026-11-22.
       body: (
         <p>
-          Stop by the children&rsquo;s ministry gate downstairs across from the cafe. Plan to arrive about 10-15
-          minutes early.
+          Kids join everyone in the sanctuary for worship.
         </p>
       ),
     },
     {
-      title: 'Join the service',
-      // Source: plan-a-visit.md step 4 (family worship line)
-      body: <p>Our family worship service offers full programming for all ages of kids.</p>,
+      title: 'Kids ministry & sermon',
+      // Source: owner correction, 2026-11-22.
+      body: <p>After worship, the pastors give everyone about five minutes to say hello and for parents to bring their kids downstairs for kids ministry, before the sermon.</p>,
     },
     {
       title: 'Say, \u201cI\u2019m new!\u201d',

@@ -336,15 +336,9 @@ Rules: build new UI from the palette classes and it adapts automatically. Avoid 
 
 ### Page transitions
 
-`PageTransition` (`src/components/layout/PageTransition.tsx`) wraps the public `<main>` and the admin content pane, keyed by pathname. After the first load, each route change replays a short enter animation; the header, footer, and admin sidebar stay still. Styles live in `globals.css` and are chosen by `html[data-transition]`:
+`PageTransition` (`src/components/layout/PageTransition.tsx`) wraps the public `<main>` and the admin content pane, keyed by pathname. After the first load, each route change plays `.page-enter` (`globals.css`): the new view fades in over the first ~100ms while zooming from 104% down to 99.7%, then settles at 100% (340ms total). The header, footer, and admin sidebar stay still. Both `<main>` elements use `overflow-x: clip` so the enlarged first frame never adds a scrollbar. Skipped under `prefers-reduced-motion`.
 
-| Option | Motion | Feel |
-|---|---|---|
-| `lift` | Fade in + rise 10px, 240ms | Quietest; content settles into place |
-| `zoom` (default) | Fade + scale 96.5% to 100.4% to 100%, 300ms | The view minimizes and re-expands; the clearest change of state |
-| `focus` | Fade + blur 6px to sharp + scale 101.2% to 100%, 320ms | A camera pulling focus; softest on the eyes |
-
-Preview any option on a device by adding `?transition=lift`, `?transition=zoom`, or `?transition=focus` to a URL (the choice is remembered on that device). To ship a choice, change `DEFAULT_PAGE_TRANSITION` in `src/lib/theme/preferences.ts`. All three are skipped under `prefers-reduced-motion`.
+The wrapper must live in a layout that persists across the routes it animates (the root `SiteShell`, the admin `AdminShell` in `src/app/admin/layout.tsx`). Rendered inside a page, it remounts on every navigation and treats each one as a first load.
 
 ---
 

@@ -33,7 +33,7 @@ export function SiteShell({ children }: SiteShellProps) {
         Skip to main content
       </a>
       <GlobalNav />
-      <main id="main-content" className="min-h-screen" tabIndex={-1}>
+      <main id="main-content" className="min-h-screen overflow-x-clip" tabIndex={-1}>
         <PageTransition>{children}</PageTransition>
       </main>
       <Footer />

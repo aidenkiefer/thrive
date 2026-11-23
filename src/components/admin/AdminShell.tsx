@@ -149,7 +149,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         )}
       </header>
 
-      <main id="admin-main" className="min-w-0 flex-1 px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
+      <main id="admin-main" className="min-w-0 flex-1 overflow-x-clip px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
         <PageTransition className="mx-auto max-w-5xl">{children}</PageTransition>
       </main>
     </div>

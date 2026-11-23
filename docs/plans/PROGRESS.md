@@ -18,6 +18,8 @@ Tracks milestones, sprints, and completed work across the project lifespan.
 **Active plan:** [`docs/agents/assignments/2026-11-19-batch-3.md`](../agents/assignments/2026-11-19-batch-3.md) (Batches 3-6 order: [`batches.md`](./batches.md); milestones M1-M5: [`roadmap-milestones.md`](./roadmap-milestones.md); lane backlogs: [`backlog/`](./backlog/)).
 **Status sources:** GitHub Project 3 (Batch, Delivery stage, Milestone fields) · [`docs/08-mvp-status-roadmap.md`](../08-mvp-status-roadmap.md) · QA reports in [`docs/agents/qa/`](../agents/qa/).
 
+**2026-11-22 QA:** Cursor #150 is merged as `51b7bcc`: light/dark theme, persistent/system preference and reduced-motion-aware theme/page transitions. QA fixed responsive toggle labels and blocked-storage fallback; full local/CI/browser verification is recorded in [the QA report](../agents/qa/2026-11-22-dark-mode-150.md). Media library #153 was independently merged during this review; the merged-main gate includes it (516 tests). Date-picker #147 was merged separately afterward.
+
 ### What's done (on `main`)
 
 | Area | Status | Notes |

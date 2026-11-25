@@ -3,15 +3,12 @@
  *
  * Local files in /images/church are the owner-supplied LaSalle Studios set and
  * baptism photos (selected 2026-11-19, published with the kids-ministry shots).
- * Alt text describes what is in the frame. Individual staff headshots and the
- * four kids* age-group photos are still the WordPress files from the
- * 2026-11-07 audit, because this set has no identified replacement for those
- * frames. The pastors and welcome photos use frames from this set.
- *
- * TEMPORARY: the WordPress URLs load via `remotePatterns` in next.config.ts.
- * Re-host those remaining files before the WordPress site is retired.
+ * Alt text describes what is in the frame. The pastors and welcome photos use
+ * frames from the owner-supplied set. The remaining staff and kids photos were
+ * downloaded from the church's WordPress media on 2026-11-24 with owner approval,
+ * optimized as WebP, and committed here so they survive WordPress retirement.
+ * Source URLs and file checks are in the photo re-hosting session log.
  */
-const BASE = 'https://thrivevineyard.com/wp-content/uploads'
 
 export interface Photo {
   src: string
@@ -76,85 +73,85 @@ export const PHOTOS = {
     height: 1600,
   },
   water: {
-    src: `${BASE}/2024/08/lakesquare.jpg`,
+    src: '/images/church/wordpress-water.webp',
     alt: 'Sunlit water rippling over rocks in a stream.',
     width: 1080,
     height: 1080,
   },
   kevin: {
-    src: `${BASE}/2024/04/kevin-wall.jpg`,
+    src: '/images/church/wordpress-kevin.webp',
     alt: 'Portrait of Kevin Kiefer.',
     width: 800,
     height: 800,
   },
   molly: {
-    src: `${BASE}/2024/04/Mollywall-scaled-e1714258419441.jpeg`,
+    src: '/images/church/wordpress-molly.webp',
     alt: 'Portrait of Molly Kiefer.',
     width: 800,
     height: 800,
   },
   jjay: {
-    src: `${BASE}/2024/04/Jjay-wall-e1714855730602.jpg`,
+    src: '/images/church/wordpress-jjay.webp',
     alt: 'Portrait of Jjay Neumaier.',
     width: 541,
     height: 541,
   },
   carley: {
-    src: `${BASE}/2024/04/Carley-Wall.jpg`,
+    src: '/images/church/wordpress-carley.webp',
     alt: 'Portrait of Carley LaPointe.',
     width: 800,
     height: 800,
   },
   mikeAndTami: {
-    src: `${BASE}/2024/04/Mike-and-Tami.jpg`,
+    src: '/images/church/wordpress-mikeAndTami.webp',
     alt: 'Mike and Tami.',
     width: 800,
     height: 800,
   },
   royAndJulie: {
-    src: `${BASE}/2024/04/Roy-and-Julie.jpg`,
+    src: '/images/church/wordpress-royAndJulie.webp',
     alt: 'Roy and Julie.',
     width: 800,
     height: 800,
   },
   michiAndNathan: {
-    src: `${BASE}/2024/04/Michi-and-Nathan.jpg`,
+    src: '/images/church/wordpress-michiAndNathan.webp',
     alt: 'Michi and Nathan.',
     width: 800,
     height: 800,
   },
   jjayAndJustin: {
-    src: `${BASE}/2024/04/JJay-and-Justin.jpg`,
+    src: '/images/church/wordpress-jjayAndJustin.webp',
     alt: 'Jjay and Justin.',
     width: 800,
     height: 800,
   },
   mary: {
-    src: `${BASE}/2024/05/Mary-e1714853998990.jpeg`,
+    src: '/images/church/wordpress-mary.webp',
     alt: 'Portrait of Mary Sirois.',
     width: 768,
     height: 769,
   },
   kidsNewborns: {
-    src: `${BASE}/2022/12/kids-newborns_600x400-1.jpg`,
+    src: '/images/church/wordpress-kidsNewborns.webp',
     alt: 'A smiling adult holds a baby in warm afternoon light.',
     width: 600,
     height: 400,
   },
   kidsPreschool: {
-    src: `${BASE}/2022/12/kids-preschool_600x400-1.jpg`,
+    src: '/images/church/wordpress-kidsPreschool.webp',
     alt: 'A toddler in a high chair holds a toy camera up to her eye.',
     width: 600,
     height: 400,
   },
   kidsReading: {
-    src: `${BASE}/2022/12/kids-reading-preschool_600x400-1.jpg`,
+    src: '/images/church/wordpress-kidsReading.webp',
     alt: 'A young boy sits on the floor reading a picture book among shelves of books.',
     width: 600,
     height: 400,
   },
   kidsSchoolAge: {
-    src: `${BASE}/2022/12/boy-facial-expression-girl-2150606-1.jpg`,
+    src: '/images/church/wordpress-kidsSchoolAge.webp',
     alt: 'Two young people sit together outdoors, smiling.',
     width: 600,
     height: 399,

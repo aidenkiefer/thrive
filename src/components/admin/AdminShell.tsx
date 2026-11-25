@@ -79,6 +79,14 @@ function SidebarContents({ pathname }: { pathname: string }) {
           <AdminIcon name="external" className="h-[18px] w-[18px] text-white/50" />
           View live site
         </a>
+        <Link
+          href="/admin/feedback"
+          aria-current={pathname === '/admin/feedback' ? 'page' : undefined}
+          className="flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white"
+        >
+          <AdminIcon name="megaphone" className="h-[18px] w-[18px] text-white/50" />
+          Send feedback
+        </Link>
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: '/admin/login' })}

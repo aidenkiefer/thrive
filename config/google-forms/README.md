@@ -64,13 +64,13 @@ Rules for public surfaces (Experience lane):
    - a `published` form whose content differs from the launch file. The CLI does not rewrite live forms, because existing responses would detach from changed questions
    - a draft template for a non-sandbox entity
    - a changed `templateKey`
-5. `apply --confirm <planId>` recomputes the plan and runs only if the ID matches what you reviewed. Content writes carry `writeControl.requiredRevisionId`, so an edit made in Google since the read fails the batch instead of being overwritten. If the live revision differs from the one recorded after the CLI's last write, `apply` stops and does not replace the manual edit.
+5. `apply --confirm <planId>` recomputes the plan and runs only if the ID matches what you reviewed. Content writes carry `writeControl.requiredRevisionId`, so an edit made in Google since the read fails the batch instead of being overwritten. If the live revision differs from the one recorded after the CLI's last write, `apply` stops and does not replace the manual edit. `apply` also stops before any content write when `forms.get` returns no revision ID, or when it shows the form is already published (for example, published directly in Google). Publishing does not change the content revision, so a matching revision ID does not prove the form is still a draft.
 6. The manifest is saved atomically after **every** successful step. A failure mid-run leaves an accurate record, and the next `plan` resumes from it.
 
 ### Failures, 429 and quota
 
 - `429` and `5xx` responses are retried with truncated exponential backoff and jitter. Retries respect `Retry-After` up to 32 seconds, with at most 4 retries per call. The run then stops with a redacted error.
-- `forms.create` is retried **only** on `429`, which Google rejects before doing anything. After a 5xx or network error on create, the entry stays `creating`, and the next plan blocks it until a person checks Drive.
+- `forms.create` is retried **only** on `429`, which Google rejects before doing anything. After a 5xx, a network error, or an accepted create whose response body could not be read, the entry stays `creating`, and the next plan blocks it until a person checks Drive.
 - Current [published limits](https://developers.google.com/workspace/forms/api/limits) (checked 2026-11-22): 375 writes/min per project and 150 per user, and 975 reads/min per project. Standard use is at no additional cost. Google says exceeding quota is "planned to incur charges" later in 2026. A launch of a few dozen forms is far below these limits. **Check the project's actual quotas and billing state in the Cloud console before the first live run, and do not enable billing or request a quota increase.**
 
 ### Recovery from `creating`

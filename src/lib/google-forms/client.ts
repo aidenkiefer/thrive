@@ -38,7 +38,7 @@ export class FormsApiError extends Error {
     readonly method: Method,
     readonly status: number,
     message: string,
-    /** True when the request may have taken effect (create after 5xx/network failure). */
+    /** True when the request may have taken effect (a write after 5xx, network failure or an unreadable success body). */
     readonly ambiguous: boolean,
     readonly attempts: number,
   ) {
@@ -96,7 +96,13 @@ export function createFormsClient(opts: ClientOptions): FormsClient {
 
   async function call<T>(method: Method, httpMethod: 'GET' | 'POST', path: string, body: unknown, idempotent: boolean): Promise<T> {
     for (let attempt = 0; ; attempt++) {
-      const token = await opts.getToken()
+      let token: string
+      try {
+        token = await opts.getToken()
+      } catch (e) {
+        // Nothing was sent, so this is never ambiguous.
+        throw new FormsApiError(method, 0, `${method} could not obtain credentials: ${(e as Error).message}`, false, attempt + 1)
+      }
       const headers: Record<string, string> = { authorization: `Bearer ${token}`, accept: 'application/json' }
       if (body !== undefined) headers['content-type'] = 'application/json'
       if (opts.quotaProject) headers['x-goog-user-project'] = opts.quotaProject
@@ -112,7 +118,22 @@ export function createFormsClient(opts: ClientOptions): FormsClient {
         throw new FormsApiError(method, 0, `${method} network error: ${(e as Error).message}`, !idempotent, attempt + 1)
       }
 
-      const raw = await res.text()
+      let raw: string
+      try {
+        raw = await res.text()
+      } catch (e) {
+        // The status line arrived but the body did not. A non-2xx status is still a definitive
+        // rejection, so fall through to the status handling with no detail.
+        if (res.ok) {
+          // Accepted, outcome unreadable. Reads are safe to repeat; a write may have taken effect.
+          if (idempotent && attempt < maxRetries) {
+            await sleep(backoff(attempt, null))
+            continue
+          }
+          throw new FormsApiError(method, res.status, `${method} response body could not be read: ${(e as Error).message}`, !idempotent, attempt + 1)
+        }
+        raw = ''
+      }
       if (res.ok) {
         try {
           return (raw ? JSON.parse(raw) : {}) as T

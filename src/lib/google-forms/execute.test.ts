@@ -157,6 +157,21 @@ describe('apply: failures leave an accurate manifest', () => {
     expect(h.g.calls).toHaveLength(0)
   })
 
+  it('an accepted create whose response body cannot be read stays "creating" and is never re-created', async () => {
+    const h = harness()
+    h.g.fail('POST /forms?', 200, { afterApply: true, brokenBody: true })
+    expect(await h.applyReviewed()).toBe(1)
+    expect(h.g.ops()).toEqual(['create'])
+    expect(h.cap.err[0]).toMatch(/forms\.create response body could not be read: aborted: stream reset\. The form may exist: entry left as "creating"/)
+    expect(h.manifest().forms[0]).toMatchObject({ publicationState: 'creating', formId: null })
+    expect((await h.plan())[0]).toMatch(/1 blocked$/)
+    h.g.calls.length = 0
+    expect(await h.applyReviewed()).toBe(1)
+    expect(h.g.calls).toHaveLength(0)
+    expect(h.g.forms.size).toBe(1)
+    expectNoSecrets(h.all(), [...h.g.forms.keys()])
+  })
+
   it('a rejected create (403) restores the entry so the next run can create', async () => {
     const h = harness()
     h.g.fail('POST /forms?', 403, { body: { error: { code: 403, status: 'PERMISSION_DENIED', message: 'Forms API has not been used in project 123' } } })
@@ -177,6 +192,49 @@ describe('apply: failures leave an accurate manifest', () => {
     expect(h.cap.err[0]).toMatch(/edited in Google since the CLI last wrote it; not overwriting/)
     expect(h.g.ops()).toEqual(['get'])
     expect(form.items).toHaveLength(4)
+  })
+
+  it('never rewrites content of a form published in Google, even when the revision ID still matches', async () => {
+    const h = harness(repoFiles({ launch: launchFile(launchEntry({ publish: false })) }))
+    await h.applyReviewed()
+    const [form] = [...h.g.forms.values()]
+    h.g.publishInGoogle(form.formId)
+    expect(form.revisionId).toBe(h.manifest().forms[0].revisionId) // publish is not a content revision
+    h.setLaunch(launchFile(launchEntry({ publish: false, title: 'Updated title' })))
+    const before = h.manifest().forms[0]
+    h.g.calls.length = 0
+    expect(await h.applyReviewed()).toBe(1)
+    expect(h.g.ops()).toEqual(['get'])
+    expect(h.cap.err[0]).toMatch(/published in Google outside the CLI; the CLI does not rewrite live forms/)
+    expect(form.info.title).not.toBe('Updated title')
+    expect(form.items).toHaveLength(3)
+    expect(h.manifest().forms[0]).toEqual(before)
+  })
+
+  it('fails closed before the destructive batch when forms.get returns no revision ID', async () => {
+    const h = harness()
+    h.g.fail(':batchUpdate', 400)
+    await h.applyReviewed() // leaves "created", so the rerun resumes via get -> batchUpdate
+    const [form] = [...h.g.forms.values()]
+    h.g.omitRevisionIds()
+    h.g.calls.length = 0
+    h.cap.err.length = 0
+    expect(await h.applyReviewed()).toBe(1)
+    expect(h.g.ops()).toEqual(['get'])
+    expect(h.cap.err[0]).toMatch(/no revision ID for the form; not sending an unguarded content rewrite/)
+    expect(h.g.calls.some(c => c.path.endsWith(':batchUpdate'))).toBe(false)
+    expect(form.items).toHaveLength(0)
+    expect(h.manifest().forms[0].publicationState).toBe('created')
+  })
+
+  it('every content batch it sends is pinned with requiredRevisionId', async () => {
+    const h = harness(repoFiles({ launch: launchFile(launchEntry({ publish: false })) }))
+    await h.applyReviewed()
+    h.setLaunch(launchFile(launchEntry({ publish: false, title: 'Updated title' })))
+    expect(await h.applyReviewed()).toBe(0)
+    const batches = h.g.calls.filter(c => c.path.endsWith(':batchUpdate'))
+    expect(batches).toHaveLength(2)
+    for (const b of batches) expect(b.body).toMatchObject({ writeControl: { requiredRevisionId: expect.stringMatching(/^rev\d+$/) } })
   })
 
   it('stops at the first failing entity and leaves later entities untouched', async () => {

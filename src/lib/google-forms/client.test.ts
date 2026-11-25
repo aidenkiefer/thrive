@@ -100,6 +100,43 @@ describe('Forms REST client', () => {
     expect(g.calls).toHaveLength(1)
   })
 
+  it('an accepted create whose body cannot be read is ambiguous and not retried', async () => {
+    const { g, client } = setup()
+    g.fail('POST /forms?', 200, { afterApply: true, brokenBody: true })
+    const err = await client.create(create).catch(e => e)
+    expect(err).toBeInstanceOf(FormsApiError)
+    expect(err).toMatchObject({ method: 'forms.create', status: 200, ambiguous: true, attempts: 1 })
+    expect(err.message).toBe('forms.create response body could not be read: aborted: stream reset')
+    expect(g.calls).toHaveLength(1)
+    expect(g.forms.size).toBe(1)
+  })
+
+  it('a rejected status with an unreadable body is still definitive: 429 retried, 403 not ambiguous', async () => {
+    const { g, client } = setup()
+    g.fail('POST /forms?', 429, { brokenBody: true })
+    await client.create(create)
+    expect(g.ops()).toEqual(['create', 'create'])
+    g.fail('POST /forms?', 403, { brokenBody: true })
+    await expect(client.create(create)).rejects.toMatchObject({ status: 403, ambiguous: false, message: 'forms.create failed: HTTP 403: no response body' })
+  })
+
+  it('retries an idempotent read whose body cannot be read, within the retry budget', async () => {
+    const { g, client } = setup({ maxRetries: 1 })
+    const form = await client.create(create)
+    g.fail('GET /forms/', 200, { brokenBody: true })
+    expect((await client.get(form.formId)).formId).toBe(form.formId)
+    g.fail('GET /forms/', 200, { brokenBody: true, times: 2 })
+    await expect(client.get(form.formId)).rejects.toMatchObject({ method: 'forms.get', ambiguous: false, attempts: 2 })
+    expect(g.ops()).toEqual(['create', 'get', 'get', 'get', 'get'])
+  })
+
+  it('a credential failure sends nothing and is not ambiguous', async () => {
+    const g = fakeGoogle()
+    const client = createFormsClient({ fetch: g.fetch, getToken: async () => Promise.reject(new Error('reauth required')), sleep: async () => {} })
+    await expect(client.create(create)).rejects.toMatchObject({ status: 0, ambiguous: false, message: 'forms.create could not obtain credentials: reauth required' })
+    expect(g.calls).toHaveLength(0)
+  })
+
   it('does not retry an unpinned batchUpdate (could double-apply)', async () => {
     const { g, client } = setup()
     const form = await client.create(create)

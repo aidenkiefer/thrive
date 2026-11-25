@@ -22,6 +22,8 @@ interface Failure {
   /** Apply the request, then fail (simulates a lost response). */
   afterApply?: boolean
   network?: boolean
+  /** Send the real status line, then fail while reading the body (stream reset mid-response). */
+  brokenBody?: boolean
 }
 
 export const QUOTA_BODY = {
@@ -35,6 +37,7 @@ export function fakeGoogle() {
   let seq = 0
   let rev = 0
   const nextRev = () => `rev${++rev}`
+  let omitRevisionIds = false
 
   const json = (status: number, body: unknown, headers: Record<string, string> = {}) => ({
     ok: status >= 200 && status < 300,
@@ -62,7 +65,7 @@ export function fakeGoogle() {
     const m = path.match(/^\/forms\/([^/:?]+)(?::(batchUpdate|setPublishSettings))?$/)
     const form = m && forms.get(m[1])
     if (!m || !form) return json(404, { error: { code: 404, message: 'Requested entity was not found.', status: 'NOT_FOUND' } })
-    if (!m[2]) return json(200, form)
+    if (!m[2]) return json(200, omitRevisionIds ? { ...form, revisionId: undefined } : form)
     if (m[2] === 'setPublishSettings') {
       const b = body as { publishSettings: ApiForm['publishSettings'] }
       form.publishSettings = b.publishSettings
@@ -92,8 +95,12 @@ export function fakeGoogle() {
     const f = failures.find(x => x.times > 0 && label.includes(x.match))
     if (f) {
       f.times--
-      if (f.afterApply) apply(init.method, path, body)
+      const applied = f.afterApply ? apply(init.method, path, body) : null
       if (f.network) throw new Error('socket hang up')
+      if (f.brokenBody) {
+        const res = applied ?? json(f.status, {})
+        return { ...res, text: async () => Promise.reject(new Error('aborted: stream reset')) }
+      }
       return json(f.status, f.body ?? { error: { code: f.status, message: 'Backend Error', status: 'UNAVAILABLE' } }, f.headers)
     }
     return apply(init.method, path, body)
@@ -112,6 +119,14 @@ export function fakeGoogle() {
       const form = forms.get(formId)!
       form.items = [...(form.items ?? []), item]
       form.revisionId = nextRev()
+    },
+    /** Simulate a staff member publishing in the Google UI: publish settings are not a content revision. */
+    publishInGoogle(formId: string) {
+      forms.get(formId)!.publishSettings = { publishState: { isPublished: true, isAcceptingResponses: true } }
+    },
+    /** Make forms.get responses omit revisionId. */
+    omitRevisionIds() {
+      omitRevisionIds = true
     },
     /** Short operation log: "create", "get", "batchUpdate", "setPublishSettings". */
     ops: () =>

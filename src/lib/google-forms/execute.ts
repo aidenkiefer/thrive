@@ -77,15 +77,19 @@ export function createLiveRunner(deps: ExecuteDeps): LiveRunner {
       if (step === 'forms.create') {
         const before = entry
         // Record intent first: if the response is lost, the next plan blocks instead of creating twice.
+        const body = createBody(launch)
         entry = { ...entry, publicationState: 'creating', formId: null, updatedAt: now() }
         await save(entry)
         try {
-          live = await client.create(createBody(launch))
+          live = await client.create(body)
         } catch (e) {
-          if (e instanceof FormsApiError && e.ambiguous) {
-            throw new StopError(`${e.message}. The form may exist: entry left as "creating"; see README Recovery before rerunning.`)
+          // Only a definitive rejection from Google proves nothing was created. Anything else
+          // (ambiguous status, unreadable body, unexpected error) keeps "creating" so the next
+          // plan blocks instead of creating a duplicate.
+          if (!(e instanceof FormsApiError) || e.ambiguous) {
+            throw new StopError(`${describe(e)}. The form may exist: entry left as "creating"; see README Recovery before rerunning.`)
           }
-          await save(before) // Google rejected the call; nothing was created.
+          await save(before)
           throw e
         }
         counter.writes++
@@ -109,7 +113,21 @@ export function createLiveRunner(deps: ExecuteDeps): LiveRunner {
         }
       } else if (step === 'forms.batchUpdate') {
         if (!live) throw new StopError('internal: batchUpdate without a form read')
-        const res = await client.batchUpdate(entry.formId!, configureBody(launch, template, live))
+        // Publish settings are not part of the content revision, so a form published directly in
+        // Google can keep the recorded revision ID. Never rewrite a published form's content: the
+        // delete/recreate batch would alter a live form that may already have responses.
+        if (live.publishSettings?.publishState?.isPublished) {
+          throw new StopError(
+            'form was published in Google outside the CLI; the CLI does not rewrite live forms (existing responses would detach). Inspect it, then edit it in Google or launch a new form',
+          )
+        }
+        // The batch deletes and recreates every item; only send it pinned to the revision just read.
+        if (!live.revisionId) {
+          throw new StopError('Google returned no revision ID for the form; not sending an unguarded content rewrite')
+        }
+        const body = configureBody(launch, template, live)
+        if (!body.writeControl?.requiredRevisionId) throw new StopError('internal: content batch is not revision-pinned')
+        const res = await client.batchUpdate(entry.formId!, body)
         counter.writes++
         const items = res.form?.items?.length ?? -1
         if (items !== template.questions.length) {

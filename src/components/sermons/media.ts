@@ -41,8 +41,21 @@ export function parseYouTubeId(raw: string | null | undefined): string | null {
   return candidate && VIDEO_ID.test(candidate) ? candidate : null
 }
 
-export function youtubeEmbedUrl(videoId: string): string {
-  return `https://www.youtube.com/embed/${videoId}`
+/**
+ * Start offset in whole seconds from `start=` or `t=` (`3246`, `3246s` or `54m6s`).
+ * Livestream recordings use it to skip to the message. Null when absent or invalid.
+ */
+export function parseYouTubeStart(raw: string | null | undefined): number | null {
+  const url = parseUrl(raw)
+  const value = url?.searchParams.get('start') ?? url?.searchParams.get('t')
+  const match = value?.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s?)?$/)
+  if (!match) return null
+  const seconds = Number(match[1] ?? 0) * 3600 + Number(match[2] ?? 0) * 60 + Number(match[3] ?? 0)
+  return seconds > 0 ? seconds : null
+}
+
+export function youtubeEmbedUrl(videoId: string, start?: number | null): string {
+  return `https://www.youtube.com/embed/${videoId}${start ? `?start=${start}` : ''}`
 }
 
 /** Returns the normalized URL only when it is a valid https: URL, otherwise null. */

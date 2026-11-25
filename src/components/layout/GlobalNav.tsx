@@ -51,7 +51,7 @@ export function GlobalNav() {
 
   // If the window is widened past the mobile breakpoint, close the drawer so the scroll lock is released.
   useEffect(() => {
-    const query = window.matchMedia('(min-width: 1024px)')
+    const query = window.matchMedia('(min-width: 1280px)')
     function onChange(event: MediaQueryListEvent) {
       if (event.matches) setMobileOpen(false)
     }
@@ -76,7 +76,7 @@ export function GlobalNav() {
           : 'bg-brand-800'
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-content items-center justify-between gap-4 px-4 sm:px-6 lg:h-[72px] lg:px-8">
+      <div className="mx-auto flex h-16 max-w-content items-center justify-between gap-4 px-4 sm:px-6 xl:h-[72px] xl:px-8">
         <Link
           href="/"
           aria-label="Thrive Vineyard Church home"
@@ -93,7 +93,7 @@ export function GlobalNav() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Main navigation">
+        <nav className="hidden items-center gap-0.5 xl:flex" aria-label="Main navigation">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -107,7 +107,7 @@ export function GlobalNav() {
         </nav>
 
         {/* Desktop actions */}
-        <div className="hidden items-center gap-2 lg:flex">
+        <div className="hidden items-center gap-2 xl:flex">
           <ThemeToggle />
           <Link
             href={giveLink.href}
@@ -126,11 +126,11 @@ export function GlobalNav() {
         </div>
 
         {/* Mobile menu button */}
-        <div className="flex items-center gap-1 lg:hidden">
+        <div className="flex items-center gap-1 xl:hidden">
           <ThemeToggle />
           <button
             ref={menuButtonRef}
-            className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-white lg:hidden"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-white xl:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileOpen}
@@ -156,7 +156,7 @@ export function GlobalNav() {
       {mobileOpen && (
         <div
           id="mobile-navigation"
-          className="drawer-in max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-white/10 lg:hidden"
+          className="drawer-in max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-white/10 xl:hidden"
         >
           <nav className="flex flex-col px-4 py-4" aria-label="Mobile navigation">
             <Link

@@ -4,9 +4,8 @@ import type { Metadata } from 'next'
 import { BackLink } from '@/components/ui'
 import { getGroupBySlug } from '@/lib/queries/groups'
 import type { Group } from '@/lib/queries/groups'
-import { isApprovedFormUrl } from '@/lib/form-urls'
 import { CardImage } from '@/components/events/CardImage'
-import { LinkButton } from '@/components/events/LinkButton'
+import { SignupPanel } from '@/components/signup/SignupPanel'
 import { Band, PageHero, safely } from '@/components/content'
 import { pageMetadata } from '@/components/seo/metadata'
 
@@ -32,8 +31,6 @@ export default async function GroupPage({ params }: Props) {
   const { slug } = await params
   const group = await loadGroup(slug)
   if (!group) notFound()
-  // Only ChurchSuite / Google Forms links are treated as signup forms.
-  const formUrl = isApprovedFormUrl(group.churchsuite_form_url) ? group.churchsuite_form_url : null
   return (
     <>
       <PageHero eyebrow={group.category || 'Group'} title={group.name} />
@@ -64,12 +61,13 @@ export default async function GroupPage({ params }: Props) {
               {group.leader && <div><dt className="font-semibold text-neutral-950">Leader</dt><dd>{group.leader}</dd></div>}
               <div><dt className="font-semibold text-neutral-950">Status</dt><dd>{group.is_open ? 'Open to new participants' : 'Not currently accepting participants'}</dd></div>
             </dl>
-            {(formUrl || group.contact_email) && (
-              <div className="mt-6 flex flex-col gap-3">
-                {formUrl && <LinkButton href={formUrl}>Ask about this group</LinkButton>}
-                {group.contact_email && <LinkButton href={`mailto:${group.contact_email}`} variant={formUrl ? 'secondary' : 'primary'}>Contact the group</LinkButton>}
-              </div>
-            )}
+            <SignupPanel
+              kind="group"
+              entityName={group.name}
+              formUrl={group.churchsuite_form_url}
+              contactEmail={group.contact_email}
+              expectSignup={group.is_open}
+            />
           </aside>
         </div>
       </Band>

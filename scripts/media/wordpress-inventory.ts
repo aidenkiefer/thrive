@@ -1,10 +1,10 @@
 /**
  * Read-only WordPress media inventory (#49).
  *
- *   npx tsx scripts/media-inventory.ts --sql        write supabase/ops/media/wordpress-media-audit.sql
- *   npx tsx scripts/media-inventory.ts --checklist  write supabase/ops/media/wordpress-media-checklist.md
- *   npx tsx scripts/media-inventory.ts --code       print code-held references (src/, content/, next.config.ts)
- *   npx tsx scripts/media-inventory.ts --json       print the seed-held inventory as JSON
+ *   npx tsx scripts/media/wordpress-inventory.ts --sql        write supabase/ops/media/wordpress-media-audit.sql
+ *   npx tsx scripts/media/wordpress-inventory.ts --checklist  write supabase/ops/media/wordpress-media-checklist.md
+ *   npx tsx scripts/media/wordpress-inventory.ts --code       print code-held references (src/, content/, next.config.ts)
+ *   npx tsx scripts/media/wordpress-inventory.ts --json       print the seed-held inventory as JSON
  *   --bucket <name>  bucket shown in the checklist (default site-media)
  *
  * Reads local files only. No network, Storage or database access.
@@ -18,9 +18,9 @@ import {
   codeReferences,
   inventory,
   loadSeedSources,
-} from '../src/lib/media/wordpress-inventory'
+} from '../../src/lib/media/wordpress-inventory'
 
-const root = path.resolve(__dirname, '..')
+const root = path.resolve(__dirname, '../..')
 const outDir = path.join(root, 'supabase/ops/media')
 
 function walk(relative: string, files: string[]) {

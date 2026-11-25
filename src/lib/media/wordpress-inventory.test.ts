@@ -20,6 +20,12 @@ import {
 
 const root = process.cwd()
 const read = (file: string) => readFileSync(path.join(root, file), 'utf8')
+/** Synthetic WordPress URLs live outside src/ so the source guard needs no exception. */
+const fixture = JSON.parse(read('scripts/media/fixtures/wordpress-urls.json')) as {
+  urls: Record<'full' | 'www' | 'relative' | 'encoded' | 'theme', string>
+  records: Record<string, unknown>[]
+  code: string[]
+}
 
 /** `create table <name> ( ... );` blocks from schema.sql, mapped to their column names. */
 function schemaColumns(): Map<string, Set<string>> {
@@ -58,16 +64,16 @@ describe('media column registry', () => {
 
 describe('URL helpers', () => {
   it('detects both legacy forms and nothing else', () => {
-    expect(isWordPressMedia('https://thrivevineyard.com/wp-content/uploads/2024/04/a.jpg')).toBe(true)
-    expect(isWordPressMedia('https://www.thrivevineyard.com/wp-content/uploads/a.jpg')).toBe(true)
-    expect(isWordPressMedia('/wp-content/uploads/a.jpg')).toBe(true)
+    expect(isWordPressMedia(fixture.urls.full)).toBe(true)
+    expect(isWordPressMedia(fixture.urls.www)).toBe(true)
+    expect(isWordPressMedia(fixture.urls.relative)).toBe(true)
     expect(isWordPressMedia('https://x.supabase.co/storage/v1/object/public/site-media/wordpress/a.jpg')).toBe(false)
     expect(isWordPressMedia(null)).toBe(false)
   })
 
   it('extracts the upload path without query or fragment', () => {
-    expect(uploadPath('https://thrivevineyard.com/wp-content/uploads/2024/04/a%20b.jpg?ver=2#x')).toBe('2024/04/a b.jpg')
-    expect(uploadPath('https://thrivevineyard.com/wp-content/themes/x.css')).toBeNull()
+    expect(uploadPath(fixture.urls.encoded)).toBe('2024/04/a b.jpg')
+    expect(uploadPath(fixture.urls.theme)).toBeNull()
   })
 
   it('classifies kinds and WordPress derivatives', () => {
@@ -94,12 +100,7 @@ describe('inventory', () => {
     {
       table: 'one_time_events',
       file: 'fixture.json',
-      records: [
-        { slug: 'b', featured_image_url: 'https://thrivevineyard.com/wp-content/uploads/2024/01/x.jpg', external_url: 'https://example.org' },
-        { slug: 'a', featured_image_url: 'https://thrivevineyard.com/wp-content/uploads/2024/01/x.jpg' },
-        { slug: 'c', gallery_urls: ['/wp-content/uploads/2024/02/y.png', 'https://cdn.example/z.png'] },
-        { slug: 'd', featured_image_url: 'https://thrivevineyard.com/wp-content/cache/odd.jpg' },
-      ],
+      records: fixture.records,
     },
   ]
 
@@ -157,12 +158,7 @@ describe('generated files are current', () => {
 
 describe('code references', () => {
   it('finds template-literal paths under a WordPress base and full URLs', () => {
-    const content = [
-      "const BASE = 'https://thrivevineyard.com/wp-content/uploads'",
-      'const a = `${BASE}/2024/04/a.jpg`',
-      "const b = 'https://thrivevineyard.com/wp-content/uploads/2024/05/b.png'",
-      "const c = '/images/local.jpg'",
-    ].join('\n')
+    const content = fixture.code.join('\n')
     expect(codeReferences('x.ts', content)).toEqual([
       { file: 'x.ts', line: 2, path: '2024/04/a.jpg' },
       { file: 'x.ts', line: 3, path: '2024/05/b.png' },

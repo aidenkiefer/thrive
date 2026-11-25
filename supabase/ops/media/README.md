@@ -10,7 +10,7 @@ This folder is read-only tooling plus a runbook. Nothing here creates a bucket, 
 |---|---|
 | `wordpress-media-checklist.md` | Generated. Every WordPress upload referenced by seed data (`migration-files/parsed/*.json`), with its Storage key. |
 | `wordpress-media-audit.sql` | Generated. One `SELECT` over all 25 media URL columns. It returns counts and row IDs by table, column and kind, never URL values or row content. |
-| `../../../scripts/media-inventory.ts` | Generator. `npx tsx scripts/media-inventory.ts --sql --checklist` rewrites both files. `--code` prints code-held references. `--json` prints the full inventory. |
+| `../../../scripts/media/wordpress-inventory.ts` | Generator. `npx tsx scripts/media/wordpress-inventory.ts --sql --checklist` rewrites both files. `--code` prints code-held references. `--json` prints the full inventory. |
 | `../../../src/lib/media/wordpress-inventory.ts` | Pure helpers and the 25-column registry. Its test fails if `schema.sql` gains or loses a media column, or if a generated file is stale. |
 
 ## Inventory, 2026-11-24

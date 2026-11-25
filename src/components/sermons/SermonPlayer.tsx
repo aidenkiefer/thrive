@@ -1,5 +1,5 @@
 import { SITE } from '@/components/content/site-info'
-import { parseYouTubeId, safeHttpsUrl, youtubeEmbedUrl } from './media'
+import { parseYouTubeId, parseYouTubeStart, safeHttpsUrl, youtubeEmbedUrl } from './media'
 
 interface SermonPlayerProps {
   youtubeUrl: string | null
@@ -27,7 +27,10 @@ function AudioBlock({ src, title, heading }: { src: string; title: string; headi
 
 export function SermonPlayer({ youtubeUrl, videoUrl = null, audioUrl = null, title }: SermonPlayerProps) {
   // `youtube_url` first, then a YouTube link stored in `video_url`.
-  const videoId = parseYouTubeId(youtubeUrl) ?? parseYouTubeId(videoUrl)
+  const videoSource = parseYouTubeId(youtubeUrl) ? youtubeUrl : videoUrl
+  const videoId = parseYouTubeId(videoSource)
+  // Livestream recordings carry `start=` so the embed opens at the message.
+  const start = parseYouTubeStart(videoSource)
   // A non-YouTube video link is only ever offered as an outbound link, never an iframe.
   const externalVideo = videoId ? null : safeHttpsUrl(videoUrl)
   const audio = safeHttpsUrl(audioUrl)
@@ -37,7 +40,7 @@ export function SermonPlayer({ youtubeUrl, videoUrl = null, audioUrl = null, tit
       <div className="space-y-6">
         <div className="aspect-video overflow-hidden rounded-2xl bg-neutral-950 shadow-sm">
           <iframe
-            src={youtubeEmbedUrl(videoId)}
+            src={youtubeEmbedUrl(videoId, start)}
             title={title}
             loading="lazy"
             referrerPolicy="strict-origin-when-cross-origin"

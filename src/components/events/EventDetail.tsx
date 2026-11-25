@@ -31,9 +31,12 @@ function formatTime(dateStr: string) {
 
 export function EventDetail({
   name, imageUrl, location, venue,
-  churchsuiteFormUrl, externalUrl, startDatetime,
+  churchsuiteFormUrl, externalUrl, startDatetime, endDatetime,
   recurrenceDescription, typicalTime, nextOccurrenceStart, description,
 }: EventDetailProps) {
+  // A one-time event that has finished keeps its page but no longer offers signup.
+  const finishedAt = endDatetime ?? startDatetime
+  const isPast = finishedAt ? new Date(finishedAt).getTime() < Date.now() : false
   const displayDate = startDatetime
     ? `${formatFullDate(startDatetime)} at ${formatTime(startDatetime)}`
     : nextOccurrenceStart
@@ -50,7 +53,7 @@ export function EventDetail({
   // A form URL was intended when the field is non-empty, even if it's not yet a
   // valid responder link (the panel then shows a pending state).
   const hasIntendedForm = typeof churchsuiteFormUrl === 'string' && churchsuiteFormUrl.trim().length > 0
-  const showSignup = hasIntendedForm || Boolean(moreUrl)
+  const showSignup = !isPast && (hasIntendedForm || Boolean(moreUrl))
 
   return (
     <article className="grid gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(16rem,1fr)] lg:items-start">
@@ -90,6 +93,11 @@ export function EventDetail({
             )}
             {recurs && <div><dt className="sr-only">Recurrence</dt><dd className="text-neutral-600">{recurs}</dd></div>}
           </dl>
+          {isPast && (
+            <p className="mt-6 border-t border-neutral-200 pt-5 text-sm text-neutral-600">
+              This event has already taken place.
+            </p>
+          )}
           {showSignup && (
             <SignupPanel
               kind="event"

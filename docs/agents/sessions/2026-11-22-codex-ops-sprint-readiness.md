@@ -18,3 +18,11 @@
 5. Owner-assisted R2/account/key custody, optional billing, activation schedule, independent missed-run alert, real encrypted backup, actual restore proof and capacity/cost check remain unverified. No live database, cloud resource, schedule, paid service or DNS action occurred.
 
 Account usage percentage was not available; no percentage is asserted.
+
+## 2026-11-25 continuation
+
+- Resumed the owned worktree, confirmed a clean branch, and rebased its one commit onto then-current main `edfaf88` after the independently reviewed WordPress inventory merge.
+- Updated the inert workflow template from Node 20 to Node 24 to match the approved runtime direction; it remains an `.example` and cannot schedule or access production.
+- With Node v24.22.3, `npm ci --include=optional` completed; the four encrypted-backup fixture tests passed. `git diff --check` was clean. The full `scripts/agents/gate.sh` passed: typecheck, 679 tests, lint (four existing warnings), and production build.
+- No live database connection, R2 account/bucket, workflow schedule, encryption key, snapshot, or actual restore was used. The disposable PostgreSQL fixture evidence remains the only restore rehearsal. The owner-assisted activation and real restore requirements in `docs/ops/backups.md` are still open.
+- Next: open a draft PR for independent security/operability review. Rebase and re-run the gate after newer app PRs merge, then obtain a reviewer verdict before any merge.

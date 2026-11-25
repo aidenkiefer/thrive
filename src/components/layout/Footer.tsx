@@ -90,7 +90,7 @@ export function Footer() {
               href={SITE.mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={`mt-1 inline-block text-sm text-white/80 underline decoration-white/30 underline-offset-4 ${linkClass}`}
+              className={`inline-flex min-h-11 items-center text-sm text-white/80 underline decoration-white/30 underline-offset-4 ${linkClass}`}
             >
               Get directions
             </a>

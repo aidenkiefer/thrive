@@ -83,7 +83,7 @@
   }
 
   .prose-invert-content a:not([class]) {
-    @apply text-accent-400 decoration-accent-400/50 hover:text-white;
+    @apply text-accent-300 decoration-accent-300/50 hover:text-white;
   }
 
   /* Numbered steps (StepList / Step) */

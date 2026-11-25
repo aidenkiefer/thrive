@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { Button, Input } from '@/components/ui'
 import type { FeedbackCategory, FormResult } from './types'
 
@@ -52,6 +52,19 @@ export function FeedbackForm({ initialPagePath = '', className = '' }: FeedbackF
   const [pagePath, setPagePath] = useState(initialPagePath)
   const [website, setWebsite] = useState('')
   const [status, setStatus] = useState<Status>({ kind: 'idle' })
+  const formRef = useRef<HTMLFormElement>(null)
+
+  // The submit button is disabled while sending, which drops keyboard focus to <body>.
+  useEffect(() => {
+    if (status.kind === 'idle' || status.kind === 'submitting') return
+    const form = formRef.current
+    if (!form || (document.activeElement && document.activeElement !== document.body)) return
+    const invalidField =
+      status.kind === 'invalid'
+        ? form.querySelector<HTMLElement>('fieldset[aria-describedby] input, [aria-invalid="true"]')
+        : null
+    ;(invalidField ?? form.querySelector<HTMLElement>('button[type="submit"]'))?.focus()
+  }, [status])
 
   const fieldErrors = status.kind === 'invalid' ? status.fieldErrors : {}
   const errorFor = (key: FieldKey) => fieldErrors[key]
@@ -117,6 +130,7 @@ export function FeedbackForm({ initialPagePath = '', className = '' }: FeedbackF
 
   return (
     <form
+      ref={formRef}
       className={`relative space-y-6 ${className}`}
       onSubmit={onSubmit}
       noValidate

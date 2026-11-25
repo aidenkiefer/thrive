@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { requireAdmin } from '@/lib/admin-auth'
 import { EventDetail } from '@/components/events/EventDetail'
 import { Band, PageHero } from '@/components/content'
 import { PreviewBanner } from '../../_components/preview-banner'
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
  * public /events/[slug] layout with the same public components.
  */
 export default async function EventPreviewPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireAdmin()
   const { id } = await params
   const event = await loadEventPreview(id)
   const published = Boolean(event.published_at)

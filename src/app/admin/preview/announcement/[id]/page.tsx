@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { requireAdmin } from '@/lib/admin-auth'
 import { FeaturedAnnouncement } from '@/components/home/FeaturedAnnouncement'
 import { PreviewBanner } from '../../_components/preview-banner'
 import { announcementVisibilityNotes, loadAnnouncementPreview } from '../../preview-data'
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 
 /** Staff-only preview of an announcement (draft or published), rendered with the public homepage component. */
 export default async function AnnouncementPreviewPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireAdmin()
   const { id } = await params
   const item = await loadAnnouncementPreview(id)
   const published = Boolean(item.published_at)

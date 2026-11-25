@@ -7,11 +7,11 @@
 | PR | Lane / tool | Verdict | Gate | Notes |
 |---|---|---|---|---|
 | [#160](https://github.com/aidenkiefer/thrive/pull/160) | experience / cursor | MERGED (`aa7e093`) | PASS | Header overflow at 1024–1099px. Desktop nav, actions and drawer toggle move from `lg` to `xl` (1280px). One file (`GlobalNav.tsx`). Reviewed after merge for this close-out. |
-| [#162](https://github.com/aidenkiefer/thrive/pull/162) | experience / cursor | MERGE | PASS (rebased on `8bb36c9`) | Active nav and other accent text on dark surfaces moved from `accent-400` to `accent-300`. Footer "Get directions" target is now 44px tall. FeedbackForm puts focus back after a submit. |
+| [#162](https://github.com/aidenkiefer/thrive/pull/162) | experience / cursor | MERGED (`401e3d7`) | PASS (rebased on `8bb36c9`) | Active nav and other accent text on dark surfaces moved from `accent-400` to `accent-300`. Footer "Get directions" target is now 44px tall. FeedbackForm puts focus back after a submit. |
 
 **#162 integration:** the PR branch was based on `aa7e093`, two commits behind `main` (#157, #161). QA rebased it locally onto `8bb36c9` with no conflicts. #161 only touches `public/images/**` and `photos.ts`, and #162 touches neither. `scripts/agents/gate.sh` on that tree: `GATE: PASS` (typecheck, 620 tests, lint with 0 errors and 4 warnings that already exist on main, production build). PR CI: `gate` pass, Vercel pass.
 
-**`main` after merge:** see the PROGRESS.md v0.8.9 row for the merge SHA and the CI result on `main`.
+**`main` after merge:** #162 squash-merged as `401e3d7`. CI run 45537369622 on `main` passed, and the Vercel production deploy succeeded.
 
 ### #162 evidence (Playwright and axe 4, production build of the rebased tree)
 
@@ -37,7 +37,7 @@
 
 ## Next session (for the PM)
 
-1. Close #47 once #162 is on `main`. Keep #61 open (or split it) for the populated-state recheck after Preview data exists.
+1. Close #47 now that #162 is on `main`. Keep #61 open (or split it) for the populated-state recheck after Preview data exists.
 2. Have Ops add an axe step to the Playwright smoke (#64/#117) using the reduced-motion and scroll-into-view rule above, so contrast regressions fail CI.
 
 ## Workflow friction

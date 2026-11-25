@@ -115,6 +115,29 @@ export function assertEndAfterStart(start: string | null, end: string | null, al
   if (allowEqual ? end < start : end <= start) fail('End must be after start')
 }
 
+/** Calendar dates (YYYY-MM-DD): the end may equal the start but never come before it. */
+export function assertDateRange(start: string | null, end: string | null): void {
+  if (start && end && end < start) fail("End date can't be before the start date")
+}
+
+/** An optional email address. Empty input returns null. */
+export function optionalEmail(raw: string, label: string): string | null {
+  const value = raw.trim()
+  if (!value) return null
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) fail(`${label} must be a valid email address`)
+  return value
+}
+
+/**
+ * Why a published sermon series can't be unpublished yet, or null when it can.
+ * Its published sermons would otherwise link to a series page that 404s.
+ */
+export function seriesUnpublishProblem(publishedSermons: number): string | null {
+  if (publishedSermons <= 0) return null
+  const sermons = publishedSermons === 1 ? '1 published sermon belongs' : `${publishedSermons} published sermons belong`
+  return `Can't unpublish this series: ${sermons} to it. Unpublish those sermons or move them to another series first.`
+}
+
 /** Throws one message listing everything that blocks publishing. */
 export function assertPublishable(kind: string, problems: string[]): void {
   if (problems.length) fail(`Can't publish this ${kind} yet: ${problems.join('; ')}. Uncheck Published to save it as a draft.`)

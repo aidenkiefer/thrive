@@ -10,7 +10,7 @@ import { revalidatePath } from 'next/cache'
  */
 export type RevalidateEntity =
   | 'announcement' | 'one_time_event' | 'recurring_event' | 'group' | 'outreach'
-  | 'ministry' | 'landing_page' | 'sermon' | 'staff'
+  | 'ministry' | 'landing_page' | 'sermon' | 'sermon_series' | 'speaker' | 'staff'
 
 /** A concrete path, or a dynamic route pattern refreshed for every slug. */
 export type RevalidateTarget = string | { pattern: string; type: 'page' }
@@ -37,6 +37,15 @@ const PAGES: Record<RevalidateEntity, EntityPages> = {
     admin: ['/admin/sermons'], list: ['/sermons', '/sermons/series'], detail: s => `/sermons/${s}`,
     patterns: ['/sermons/series/[slug]'], home: true, sitemap: true,
   },
+  // The sermon form lists published series and every speaker, so both refresh it too.
+  sermon_series: {
+    admin: ['/admin/sermon-series', '/admin/sermons'], list: ['/sermons', '/sermons/series'],
+    detail: s => `/sermons/series/${s}`, patterns: ['/sermons/[slug]'], home: true, sitemap: true,
+  },
+  speaker: {
+    admin: ['/admin/speakers', '/admin/sermons'], list: ['/sermons', '/sermons/series'],
+    patterns: ['/sermons/[slug]', '/sermons/series/[slug]'], home: true,
+  },
   staff: { admin: ['/admin/staff'], list: ['/about/team', '/about'] },
 }
 
@@ -59,7 +68,7 @@ export function revalidateEntity(entity: RevalidateEntity, slug?: string | null,
 /** Entities whose published rows are listed in /sitemap.xml, keyed by table (checked by the test). */
 export const SITEMAP_TABLES: Record<string, RevalidateEntity | null> = {
   sermons: 'sermon',
-  sermon_series: null, // no admin editor yet (#42); add one here when it exists
+  sermon_series: 'sermon_series',
   one_time_events: 'one_time_event',
   recurring_events: 'recurring_event',
   landing_pages: 'landing_page',

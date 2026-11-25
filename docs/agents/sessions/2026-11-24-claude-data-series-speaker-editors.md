@@ -4,7 +4,7 @@
 
 ## Status
 Done: series editor, speaker editor, nav entries, revalidation entities, tests (opus-5.5). Full gate PASS (typecheck, lint, build); vitest 684/684.
-Open: no browser smoke test (no dev server allowed: the only Supabase project is production). The owner should do the demo click-through. PR is "Part of #42" because `gh issue view 42` was blocked in this session, so the issue's Done-when list couldn't be checked line by line.
+Open: no browser smoke test (no dev server allowed: the only Supabase project is production). The owner should do the demo click-through. PR #171 is "Part of #42" because `gh issue view 42` was blocked in this session, so the issue's Done-when list couldn't be checked line by line.
 
 ## Entries
 <!-- Append-only, oldest first. Types: decision · change · blocker · request · note -->
@@ -20,4 +20,5 @@ Open: no browser smoke test (no dev server allowed: the only Supabase project is
 - `--:--` **note**: the test fake is src/app/admin/sermon-series/fake-admin-db.ts: a chainable, recording stand-in for the Supabase client, and the speakers test reuses it. Fixtures are synthetic ("Test Series Alpha", "Test Speaker One", example.test). (opus-5.5)
 - `--:--` **note**: out-of-allowlist but in-lane: src/lib/revalidate.ts and src/lib/revalidate.test.ts (data lane owns src/lib/**). Neither open PR (#169 `claude/data-admin-demo-preview`, `claude/data-sermon-title-entities`) touches them; I checked with `git diff --stat`. (opus-5.5)
 - `--:--` **blocker**: `gh` commands needed approval and were denied in this headless session, so `gh issue view 42` couldn't run. The PR may need to be opened by the owner if `gh pr create` is also denied (body below in the PR description). (opus-5.5)
+- `--:--` **note**: `gh pr create` worked (only the read-only `gh issue view` / `gh api` calls were denied). PR #171 is open against main. (opus-5.5)
 - `--:--` **note** session end: gate PASS, 4 feature commits, branch pushed. No DB access, no dev server, nothing merged. (opus-5.5)

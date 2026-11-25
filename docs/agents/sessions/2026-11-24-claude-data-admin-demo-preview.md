@@ -5,7 +5,7 @@
 ## Status
 <!-- ≤3 lines, kept current by scribe: done / in progress / parked / blocked -->
 Done: staff-only draft preview for announcements and events, Preview links in both admin lists, and a preview link right after a create. GATE: PASS.
-PR open against main, not merged; awaiting senior QA. Nothing parked or blocked.
+PR #169 open against main (https://github.com/aidenkiefer/thrive/pull/169), not merged; awaiting senior QA. Nothing parked or blocked.
 
 ## Entries
 <!-- Append-only, oldest first. Types: decision · change · blocker · request · note -->

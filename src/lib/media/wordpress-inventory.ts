@@ -293,6 +293,9 @@ export function codeReferences(file: string, content: string): CodeReference[] {
     for (const match of line.matchAll(/https?:\/\/[^\s'"`)]*wp-content\/uploads\/[^\s'"`)]+/gi)) {
       found.push({ file, line: index + 1, path: uploadPath(match[0]) })
     }
+    if (/\/wp-content\/uploads\//i.test(line) && !found.some(ref => ref.line === index + 1)) {
+      found.push({ file, line: index + 1, path: null })
+    }
   })
   return found
 }

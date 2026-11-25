@@ -33,6 +33,7 @@
     "const BASE = 'https://thrivevineyard.com/wp-content/uploads'",
     "const a = `${BASE}/2024/04/a.jpg`",
     "const b = 'https://thrivevineyard.com/wp-content/uploads/2024/05/b.png'",
-    "const c = '/images/local.jpg'"
+    "const c = '/images/local.jpg'",
+    "const legacyPath = \"/wp-content/uploads/**\""
   ]
 }

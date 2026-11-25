@@ -162,6 +162,7 @@ describe('code references', () => {
     expect(codeReferences('x.ts', content)).toEqual([
       { file: 'x.ts', line: 2, path: '2024/04/a.jpg' },
       { file: 'x.ts', line: 3, path: '2024/05/b.png' },
+      { file: 'x.ts', line: 5, path: null },
     ])
   })
 })

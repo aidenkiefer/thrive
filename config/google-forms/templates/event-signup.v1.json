@@ -1,0 +1,19 @@
+{
+  "$comment": "Starter event signup questions. DRAFT: wording and fields need owner approval before any non-sandbox live use. Contains no ministry facts; per-event title/description come from the launch file.",
+  "templateKey": "event-signup",
+  "templateVersion": 1,
+  "kind": "event",
+  "approval": {
+    "status": "draft",
+    "approvedBy": null,
+    "approvedOn": null,
+    "notes": "Owner to confirm questions, required flags and email collection mode (#151 / #55)."
+  },
+  "settings": { "emailCollectionType": "RESPONDER_INPUT" },
+  "questions": [
+    { "key": "full-name", "title": "Full name", "type": "shortText", "required": true },
+    { "key": "phone", "title": "Phone number", "type": "shortText", "required": false },
+    { "key": "party-size", "title": "How many people are you signing up, including yourself?", "type": "shortText", "required": true },
+    { "key": "notes", "title": "Anything we should know before the event?", "type": "paragraph", "required": false }
+  ]
+}

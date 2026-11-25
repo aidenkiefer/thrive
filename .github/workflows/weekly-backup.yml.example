@@ -1,0 +1,54 @@
+# INERT TEMPLATE: GitHub ignores .example. The owner must review costs, secrets,
+# CLI/export compatibility, independent missed-run alert, and schedule before activation.
+name: Weekly encrypted database export
+
+on:
+  workflow_dispatch:
+  # Add an owner-selected weekly schedule only at activation. Use an off-hour
+  # minute (not :00), and pair it with an independent missed-run heartbeat.
+
+permissions:
+  contents: read
+
+concurrency:
+  group: thrive-weekly-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: Install pinned Supabase CLI and check runner AWS client
+        run: |
+          npm ci --no-audit --no-fund
+          aws --version
+      - name: Export, encrypt, verify R2 readback, then prune
+        id: backup
+        env:
+          SUPABASE_BACKUP_DB_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+          R2_ENDPOINT: ${{ secrets.BACKUP_R2_ENDPOINT }}
+          R2_BACKUP_BUCKET: ${{ secrets.BACKUP_R2_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          THRIVE_BACKUP_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+          THRIVE_BACKUP_ALLOW_LIVE: YES
+        run: node scripts/agents/backup.mjs live
+      - name: Success heartbeat
+        if: success()
+        env:
+          HEARTBEAT_URL: ${{ secrets.BACKUP_HEARTBEAT_URL }}
+        run: test -n "$HEARTBEAT_URL" && curl --fail --silent --show-error --output /dev/null --max-time 10 "$HEARTBEAT_URL"
+      - name: Failure heartbeat
+        if: ${{ failure() && steps.backup.outcome == 'failure' }}
+        env:
+          HEARTBEAT_URL: ${{ secrets.BACKUP_HEARTBEAT_URL }}
+        run: |
+          if test -n "$HEARTBEAT_URL"; then
+            curl --fail --silent --show-error --output /dev/null --max-time 10 "${HEARTBEAT_URL}/fail" || true
+          fi

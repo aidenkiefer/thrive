@@ -1,0 +1,39 @@
+{
+  "_comment": "Synthetic WordPress URLs for src/lib/media/wordpress-inventory.test.ts. Kept outside src/ so the source guard (tests/media/no-wordpress-media.test.ts) stays strict for app code.",
+  "urls": {
+    "full": "https://thrivevineyard.com/wp-content/uploads/2024/04/a.jpg",
+    "www": "https://www.thrivevineyard.com/wp-content/uploads/a.jpg",
+    "relative": "/wp-content/uploads/a.jpg",
+    "encoded": "https://thrivevineyard.com/wp-content/uploads/2024/04/a%20b.jpg?ver=2#x",
+    "theme": "https://thrivevineyard.com/wp-content/themes/x.css"
+  },
+  "records": [
+    {
+      "slug": "b",
+      "featured_image_url": "https://thrivevineyard.com/wp-content/uploads/2024/01/x.jpg",
+      "external_url": "https://example.org"
+    },
+    {
+      "slug": "a",
+      "featured_image_url": "https://thrivevineyard.com/wp-content/uploads/2024/01/x.jpg"
+    },
+    {
+      "slug": "c",
+      "gallery_urls": [
+        "/wp-content/uploads/2024/02/y.png",
+        "https://cdn.example/z.png"
+      ]
+    },
+    {
+      "slug": "d",
+      "featured_image_url": "https://thrivevineyard.com/wp-content/cache/odd.jpg"
+    }
+  ],
+  "code": [
+    "const BASE = 'https://thrivevineyard.com/wp-content/uploads'",
+    "const a = `${BASE}/2024/04/a.jpg`",
+    "const b = 'https://thrivevineyard.com/wp-content/uploads/2024/05/b.png'",
+    "const c = '/images/local.jpg'",
+    "const legacyPath = \"/wp-content/uploads/**\""
+  ]
+}

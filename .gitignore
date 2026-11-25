@@ -44,3 +44,7 @@ tsconfig.tsbuildinfo
 
 # Private, reproducible media previews generated before dev/build
 .media-previews/
+
+# Playwright artifacts
+/playwright-report/
+/test-results/

@@ -19,6 +19,14 @@ const expected: Record<RevalidateEntity, unknown[]> = {
   ministry: ['/admin/ministries', '/ministries/x', '/sitemap.xml'],
   landing_page: ['/admin/landing-pages', '/x', '/sitemap.xml'],
   sermon: ['/admin/sermons', '/sermons', '/sermons/series', '/sermons/x', '/', '/sitemap.xml', SERIES],
+  sermon_series: [
+    '/admin/sermon-series', '/admin/sermons', '/sermons', '/sermons/series', '/sermons/series/x', '/', '/sitemap.xml',
+    { pattern: '/sermons/[slug]', type: 'page' },
+  ],
+  speaker: [
+    '/admin/speakers', '/admin/sermons', '/sermons', '/sermons/series', '/',
+    { pattern: '/sermons/[slug]', type: 'page' }, SERIES,
+  ],
   staff: ['/admin/staff', '/about/team', '/about'],
 }
 

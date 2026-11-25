@@ -31,7 +31,9 @@ export const adminSectionGroups: AdminSectionGroup[] = [
     label: 'Content',
     sections: [
       { label: 'Announcements', href: '/admin/announcements', icon: 'megaphone', description: 'Site notices. The newest featured one leads the homepage.', table: 'announcements', publishable: true },
-      { label: 'Sermons', href: '/admin/sermons', icon: 'play', description: 'Messages, series, and speakers.', table: 'sermons', publishable: true },
+      { label: 'Sermons', href: '/admin/sermons', icon: 'play', description: 'Weekly messages, each with its speaker and series.', table: 'sermons', publishable: true },
+      { label: 'Sermon series', href: '/admin/sermon-series', icon: 'play', description: 'Series that group sermons. Publish one before choosing it on a sermon.', table: 'sermon_series', publishable: true },
+      { label: 'Speakers', href: '/admin/speakers', icon: 'id', description: 'Pastors and guest speakers to choose on a sermon.', table: 'speakers', publishable: false },
       { label: 'Media library', href: '/admin/media', icon: 'layout', description: 'Browse church photos, artwork, and brand images.', publishable: false },
       { label: 'Campaign pages', href: '/admin/landing-pages', icon: 'layout', description: 'Standalone landing pages for campaigns.', table: 'landing_pages', publishable: true },
     ],

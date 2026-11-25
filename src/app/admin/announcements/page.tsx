@@ -9,6 +9,7 @@ import {
 import { DatePicker } from '@/components/ui/DatePicker'
 import { AdminForm } from '../_components/admin-form'
 import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
+import { PreviewLink } from '../_components/preview-link'
 
 async function saveAnnouncement(formData: FormData) {
   'use server'
@@ -34,7 +35,7 @@ async function saveAnnouncement(formData: FormData) {
     }
     if (publish) assertPublishable('announcement', announcementPublishProblems(row, new Date()))
     try {
-      await saveWithPublication(db, {
+      return await saveWithPublication(db, {
         table: 'announcements', entityType: 'announcement', label: 'announcement',
         id: id || null, row, publish, actorId,
       })
@@ -55,7 +56,7 @@ function AnnouncementForm({ item, feedback }: { item?: Announcement; feedback?: 
   const formKey = item?.id || 'new'
   return (
     <AdminForm resetToken={formResetToken(feedback, formKey)} id={`form-${formKey}`} action={saveAnnouncement} className="space-y-3 rounded border bg-white p-5">
-      <FormFeedback feedback={feedback} formKey={formKey} />
+      <FormFeedback feedback={feedback} formKey={formKey} previewHref={!item && feedback?.created ? `/admin/preview/announcement/${feedback.created}` : undefined} />
       {item && <input type="hidden" name="id" value={item.id} />}
       <label className="block text-sm">Title<input name="title" defaultValue={item?.title} required className="mt-1 block w-full rounded border p-2" /></label>
       <label className="block text-sm">Body<textarea name="body" defaultValue={item?.body || ''} rows={4} className="mt-1 block w-full rounded border p-2" /></label>
@@ -82,7 +83,7 @@ export default async function AdminAnnouncementsPage({ searchParams }: { searchP
     <section className="space-y-4"><h2 className="text-lg font-semibold">Existing announcements</h2>
       {items.length === 0 && <p>No announcements yet.</p>}
       {items.map(item => <details key={item.id} open={feedbackTargets(feedback, item.id)} className="rounded border bg-gray-50 p-4">
-        <summary className="cursor-pointer font-medium">{item.title} — {item.published_at ? 'Published' : 'Draft'}</summary>
+        <summary className="cursor-pointer font-medium">{item.title} — {item.published_at ? 'Published' : 'Draft'}{' '}<PreviewLink href={`/admin/preview/announcement/${item.id}`} name={item.title} /></summary>
         <div className="mt-4"><AnnouncementForm item={item} feedback={feedback} /></div>
       </details>)}
     </section>

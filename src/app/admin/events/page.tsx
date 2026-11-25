@@ -10,6 +10,7 @@ import {
 import { DatePicker } from '@/components/ui/DatePicker'
 import { AdminForm } from '../_components/admin-form'
 import { FormFeedback, feedbackTargets, formResetToken } from '../_components/form-feedback'
+import { PreviewLink } from '../_components/preview-link'
 import Link from 'next/link'
 
 async function saveEvent(formData: FormData) {
@@ -52,7 +53,7 @@ async function saveEvent(formData: FormData) {
     }
     if (publish) assertPublishable('event', [...oneTimeEventPublishProblems(row), ...formUrlPublishProblems(row.churchsuite_form_url, 'ChurchSuite URL')])
     try {
-      await saveWithPublication(db, {
+      return await saveWithPublication(db, {
         table: 'one_time_events', entityType: 'one_time_event', label: 'event',
         id: id || null, row, publish, actorId,
       })
@@ -73,7 +74,7 @@ type EventRow = {
 function EventForm({ item, feedback }: { item?: EventRow; feedback?: AdminFeedback }) {
   const formKey = item?.id || 'new'
   return <AdminForm resetToken={formResetToken(feedback, formKey)} id={`form-${formKey}`} action={saveEvent} className="space-y-3 rounded border bg-white p-5">
-    <FormFeedback feedback={feedback} formKey={formKey} />
+    <FormFeedback feedback={feedback} formKey={formKey} previewHref={!item && feedback?.created ? `/admin/preview/event/${feedback.created}` : undefined} />
     {item && <input type="hidden" name="id" value={item.id} />}
     <label className="block text-sm">Name<input name="name" defaultValue={item?.name} required className="mt-1 block w-full rounded border p-2" /></label>
     <label className="block text-sm">URL slug<input name="slug" defaultValue={item?.slug} required readOnly={Boolean(item)} className="mt-1 block w-full rounded border p-2 read-only:bg-gray-100" /></label>
@@ -106,7 +107,7 @@ export default async function AdminEventsPage({ searchParams }: { searchParams: 
     <section className="space-y-4"><h2 className="text-lg font-semibold">Existing events</h2>
       {items.length === 0 && <p>No one-time events yet.</p>}
       {items.map(item => <details key={item.id} open={feedbackTargets(feedback, item.id)} className="rounded border bg-gray-50 p-4">
-        <summary className="cursor-pointer font-medium">{item.name} — {item.published_at ? 'Published' : 'Draft'}</summary>
+        <summary className="cursor-pointer font-medium">{item.name} — {item.published_at ? 'Published' : 'Draft'}{' '}<PreviewLink href={`/admin/preview/event/${item.id}`} name={item.name} /></summary>
         <div className="mt-4"><EventForm item={item} feedback={feedback} /></div>
       </details>)}
     </section>

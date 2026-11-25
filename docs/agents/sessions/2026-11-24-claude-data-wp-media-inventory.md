@@ -3,7 +3,7 @@
 **Assignment:** `docs/agents/assignments/2026-11-22-managed-signup-sprint.md` (staged on `origin/codex/pm-managed-services-decisions`, not yet on main) · **Lane:** data · **Tool:** claude (Claude Code, Opus 5.5) · **Started:** 2026-11-24
 
 ## Status
-D-49 implemented; gate pending commit, PR for independent QA. Ticket D-49: read-only WordPress media inventory/checklist plus dashboard-managed Supabase Storage runbook (size M, tier T1).
+D-49 done; GATE: PASS; PR #164 open for independent QA (not self-merged). Owner dashboard setup remains. Ticket D-49: read-only WordPress media inventory/checklist plus dashboard-managed Supabase Storage runbook (size M, tier T1).
 Scope: issue #49 Data portion (owner decision 2026-11-22 in issue body).
 
 ## Entries
@@ -20,3 +20,4 @@ Scope: issue #49 Data portion (owner decision 2026-11-22 in issue body).
 - `20:59` **note** D-49: local env: the worktree's `node_modules` was built under Node 18 (missing rolldown binding); reran `npm ci` under nvm Node 20 locally. No lockfile change.
 - `21:08` **decision** D-49: first gate failed in `tests/media/no-wordpress-media.test.ts` (Ops guard scans `src/**`; 13 hits were the detector's own pattern string, a comment and test fixture URLs). Did not widen the Ops allowlist or split strings. Derived the SQL pattern from the JS regex (one source), reworded the comment, moved synthetic URLs to `scripts/media/fixtures/wordpress-urls.json`, and moved the CLI to `scripts/media/wordpress-inventory.ts`. Guard stays strict for app code.
 - `21:08` **request** ops: optional. If Ops prefers detector fixtures inside `src/`, add an explicit exception for `src/lib/media/wordpress-inventory*.ts` to the guard instead; until then fixtures stay under `scripts/media/fixtures/`.
+- `21:15` **note** session end: D-49 complete offline + read-only live verification; `scripts/agents/gate.sh` GATE: PASS (Node 20.20.2, 565/565 tests); PR #164 opened, awaiting independent QA. Remaining: owner audio decision and dashboard setup per `supabase/ops/media/README.md`.

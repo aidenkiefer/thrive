@@ -18,4 +18,4 @@ The four tracked skills are `product-manager`, `lane-builder`, `scribe`, and `se
 
 On Ubuntu, `claude --version` checks the installation. Use `claude auth login` for interactive sign-in and `claude auth status` to verify it. In a fresh agent session, ask it to identify the canonical instructions, name the four skills, and locate the assignment template. Claude Code's `/memory` shows loaded instruction files, and the Cursor Agent slash menu can confirm skill discovery.
 
-Use Node 20 (the version CI runs, see `.github/workflows/ci.yml`) and the committed npm lockfile. With Node active in your Ubuntu terminal, run `npm ci` and `scripts/agents/gate.sh`. Consult [admin setup](../admin-setup.md) for local runtime variables and the planning checklist before pointing a checkout at a shared service.
+Use Node 24 (pinned in `.nvmrc` and used by CI and Vercel) and the committed npm lockfile. With Node active in your Ubuntu terminal, run `npm ci` and `scripts/agents/gate.sh`. Consult [admin setup](../admin-setup.md) for local runtime variables and the planning checklist before pointing a checkout at a shared service.

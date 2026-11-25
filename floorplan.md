@@ -1,5 +1,19 @@
 # Thrive Vineyard Website Architecture & Migration Plan
 
+## MVP signup refinement — later 2026-11-22
+
+Owner chose a **branded Thrive signup surface linking to Google's hosted form** for MVP. Use the official Forms REST API through an operator CLI to create/read/update/publish forms from reusable templates (#151); no authenticated Google API call per public page view. Responses/private review remain in Google. Custom Thrive input rendering and an Apps Script submission bridge are post-MVP (#148), not launch blockers. The branded surface is #149; #50 is the umbrella.
+
+Free Browser/Computer setup is authorized for the later owner-assisted window. Defer account consent/provisioning until then; do not enable a paid plan, billable commitment or unknown-cost service. This does not replace artifact-specific live database or DNS approval. Build/QA templates, dry runs, mocked API adapters and branded handoff states before setup; mocks never establish real service success. Newest refinement supersedes earlier plain-link-only or custom-field aspirations.
+
+## Current owner direction — 2026-11-22
+
+Prefer managed services over custom runtime subsystems where they meet the need with less maintenance. Free tiers are preferred until payment is justified; paid commitments and major architecture/interface/design changes return to the owner. Target more than 1,000 concurrent website visitors, largely within a roughly 60-mile regional audience, using explicit load assumptions and CDN/static/cache delivery; capacity remains unverified.
+
+For MVP, Google Forms/Sheets owns group/event signup collection and response review, with approved links from the site/admin and no Supabase response synchronization. Do not build the former proposed native form builder or response dashboard. Native feedback/prayer remain email-only, both received at info@thrivevineyard.com; no dedicated prayer mailbox is required. Keep committed assets and use dashboard-managed Supabase Storage for changing images; defer a custom uploader. Recovery direction: weekly encrypted GitHub Actions exports to private R2, newest ten, restore rehearsal and missed-backup detection. See [the dated record](docs/plans/specs/2026-11-22-managed-services-tradeoffs.md) and [owner decisions](docs/plans/owner-decisions.md).
+
+The accepted #144 visual system stays. Wednesday November 25 targets an approved/tested MVP ready; domain cutover needs a separate owner go. CMS preview/version restoration described historically below is deferred (#32/#33). This section supersedes conflicting historical examples or feature aspirations below.
+
 ## Vision
 
 The new Thrive Vineyard website should not be a traditional collection of disconnected pages.
@@ -400,7 +414,7 @@ ChurchSuite → External Integration
 
 # MVP staff workflow and integrations
 
-- The protected admin portal provides staff accounts, a lightweight structured page editor, and editors for sermon details, events, groups, and announcements. For staff-editable pages and announcements, staff can preview a draft, publish it, and restore the previous published version. Save who published each version and when. Public routes render the published version.
+- The protected admin portal provides staff accounts, a lightweight structured page editor, and editors for sermon details, events, groups, and announcements. Staff can edit and publish the MVP content; full draft/version preview and previous-version restore are deferred from MVP. Save who published each version and when. Public routes render the published version.
 - Staff use existing announcements for service changes and closures, including expiration when relevant.
 - Every form handled by the website emails one configured admin address (for example `info@thrivevineyard.com`). Each form can optionally list additional recipients. Email is the staff inbox for website form submissions.
 - Provide a built-in feedback form for visitors and signed-in staff to report bugs and suggest improvements. Use the same email routing.

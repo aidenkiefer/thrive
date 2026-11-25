@@ -1,5 +1,11 @@
 # 00 — Project Brief
 
+## MVP signup refinement — later 2026-11-22
+
+Owner chose a **branded Thrive signup surface linking to Google's hosted form** for MVP. Use the official Forms REST API through an operator CLI to create/read/update/publish forms from reusable templates (#151); no authenticated Google API call per public page view. Responses/private review remain in Google. Custom Thrive input rendering and an Apps Script submission bridge are post-MVP (#148), not launch blockers. The branded surface is #149; #50 is the umbrella.
+
+Free Browser/Computer setup is authorized for the later owner-assisted window. Defer account consent/provisioning until then; do not enable a paid plan, billable commitment or unknown-cost service. This does not replace artifact-specific live database or DNS approval. Build/QA templates, dry runs, mocked API adapters and branded handoff states before setup; mocks never establish real service success. Newest refinement supersedes earlier plain-link-only or custom-field aspirations.
+
 ## Vision
 
 Thrive Vineyard's new website is not a redesign. It is a migration from a collection of manually maintained WordPress pages to a **centralized ministry information platform**.
@@ -9,6 +15,14 @@ Every ministry, group, event, sermon series, announcement, and outreach initiati
 Updating one record updates everything.
 
 ---
+
+## Current owner direction (2026-11-22)
+
+Use managed/hosted services to reduce application runtime, bespoke code and ongoing maintenance. Favor suitable free allowances until a paid option is justified; do not accept a large custom maintenance burden merely to avoid a modest necessary service cost. Major technical/design/product changes and paid commitments go to the owner.
+
+Design and verify for **more than 1,000 concurrent website visitors**, primarily a regional audience within about 60 miles. Define realistic browsing, signup and cache assumptions; geography and account quotas alone do not demonstrate capacity. Preserve the current stack and accepted #144 redesign.
+
+Google Forms/Sheets owns signup collection/review for MVP; Thrive links to the provider rather than duplicating responses. Native feedback/prayer remain email-only. Keep committed media plus dashboard-managed Supabase Storage images; no custom uploader for MVP. Weekly encrypted GitHub Actions -> private R2 backups retain ten verified snapshots with restore and freshness checks. See the [dated decision/tradeoff record](plans/specs/2026-11-22-managed-services-tradeoffs.md) for evidence and remaining configuration checks.
 
 ## Goals
 
@@ -26,7 +40,7 @@ Updating one record updates everything.
 | Constraint | Detail |
 |---|---|
 | Active Google Ads | Campaigns are live and pointing to pages that must exist on the new site |
-| Phased launch | No hard deadline — ship core functionality first, layer in complexity |
+| Phased launch | Approved/tested MVP readiness target Wednesday November 25; domain cutover requires a separate owner go |
 | Developer-primary editing | Aiden is the primary content editor; staff get custom-built admin interfaces for time-sensitive content |
 | Domain migration | Existing WordPress site lives on the same domain — URL structure changes require 301 redirects |
 | SEO audit needed | Google Search Console data must be reviewed before URL structure is finalized — draft redirect map started in `04-seo-url-migration-map.md` |
@@ -35,12 +49,13 @@ Updating one record updates everything.
 
 ---
 
-## What Is Not in Scope (Yet)
+## Deferred from MVP
 
-- Design system **implementation** in code (plan written — see `07-design-system.md`)
-- Content migration from WordPress (a separate later phase)
-- Full SEO URL mapping (depends on Search Console audit)
-- ChurchSuite deep integration (forms only for now)
+- Custom native signup builder, in-app signup response dashboard, response synchronization and custom detailed-email/export-control automation.
+- Custom staff media upload interface (use dashboard-managed storage initially).
+- CMS draft/version preview and previous-version restore (#32/#33); secure core editing and database recovery remain required.
+- Podcast integration while paused; advanced sermon search/calendar month-grid remains post-launch.
+- A stack rewrite or another redesign. The existing implementation and accepted #144 design are the baseline.
 
 ---
 
@@ -54,8 +69,8 @@ Updating one record updates everything.
 | Static pages | MDX files in `/content/pages` | Structural pages change rarely, benefit from git tracking |
 | Admin panel | Custom `/admin` Next.js routes | No CMS overhead; full control over staff interfaces |
 | Auth | NextAuth.js | Admin panel protection |
-| Forms / signups | ChurchSuite (embed URLs only) | No sync needed; ChurchSuite owns registration data |
-| Hosting | Vercel | Native Next.js support, free tier, ISR support |
+| Forms / signups | Google Forms/Sheets (approved hosted links/embeds) | Provider owns collection and response review; no custom signup subsystem or response sync for MVP. ChurchSuite giving remains unchanged. |
+| Hosting | Vercel | Retain existing deployment; verify actual plan/quotas and measured cache/load behavior instead of assuming a free capacity guarantee |
 
 **Why no headless CMS (Sanity, Keystatic, Payload):**
 The developer is the primary editor and is building custom staff admin interfaces anyway. A pre-built CMS adds cost, constraints, and complexity without meaningful benefit at this scale. Supabase gives instant updates, full schema control, and $0 to start.

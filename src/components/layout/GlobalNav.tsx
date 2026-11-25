@@ -64,7 +64,7 @@ export function GlobalNav() {
   const linkClass = (href: string) =>
     `relative inline-flex min-h-11 items-center whitespace-nowrap rounded-md px-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 after:pointer-events-none after:absolute after:inset-x-2 after:bottom-1.5 after:h-0.5 after:origin-left after:rounded-full after:bg-accent-400 after:transition-transform after:duration-300 motion-reduce:after:transition-none ${
       isActive(href)
-        ? 'text-accent-400 after:scale-x-100'
+        ? 'text-accent-300 after:scale-x-100'
         : 'text-white/90 after:scale-x-0 hover:text-white hover:after:scale-x-100'
     }`
 
@@ -174,7 +174,7 @@ export function GlobalNav() {
                 href={link.href}
                 aria-current={isActive(link.href) ? 'page' : undefined}
                 className={`flex min-h-12 items-center border-b border-white/10 text-base font-medium transition-colors ${
-                  isActive(link.href) ? 'text-accent-400' : 'text-white hover:text-accent-400'
+                  isActive(link.href) ? 'text-accent-300' : 'text-white hover:text-accent-300'
                 }`}
                 onClick={() => setMobileOpen(false)}
               >

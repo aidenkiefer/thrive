@@ -10,7 +10,7 @@ import { SERVICE_TIMES } from '@/lib/constants/service-times'
  */
 export function ContactDetails() {
   const linkClass =
-    'inline-flex min-h-[44px] items-center font-medium text-white underline decoration-accent-400/60 underline-offset-4 hover:text-accent-400'
+    'inline-flex min-h-[44px] items-center font-medium text-white underline decoration-accent-400/60 underline-offset-4 hover:text-accent-300'
 
   return (
     <div className="not-prose mt-10 grid gap-8 md:grid-cols-2">
@@ -28,7 +28,7 @@ export function ContactDetails() {
               <p className="mt-1 text-sm text-white/75">{service.location}</p>
               <p className="mt-1 text-sm text-white/75">{service.description}</p>
               {service.isPaused && service.pauseNote ? (
-                <p className="mt-2 text-sm font-medium text-accent-400">{service.pauseNote}</p>
+                <p className="mt-2 text-sm font-medium text-accent-300">{service.pauseNote}</p>
               ) : null}
             </li>
           ))}

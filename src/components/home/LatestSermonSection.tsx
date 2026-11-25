@@ -88,7 +88,7 @@ export function LatestSermonSection({ sermon }: { sermon: Sermon | null }) {
             </Button>
             <Link
               href="/sermons"
-              className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-white hover:text-accent-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-800"
+              className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-white hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-800"
             >
               All messages
               <ArrowRightIcon className="h-4 w-4" />

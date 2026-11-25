@@ -2,6 +2,10 @@
 
 Tracks milestones, sprints, and completed work across the project lifespan.
 
+## 2026-11-24 media QA addendum
+
+PR #161 re-hosted the 14 remaining PHOTOS WordPress images as optimized committed WebP assets and merged as 8bb36c9. Independent QA verified all source matches and the full gate on rebased PR head and merged main (620 tests). Issue #59 remains open for database-held media inventory and migration (#49), removal of the WordPress remote pattern after migration, and release browser and CLS checks. See [the QA report](../agents/qa/2026-11-24-pr161-photo-rehost.md).
+
 ---
 
 ## Current status (2026-11-20)
@@ -45,7 +49,7 @@ Shared abuse limiter = Postgres. Announcements: newest featured wins, no priorit
 | Supabase for pre-launch use (decided 2026-11-19: the production project, no separate Preview project), env vars, staff sign-in email, form email, staff enrollment | Decided; owner provisioning (open: project state, sender address, Resend keys, Auth settings, account levels; see [owner-decisions.md](owner-decisions.md)) | Owner (#54); verification Ops (#41) |
 | Ministry content, destinations, form URLs | Open decisions | Owner (#55) |
 | Domain, DNS, cutover, rollback, social URLs, Ads in container | Open decisions | Owner (#57); runbook Ops (#69) |
-| Photos still hot-link `thrivevineyard.com/wp-content/uploads` (P0) | Not re-hosted | Owner supplies or approves files; Experience (#59), Data (#49), guard Ops (#73) |
+| WordPress media cutover (P0) | The 14 PHOTOS entries are local after #161; DB-held media remains unverified | Data (#49), Ops remote pattern and guard (#73), release QA; keep #59 open |
 | Logo, favicon | Needed from owner | Owner; Experience (#56) |
 | 301 redirect manifest and `/prayer`, `/expresso`, `/volunteering` rules | Decided rules are on `main` (#138). Remaining manifest rows stay pending (#55). | Ops (#62, #63) |
 | End-to-end smoke tests, accessibility and performance passes | Not built | Ops (#64), Experience (#61, #67) |

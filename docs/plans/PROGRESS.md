@@ -124,6 +124,7 @@ Shared abuse limiter = Postgres. Announcements: newest featured wins, no priorit
 | **v0.8.6** | Dependency triage and system actors (#132, #133) | 2026-11-20 | Ops, Data | Lockfile audit reports no vulnerabilities. Dependabot stays a written proposal. System actors and the INSERT guard are on `main`; the live migration `system_actors` was applied first. |
 | **v0.8.7** | Seed publishing, reserved slugs, redirects, church mark (#137, #136, #138, #134) | 2026-11-20 | Data, Experience, Ops | Seed SQL publishes as the seed actor; the new SQL file is not applied live. Public landing pages use the shared reserved-slug list. Decided redirects are active. Nav mark and both pastors are on the home and About pages. |
 | **v0.8.8** | Prayer form and seed publish skip (#141, #140) | 2026-11-20 | Data, Ops | Prayer requests use their own inbox env key. `seed-current` skips rows with publication history. `/prayer` redirects to `/get-connected#prayer`. |
+| **v0.8.9** | Google Forms C1 contract (#157) | 2026-11-24 | Data | Independent QA merged offline templates, manifest validation and planner at 7c8f0ee after a full gate. Stacked operator CLI #159 remains FIX-FIRST; no live Google setup occurred. |
 
 ---
 

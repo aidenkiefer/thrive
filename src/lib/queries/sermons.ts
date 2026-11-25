@@ -1,4 +1,5 @@
 import { createClient } from '../supabase/server'
+import { decodeHtmlEntities } from '../text/decode-entities'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,6 +58,34 @@ export interface Sermon {
   series: SermonSeries | null
 }
 
+// ─── Display-text cleanup ─────────────────────────────────────────────────────
+//
+// Some imported WordPress titles/descriptions still contain HTML character
+// references (`Faith &amp; Works`). Decode them at read time so every public
+// route, the homepage, and metadata show clean text. Stored data is unchanged;
+// admin reads go through a different path and keep the raw value.
+
+function decodeSeries(series: SermonSeries): SermonSeries {
+  return {
+    ...series,
+    title: decodeHtmlEntities(series.title),
+    description: decodeHtmlEntities(series.description),
+    seo_title: decodeHtmlEntities(series.seo_title),
+    seo_description: decodeHtmlEntities(series.seo_description),
+  }
+}
+
+function decodeSermon(sermon: Sermon): Sermon {
+  return {
+    ...sermon,
+    title: decodeHtmlEntities(sermon.title),
+    description: decodeHtmlEntities(sermon.description),
+    seo_title: decodeHtmlEntities(sermon.seo_title),
+    seo_description: decodeHtmlEntities(sermon.seo_description),
+    series: sermon.series ? decodeSeries(sermon.series) : sermon.series,
+  }
+}
+
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
 /**
@@ -74,7 +103,7 @@ export async function getLatestSermon(): Promise<Sermon | null> {
     .single()
 
   if (error || !data) return null
-  return data as Sermon
+  return decodeSermon(data as Sermon)
 }
 
 /**
@@ -97,7 +126,7 @@ export async function getSermons(limit?: number): Promise<Sermon[]> {
   const { data, error } = await query
 
   if (error || !data) return []
-  return data as Sermon[]
+  return (data as Sermon[]).map(decodeSermon)
 }
 
 /**
@@ -114,7 +143,7 @@ export async function getSermonBySlug(slug: string): Promise<Sermon | null> {
     .single()
 
   if (error || !data) return null
-  return data as Sermon
+  return decodeSermon(data as Sermon)
 }
 
 /**
@@ -130,7 +159,7 @@ export async function getSermonSeries(): Promise<SermonSeries[]> {
     .order('start_date', { ascending: false })
 
   if (error || !data) return []
-  return data as SermonSeries[]
+  return (data as SermonSeries[]).map(decodeSeries)
 }
 
 /**
@@ -159,5 +188,5 @@ export async function getSermonsBySeriesSlug(seriesSlug: string): Promise<Sermon
     .order('preached_at', { ascending: false })
 
   if (error || !data) return []
-  return data as Sermon[]
+  return (data as Sermon[]).map(decodeSermon)
 }
